@@ -14,6 +14,21 @@ const tools: { id: Tool; label: string; desc: string; icon: React.ElementType; c
   { id: 'strategy', label: 'Strategy Advisor', desc: 'Data-backed strategy recommendations', icon: Lightbulb, color: 'from-amber-500 to-orange-500', placeholder: 'e.g. We run performance marketing for a D2C skincare brand with 3L monthly ad budget. Suggest an influencer strategy.' },
 ];
 
+function formatOutput(data: any, tool: Tool): string {
+  if (tool === 'campaign') {
+    const parts: string[] = [];
+    if (data.name) parts.push(`## ${data.name}`);
+    if (data.tagline) parts.push(`_${data.tagline}_`);
+    if (data.description) parts.push(`\n${data.description}`);
+    if (data.targetAudience) parts.push(`\n**Target:** ${data.targetAudience}`);
+    if (data.recommendedPlatforms?.length) parts.push(`\n**Platforms:** ${data.recommendedPlatforms.join(', ')}`);
+    if (data.contentPillars?.length) parts.push(`\n**Content Pillars:**\n${data.contentPillars.map((p: string, i: number) => `${i + 1}. ${p}`).join('\n')}`);
+    if (data.kpis?.length) parts.push(`\n**KPIs:**\n${data.kpis.map((k: string, i: number) => `• ${k}`).join('\n')}`);
+    return parts.join('\n') || JSON.stringify(data, null, 2);
+  }
+  return data.result || data.idea || data.caption || data.email || data.strategy || JSON.stringify(data, null, 2);
+}
+
 export default function AIToolsPage() {
   const [activeTool, setActiveTool] = useState<Tool>('campaign');
   const [prompt, setPrompt] = useState('');
@@ -38,12 +53,18 @@ export default function AIToolsPage() {
       const res = await fetch(`${API_URL}${endpointMap[activeTool]}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ prompt, brief: prompt, context: prompt })
+        body: JSON.stringify({ prompt, brief: prompt, context: prompt }),
       });
       const data = await res.json();
-      setResult(data.result || data.idea || data.caption || data.email || data.strategy || JSON.stringify(data));
-    } catch (err) {
-      setResult('⚠️ Failed to connect to AI. Make sure the backend is running and GROQ_API_KEY is set in your .env file.');
+
+      if (!res.ok) {
+        setResult(`⚠️ ${data.error || 'AI generation failed. Please try again.'}`);
+        return;
+      }
+
+      setResult(formatOutput(data, activeTool));
+    } catch (err: any) {
+      setResult('⚠️ Failed to connect to AI. Make sure the backend is running and GROQ_API_KEY is set.');
     } finally {
       setLoading(false);
     }
@@ -64,7 +85,7 @@ export default function AIToolsPage() {
           </span>
           AI Tools
         </h1>
-        <p className="text-muted-foreground mt-1 ml-12">Powered by Groq — generate campaigns, captions, outreach & strategy in seconds.</p>
+        <p className="text-muted-foreground mt-1 ml-12">Powered by Groq AI — generate campaigns, captions, outreach & strategy in seconds.</p>
       </div>
 
       {/* Tool Selector */}
@@ -141,7 +162,7 @@ export default function AIToolsPage() {
                 </motion.div>
               ) : result ? (
                 <motion.div key="result" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <pre className="text-sm text-zinc-200 whitespace-pre-wrap font-sans leading-relaxed">{result}</pre>
+                  <pre className={`text-sm whitespace-pre-wrap font-sans leading-relaxed ${result.startsWith('⚠️') ? 'text-red-400' : 'text-zinc-200'}`}>{result}</pre>
                 </motion.div>
               ) : (
                 <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} className="flex flex-col items-center justify-center h-48 gap-3 text-center">
