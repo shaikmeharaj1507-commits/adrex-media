@@ -46,16 +46,40 @@ export const createClient = async (req: Request, res: Response) => {
   }
 };
 
+export const updateClient = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+    const { companyName, contactName, email, phone, monthlyBudget, status } = req.body;
+
+    const client = await prisma.client.update({
+      where: { id, agencyId: user.agencyId },
+      data: {
+        ...(companyName && { companyName }),
+        ...(contactName && { contactName }),
+        ...(email && { email }),
+        ...(phone !== undefined && { phone }),
+        ...(monthlyBudget !== undefined && { monthlyBudget: parseFloat(monthlyBudget) }),
+        ...(status && { status })
+      }
+    });
+
+    res.json(client);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update client' });
+  }
+};
+
 export const deleteClient = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { id } = req.params;
-
-    await prisma.client.delete({
-      where: { id, agencyId: user.agencyId }
-    });
+    await prisma.client.delete({ where: { id, agencyId: user.agencyId } });
 
     res.status(204).send();
   } catch (error) {

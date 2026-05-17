@@ -1,12 +1,11 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { uploadFile, getFiles } from '../controllers/fileController';
+import { uploadFile, getFiles, deleteFile } from '../controllers/fileController';
 import { requireAuth } from '../middlewares/auth';
 
 const router = express.Router();
 
-// Multer config for local disk storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../../uploads'));
@@ -19,12 +18,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max file size
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 router.use(requireAuth);
 
 router.get('/', getFiles);
 router.post('/upload', upload.single('file'), uploadFile);
+router.delete('/:id', deleteFile);
 
 export default router;

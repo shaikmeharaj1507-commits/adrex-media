@@ -33,6 +33,7 @@ model Agency {
   messages        Message[]
   files           File[]
   whatsappMessages WhatsAppMessage[]
+  announcements   Announcement[]
 }
 
 enum Role {
@@ -61,12 +62,16 @@ model User {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
   
+  // Notification preferences stored as JSON string
+  notificationPrefs String? @default("{\"emailCampaigns\":true,\"emailTasks\":true,\"emailInfluencers\":false,\"browserAlerts\":true,\"weeklyDigest\":true}")
+  
   campaignAssignments CampaignAssignment[]
   notifications       Notification[]
   activityLogs        ActivityLog[]
   sentMessages        Message[] @relation("SentMessages")
   receivedMessages    Message[] @relation("ReceivedMessages")
   files               File[]
+  assignedTasks       Task[]    @relation("TaskAssignee")
 }
 
 model Influencer {
@@ -128,12 +133,26 @@ model Task {
   agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   title       String
   assignee    String?
+  assigneeId  String?
+  assigneeUser User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   priority    String   @default("MEDIUM")
   campaign    String?
   dueDate     String?
   status      String   @default("TODO")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  comments    TaskComment[]
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CalendarEvent {
@@ -171,7 +190,7 @@ model PipelineLead {
   email       String
   phone       String?
   value       Float    @default(0)
-  stage       String   @default("LEAD") // LEAD, CONTACTED, PROPOSAL, NEGOTIATION, WON, LOST
+  stage       String   @default("LEAD")
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -184,7 +203,7 @@ model Invoice {
   clientId    String
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   amount      Float
-  status      String   @default("DRAFT") // DRAFT, SENT, PAID, OVERDUE
+  status      String   @default("DRAFT")
   dueDate     DateTime
   issuedDate  DateTime @default(now())
   createdAt   DateTime @default(now())
@@ -253,8 +272,9 @@ model File {
   url         String
   size        Int
   type        String
-  category    String   @default("GENERAL") // CONTRACT, CREATIVE, REPORT
+  category    String   @default("GENERAL")
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model WhatsAppMessage {
@@ -264,8 +284,20 @@ model WhatsAppMessage {
   toNumber   String
   fromNumber String
   body       String
-  status     String   @default("sent") // sent, delivered, read, failed
+  status     String   @default("sent")
   messageSid String   @unique
-  direction  String   @default("outbound") // outbound, inbound
+  direction  String   @default("outbound")
   createdAt  DateTime @default(now())
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  agencyId    String
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  priority    String   @default("NORMAL")
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

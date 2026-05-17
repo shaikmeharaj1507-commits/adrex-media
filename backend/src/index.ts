@@ -60,6 +60,7 @@ import whatsappRoutes from './routes/whatsapp';
 import fileRoutes from './routes/files';
 import messageRoutes from './routes/messages';
 import pdfRoutes from './routes/pdf';
+import notificationRoutes from './routes/notifications';
 
 // Basic Health Check
 app.get('/api/health', (req, res) => {
@@ -83,6 +84,7 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/pdf', pdfRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 import { createServer } from 'http';
 import { setupSocketIO } from './socket';

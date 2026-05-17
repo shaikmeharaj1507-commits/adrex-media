@@ -6,7 +6,11 @@ import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-adrex-key-12345';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
 const JWT_EXPIRES_IN = '7d';
 
 const SignupSchema = z.object({
@@ -39,10 +43,10 @@ export const signup = async (req: Request, res: Response) => {
 
     const result = await prisma.$transaction(async (tx) => {
       const agency = await tx.agency.create({
-        data: {
-          name: data.agencyName,
-        }
+        data: { name: data.agencyName }
       });
+
+      const emailVerificationToken = crypto.randomBytes(32).toString('hex');
 
       const user = await tx.user.create({
         data: {
@@ -51,12 +55,31 @@ export const signup = async (req: Request, res: Response) => {
           lastName: data.lastName,
           passwordHash,
           agencyId: agency.id,
-          role: 'SUPER_ADMIN' // First user of agency is super admin
+          role: 'SUPER_ADMIN',
+          emailVerificationToken
         }
       });
 
       return { agency, user };
     });
+
+    // Send verification email
+    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify?token=${result.user.emailVerificationToken}`;
+    try {
+      await transporter.sendMail({
+        from: '"Adrex Media OS" <noreply@adrexmedia.com>',
+        to: result.user.email,
+        subject: 'Verify Your Email — Adrex Media',
+        html: `
+          <h3>Welcome to Adrex Media!</h3>
+          <p>Click the link below to verify your email address:</p>
+          <a href="${verifyUrl}">Verify Email</a>
+          <p>If you did not create an account, please ignore this email.</p>
+        `
+      });
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+    }
 
     const token = jwt.sign(
       { userId: result.user.id, agencyId: result.agency.id, role: result.user.role },

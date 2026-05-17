@@ -1,5 +1,5 @@
 import express from 'express';
-import { getInvoices, createInvoice, updateInvoice, deleteInvoice, getExpenses, createExpense, deleteExpense } from '../controllers/financeController';
+import { getInvoices, createInvoice, updateInvoice, deleteInvoice, getExpenses, createExpense, updateExpense, deleteExpense } from '../controllers/financeController';
 import { requireAuth } from '../middlewares/auth';
 
 const router = express.Router();
@@ -12,6 +12,7 @@ router.delete('/invoices/:id', deleteInvoice);
 
 router.get('/expenses', getExpenses);
 router.post('/expenses', createExpense);
+router.put('/expenses/:id', updateExpense);
 router.delete('/expenses/:id', deleteExpense);
 
 export default router;

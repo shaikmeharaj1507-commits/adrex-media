@@ -28,13 +28,7 @@ export const createEvent = async (req: Request, res: Response) => {
     const { title, date, type, color } = req.body;
 
     const event = await prisma.calendarEvent.create({
-      data: {
-        agencyId: user.agencyId,
-        title,
-        date,
-        type,
-        color
-      }
+      data: { agencyId: user.agencyId, title, date, type, color }
     });
 
     res.status(201).json(event);
@@ -44,16 +38,38 @@ export const createEvent = async (req: Request, res: Response) => {
   }
 };
 
+export const updateEvent = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+    const { title, date, type, color } = req.body;
+
+    const event = await prisma.calendarEvent.update({
+      where: { id, agencyId: user.agencyId },
+      data: {
+        ...(title && { title }),
+        ...(date && { date }),
+        ...(type && { type }),
+        ...(color && { color })
+      }
+    });
+
+    res.json(event);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update event' });
+  }
+};
+
 export const deleteEvent = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { id } = req.params;
-
-    await prisma.calendarEvent.delete({
-      where: { id, agencyId: user.agencyId }
-    });
+    await prisma.calendarEvent.delete({ where: { id, agencyId: user.agencyId } });
 
     res.status(204).send();
   } catch (error) {

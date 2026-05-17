@@ -37,7 +37,7 @@ const allowedOrigins = [
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key') as SocketUser;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as SocketUser;
       socket.user = decoded;
       next();
     } catch (err) {

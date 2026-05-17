@@ -31,9 +31,14 @@ export const updateInvoice = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     const { id } = req.params;
+    const { amount, status, dueDate } = req.body;
     const invoice = await prisma.invoice.update({
       where: { id, agencyId: user.agencyId },
-      data: req.body,
+      data: {
+        ...(amount !== undefined && { amount: parseFloat(amount) }),
+        ...(status && { status }),
+        ...(dueDate && { dueDate: new Date(dueDate) })
+      },
       include: { client: { select: { companyName: true } } }
     });
     res.json(invoice);
@@ -68,6 +73,24 @@ export const createExpense = async (req: Request, res: Response) => {
     });
     res.status(201).json(expense);
   } catch (error) { res.status(500).json({ error: 'Failed to create expense' }); }
+};
+
+export const updateExpense = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { category, amount, description, date } = req.body;
+    const expense = await prisma.expense.update({
+      where: { id, agencyId: user.agencyId },
+      data: {
+        ...(category && { category }),
+        ...(amount !== undefined && { amount: parseFloat(amount) }),
+        ...(description !== undefined && { description }),
+        ...(date && { date: new Date(date) })
+      }
+    });
+    res.json(expense);
+  } catch (error) { res.status(500).json({ error: 'Failed to update expense' }); }
 };
 
 export const deleteExpense = async (req: Request, res: Response) => {
