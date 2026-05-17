@@ -59,3 +59,24 @@ export const updateAgency = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update agency' });
   }
 };
+
+export const uploadLogo = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const logoUrl = `/uploads/logos/${req.file.filename}`;
+
+    const updatedAgency = await prisma.agency.update({
+      where: { id: user.agencyId },
+      data: { logo: logoUrl },
+    });
+
+    res.json({ message: 'Logo uploaded', logoUrl, agency: updatedAgency });
+  } catch (error) {
+    console.error('Logo upload error:', error);
+    res.status(500).json({ error: 'Failed to upload logo' });
+  }
+};

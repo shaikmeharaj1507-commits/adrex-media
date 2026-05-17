@@ -7,26 +7,12 @@ const prisma = new PrismaClient();
 export const generateInvoicePDF = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const token = req.query.token as string;
-
-    // Allow auth via query param for browser downloads
-    if (!user && token) {
-      const jwt = require('jsonwebtoken');
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        (req as any).user = decoded;
-      } catch {
-        return res.status(401).json({ error: 'Invalid token' });
-      }
-    }
-
-    const authUser = (req as any).user;
-    if (!authUser || !authUser.userId) return res.status(401).json({ error: 'Authentication required' });
+    if (!user || !user.userId) return res.status(401).json({ error: 'Authentication required' });
 
     const { id } = req.params;
 
     const invoice = await prisma.invoice.findUnique({
-      where: { id, agencyId: authUser.agencyId },
+      where: { id, agencyId: user.agencyId },
       include: { client: true, agency: true },
     });
 
@@ -99,23 +85,10 @@ export const generateInvoicePDF = async (req: Request, res: Response) => {
 
 export const generateReportPDF = async (req: Request, res: Response) => {
   try {
-    let user = (req as any).user;
-    const token = req.query.token as string;
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Authentication required' });
 
-    if (!user && token) {
-      const jwt = require('jsonwebtoken');
-      try {
-        user = jwt.verify(token, process.env.JWT_SECRET);
-        (req as any).user = user;
-      } catch {
-        return res.status(401).json({ error: 'Invalid token' });
-      }
-    }
-
-    const authUser = (req as any).user;
-    if (!authUser || !authUser.agencyId) return res.status(401).json({ error: 'Authentication required' });
-
-    const agencyId = authUser.agencyId;
+    const agencyId = user.agencyId;
 
     const [agency, campaigns, clients, influencers, expenses, invoices, tasks] = await Promise.all([
       prisma.agency.findUnique({ where: { id: agencyId } }),

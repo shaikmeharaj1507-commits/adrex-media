@@ -50,3 +50,25 @@ export const updateProfile = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 };
+
+export const uploadAvatar = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.id) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { avatar: avatarUrl },
+      select: { id: true, email: true, firstName: true, lastName: true, role: true, agencyId: true, avatar: true }
+    });
+
+    res.json({ message: 'Avatar uploaded', avatarUrl, user: updatedUser });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ error: 'Failed to upload avatar' });
+  }
+};
