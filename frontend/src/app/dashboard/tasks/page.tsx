@@ -41,7 +41,7 @@ export default function TasksPage() {
   const fetchTasks = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/tasks', {
+      const res = await fetch(`${API_URL}/api/tasks`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -65,7 +65,7 @@ export default function TasksPage() {
 
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/tasks', {
+      const res = await fetch(`${API_URL}/api/tasks`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

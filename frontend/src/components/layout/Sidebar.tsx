@@ -36,7 +36,7 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      await fetch('${API_URL}/api/auth/logout', {
+      await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

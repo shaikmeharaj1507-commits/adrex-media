@@ -26,7 +26,7 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/clients', {
+      const res = await fetch(`${API_URL}/api/clients`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -50,7 +50,7 @@ export default function ClientsPage() {
 
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/clients', {
+      const res = await fetch(`${API_URL}/api/clients`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

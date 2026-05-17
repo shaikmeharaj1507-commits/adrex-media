@@ -34,7 +34,7 @@ export default function TeamPage() {
   const fetchTeam = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/team', {
+      const res = await fetch(`${API_URL}/api/team`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -55,7 +55,7 @@ export default function TeamPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/team', {
+      const res = await fetch(`${API_URL}/api/team`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(newMember)

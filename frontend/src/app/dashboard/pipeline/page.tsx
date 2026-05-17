@@ -44,13 +44,13 @@ export default function PipelinePage() {
   };
 
   useEffect(() => {
-    fetch('${API_URL}/api/pipeline', { headers: getHeaders() })
+    fetch(`${API_URL}/api/pipeline`, { headers: getHeaders() })
       .then(r => r.json()).then(setLeads).catch(console.error).finally(() => setLoading(false));
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('${API_URL}/api/pipeline', { method: 'POST', headers: getHeaders(), body: JSON.stringify(form) });
+    const res = await fetch(`${API_URL}/api/pipeline`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(form) });
     if (res.ok) { const d = await res.json(); setLeads(p => [d, ...p]); setShowModal(false); setForm({ companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD', notes: '' }); }
   };
 

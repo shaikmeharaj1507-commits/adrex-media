@@ -43,8 +43,8 @@ export default function CampaignsPage() {
       const token = localStorage.getItem('adrex_token');
       const headers = { 'Authorization': `Bearer ${token}` };
       const [campRes, cliRes] = await Promise.all([
-        fetch('${API_URL}/api/campaigns', { headers }),
-        fetch('${API_URL}/api/clients', { headers })
+        fetch(`${API_URL}/api/campaigns`, { headers }),
+        fetch(`${API_URL}/api/clients`, { headers })
       ]);
       if (campRes.ok) setCampaigns(await campRes.json());
       if (cliRes.ok) setClients(await cliRes.json());
@@ -62,7 +62,7 @@ export default function CampaignsPage() {
     if (!newCamp.name || !newCamp.clientId || !newCamp.startDate || !newCamp.endDate) return;
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/campaigns', {
+      const res = await fetch(`${API_URL}/api/campaigns`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(newCamp)
@@ -88,7 +88,7 @@ export default function CampaignsPage() {
     setAiLoading(true);
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/ai/campaign-idea', {
+      const res = await fetch(`${API_URL}/api/ai/campaign-idea`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({

@@ -76,7 +76,7 @@ export default function TeamChat() {
   const fetchTeamMembers = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/team', {
+      const res = await fetch(`${API_URL}/api/team`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -126,7 +126,7 @@ export default function TeamChat() {
     } else if (mode === 'private' && selectedUser) {
       const token = localStorage.getItem('adrex_token');
       try {
-        const res = await fetch('${API_URL}/api/messages', {
+        const res = await fetch(`${API_URL}/api/messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ receiverId: selectedUser.id, content: input }),
@@ -153,7 +153,7 @@ export default function TeamChat() {
 
       try {
         const token = localStorage.getItem('adrex_token');
-        const res = await fetch('${API_URL}/api/ai/chat', {
+        const res = await fetch(`${API_URL}/api/ai/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ prompt: input }),

@@ -38,7 +38,7 @@ export default function CalendarPage() {
   const fetchEvents = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/calendar', {
+      const res = await fetch(`${API_URL}/api/calendar`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -62,7 +62,7 @@ export default function CalendarPage() {
 
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/calendar', {
+      const res = await fetch(`${API_URL}/api/calendar`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

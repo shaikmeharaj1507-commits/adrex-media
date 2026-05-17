@@ -29,7 +29,7 @@ export default function FilesPage() {
   const fetchFiles = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/files', {
+      const res = await fetch(`${API_URL}/api/files`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) setFiles(await res.json());
@@ -56,7 +56,7 @@ export default function FilesPage() {
 
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch('${API_URL}/api/files/upload', {
+      const res = await fetch(`${API_URL}/api/files/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData

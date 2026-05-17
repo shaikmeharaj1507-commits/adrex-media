@@ -42,9 +42,9 @@ export default function FinancePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('${API_URL}/api/finance/invoices', { headers: getHeaders() }).then(r => r.json()),
-      fetch('${API_URL}/api/finance/expenses', { headers: getHeaders() }).then(r => r.json()),
-      fetch('${API_URL}/api/clients', { headers: getHeaders() }).then(r => r.json()),
+      fetch(`${API_URL}/api/finance/invoices`, { headers: getHeaders() }).then(r => r.json()),
+      fetch(`${API_URL}/api/finance/expenses`, { headers: getHeaders() }).then(r => r.json()),
+      fetch(`${API_URL}/api/clients`, { headers: getHeaders() }).then(r => r.json()),
     ]).then(([inv, exp, cls]) => {
       setInvoices(Array.isArray(inv) ? inv : []);
       setExpenses(Array.isArray(exp) ? exp : []);
@@ -59,13 +59,13 @@ export default function FinancePage() {
 
   const handleCreateInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('${API_URL}/api/finance/invoices', { method: 'POST', headers: getHeaders(), body: JSON.stringify(invoiceForm) });
+    const res = await fetch(`${API_URL}/api/finance/invoices`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(invoiceForm) });
     if (res.ok) { const d = await res.json(); setInvoices(p => [d, ...p]); setShowModal(false); setInvoiceForm({ clientId: '', amount: '', status: 'DRAFT', dueDate: '' }); }
   };
 
   const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch('${API_URL}/api/finance/expenses', { method: 'POST', headers: getHeaders(), body: JSON.stringify(expenseForm) });
+    const res = await fetch(`${API_URL}/api/finance/expenses`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(expenseForm) });
     if (res.ok) { const d = await res.json(); setExpenses(p => [d, ...p]); setShowModal(false); setExpenseForm({ category: '', amount: '', description: '', date: '' }); }
   };
 
