@@ -1,252 +1,144 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Zap, Mail, Lock, User, Building2, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import Link from 'next/link';
 
 export default function SignupPage() {
   const router = useRouter();
-  const setUser = useAuthStore(s => s.setUser);
-
-  const [form, setForm] = useState({
-    agencyName: '',
+  const setUser = useAuthStore(state => state.setUser);
+  
+  const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
+    agencyName: ''
   });
-  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(p => ({ ...p, [field]: e.target.value }));
-
-  // Password strength indicator
-  const passStrength = (() => {
-    const p = form.password;
-    if (!p) return 0;
-    let score = 0;
-    if (p.length >= 8) score++;
-    if (/[A-Z]/.test(p)) score++;
-    if (/[0-9]/.test(p)) score++;
-    if (/[^A-Za-z0-9]/.test(p)) score++;
-    return score;
-  })();
-  const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-  const strengthColor = ['', 'bg-red-500', 'bg-amber-500', 'bg-yellow-400', 'bg-emerald-500'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
       const res = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(form),
+        body: JSON.stringify(formData)
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        const msg = Array.isArray(data.error)
-          ? data.error.map((e: any) => e.message).join(', ')
-          : data.error || 'Signup failed. Please try again.';
-        setError(msg);
-        return;
+      if (res.ok) {
+        localStorage.setItem('adrex_token', data.token);
+        setUser(data.user);
+        router.push('/dashboard');
+      } else {
+        setError(data.error || 'Signup failed');
       }
-
-      if (data.token) localStorage.setItem('drex_token', data.token);
-
-      setUser(data.user);
-      setSuccess(true);
-
-      // Brief success flash before redirect
-      setTimeout(() => router.push('/dashboard'), 800);
     } catch (err) {
-      setError('Cannot connect to server. Make sure the backend is running on port 5000.');
+      setError('Network error. Is the backend running?');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background py-12">
-      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
+    <div className="min-h-screen bg-[#09090b] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] opacity-20 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 blur-[100px] rounded-full mix-blend-screen" />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="z-10 w-full max-w-lg p-8 glassmorphism rounded-2xl"
-      >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 mb-4">
-            <span className="text-white font-bold text-xl">D</span>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="flex justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+            <Zap size={28} className="text-white" fill="white" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Create Workspace</h1>
-          <p className="text-muted-foreground text-sm">Set up your agency on DREX MEDIA OS</p>
         </div>
-
-        {/* Error Banner */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="flex items-center gap-2.5 mb-5 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm"
-          >
-            <AlertCircle size={16} className="shrink-0" />
-            {error}
-          </motion.div>
-        )}
-
-        {/* Success Banner */}
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="flex items-center gap-2.5 mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm"
-          >
-            <CheckCircle size={16} className="shrink-0" />
-            Account created! Redirecting to dashboard...
-          </motion.div>
-        )}
-
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Agency Name */}
-          <div>
-            <label className="block text-sm font-medium mb-1.5" htmlFor="agency-name">Agency Name</label>
-            <input
-              id="agency-name"
-              type="text"
-              value={form.agencyName}
-              onChange={set('agencyName')}
-              required
-              minLength={2}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              placeholder="e.g. Drex Media Group"
-            />
-          </div>
-
-          {/* First / Last Name */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1.5" htmlFor="first-name">First Name</label>
-              <input
-                id="first-name"
-                type="text"
-                value={form.firstName}
-                onChange={set('firstName')}
-                required
-                minLength={2}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="John"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5" htmlFor="last-name">Last Name</label>
-              <input
-                id="last-name"
-                type="text"
-                value={form.lastName}
-                onChange={set('lastName')}
-                required
-                minLength={2}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="Doe"
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium mb-1.5" htmlFor="signup-email">Work Email</label>
-            <input
-              id="signup-email"
-              type="email"
-              value={form.email}
-              onChange={set('email')}
-              required
-              autoComplete="email"
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              placeholder="john@agency.com"
-            />
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium mb-1.5" htmlFor="signup-password">Password</label>
-            <div className="relative">
-              <input
-                id="signup-password"
-                type={showPass ? 'text' : 'password'}
-                value={form.password}
-                onChange={set('password')}
-                required
-                minLength={6}
-                autoComplete="new-password"
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                placeholder="Min. 6 characters"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(p => !p)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
-              </button>
-            </div>
-            {/* Strength meter */}
-            {form.password && (
-              <div className="mt-2">
-                <div className="flex gap-1 mb-1">
-                  {[1, 2, 3, 4].map(i => (
-                    <div
-                      key={i}
-                      className={`h-1 flex-1 rounded-full transition-all ${
-                        passStrength >= i ? strengthColor[passStrength] : 'bg-white/10'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Password strength: <span className="font-medium text-foreground">{strengthLabel[passStrength]}</span>
-                </p>
-              </div>
-            )}
-          </div>
-
-          <button
-            id="signup-submit"
-            type="submit"
-            disabled={loading || success}
-            className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center gap-2 mt-2"
-          >
-            {loading ? (
-              <><Loader2 size={17} className="animate-spin" /> Creating account...</>
-            ) : success ? (
-              <><CheckCircle size={17} /> Account created!</>
-            ) : (
-              'Create Account'
-            )}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-muted-foreground mt-7">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-white tracking-tight">Create your agency</h2>
+        <p className="mt-2 text-center text-sm text-zinc-400">
           Already have an account?{' '}
-          <Link href="/login" className="text-primary hover:underline font-medium">
-            Sign In
+          <Link href="/login" className="font-medium text-purple-400 hover:text-purple-300 transition-colors">
+            Sign in
           </Link>
         </p>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="bg-zinc-900/50 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/10">
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {error && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">First Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User size={18} className="text-zinc-500" />
+                  </div>
+                  <input type="text" required value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                    className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="John" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Last Name</label>
+                <input type="text" required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                  className="block w-full px-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="Doe" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Agency Name</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Building2 size={18} className="text-zinc-500" />
+                </div>
+                <input type="text" required value={formData.agencyName} onChange={e => setFormData({ ...formData, agencyName: e.target.value })}
+                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="Acme Marketing" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Email address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail size={18} className="text-zinc-500" />
+                </div>
+                <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
+                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="john@example.com" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock size={18} className="text-zinc-500" />
+                </div>
+                <input type="password" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
+                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="••••••••" />
+              </div>
+            </div>
+
+            <div>
+              <button type="submit" disabled={loading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.3)] text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                {loading ? <Loader2 size={20} className="animate-spin" /> : 'Create Workspace'}
+              </button>
+            </div>
+          </form>
+        </div>
       </motion.div>
     </div>
   );

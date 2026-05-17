@@ -10,7 +10,7 @@ export default function Home() {
       <div className="z-10 flex flex-col items-center text-center space-y-8 max-w-4xl glassmorphism p-12 rounded-3xl">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
           Welcome to <br />
-          <span className="text-gradient">DREX MEDIA OS</span>
+          <span className="text-gradient">Adrex Media OS</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl">
           The ultimate multi-tenant SaaS platform for modern Influencer & Performance Marketing Agencies. Scale your brand with enterprise-grade tools.
@@ -24,10 +24,10 @@ export default function Home() {
             Access Dashboard
           </Link>
           <Link 
-            href="/features" 
+            href="/signup" 
             className="px-8 py-4 bg-white/5 border border-white/10 rounded-full font-semibold hover:bg-white/10 transition-all"
           >
-            Explore Features
+            Get Started
           </Link>
         </div>
       </div>

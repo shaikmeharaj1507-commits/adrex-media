@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "DREX MEDIA OS - Agency Management",
+  title: "Adrex Media OS - Agency Management",
   description: "Enterprise SaaS for Influencer & Performance Marketing Agencies",
 };
 

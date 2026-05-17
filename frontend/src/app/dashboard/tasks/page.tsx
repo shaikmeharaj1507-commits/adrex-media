@@ -39,7 +39,7 @@ export default function TasksPage() {
 
   const fetchTasks = async () => {
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/tasks', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -63,7 +63,7 @@ export default function TasksPage() {
     if (!newTask.title.trim()) return;
 
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/tasks', {
         method: 'POST',
         headers: { 
@@ -85,23 +85,32 @@ export default function TasksPage() {
   };
 
   const moveTask = async (taskId: string, newStatus: TaskStatus) => {
-    // Optimistic UI update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ status: newStatus })
       });
     } catch (error) {
       console.error('Failed to update task status', error);
-      fetchTasks(); // Revert on failure
+      fetchTasks(); 
     }
+  };
+
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+  };
+
+  const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    if (taskId) moveTask(taskId, status);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
   };
 
   return (
@@ -152,7 +161,11 @@ export default function TasksPage() {
               </div>
 
               {/* Cards */}
-              <div className="space-y-3 min-h-[200px]">
+              <div 
+                className="space-y-3 min-h-[300px] p-2 -mx-2 rounded-xl transition-colors hover:bg-white/5"
+                onDrop={(e) => handleDrop(e, col.id)}
+                onDragOver={handleDragOver}
+              >
                 <AnimatePresence>
                   {colTasks.map((task, ti) => {
                     const pri = priorityConfig[task.priority];
@@ -164,7 +177,9 @@ export default function TasksPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ delay: ti * 0.04 }}
-                        className="glassmorphism rounded-xl p-4 border border-border/30 hover:border-primary/30 transition-all group"
+                        draggable
+                        onDragStart={(e: any) => handleDragStart(e, task.id)}
+                        className="glassmorphism rounded-xl p-4 border border-border/30 hover:border-primary/50 transition-all cursor-grab active:cursor-grabbing group shadow-sm hover:shadow-md"
                       >
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <p className="text-sm font-medium leading-snug">{task.title}</p>
@@ -184,19 +199,7 @@ export default function TasksPage() {
                               {task.assignee}
                             </span>
                           ) : <span />}
-                          {task.dueDate && <span className="text-[11px]">📅 {task.dueDate}</span>}
-                        </div>
-                        {/* Move buttons */}
-                        <div className="mt-3 pt-2 border-t border-border/30 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                          {columns.filter(c => c.id !== col.id).map(dest => (
-                            <button
-                              key={dest.id}
-                              onClick={() => moveTask(task.id, dest.id)}
-                              className={`text-[10px] px-2 py-1 rounded-md ${dest.color} bg-white/5 hover:bg-white/10 transition-all`}
-                            >
-                              → {dest.label}
-                            </button>
-                          ))}
+                          {task.dueDate && <span className="text-[11px]">📅 {new Date(task.dueDate).toLocaleDateString()}</span>}
                         </div>
                       </motion.div>
                     );
@@ -204,12 +207,12 @@ export default function TasksPage() {
                 </AnimatePresence>
                 {!loading && colTasks.length === 0 && (
                   <div className="flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-border/30 text-muted-foreground text-sm">
-                    Drop tasks here
+                    Drop here
                   </div>
                 )}
                 {loading && (
                    <div className="flex items-center justify-center h-24 rounded-xl border-2 border-dashed border-border/10 text-muted-foreground text-sm animate-pulse">
-                   Loading tasks...
+                   Loading...
                  </div>
                 )}
               </div>

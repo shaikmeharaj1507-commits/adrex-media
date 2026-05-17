@@ -39,6 +39,14 @@ export const createTask = async (req: Request, res: Response) => {
       }
     });
 
+    // Emit Real-Time Notification
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`agency_${user.agencyId}`).emit('receive_notification', {
+        text: `New task created: "${title}"`,
+      });
+    }
+
     res.status(201).json(task);
   } catch (error) {
     console.error(error);

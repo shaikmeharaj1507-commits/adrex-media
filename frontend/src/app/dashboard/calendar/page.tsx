@@ -36,7 +36,7 @@ export default function CalendarPage() {
 
   const fetchEvents = async () => {
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/calendar', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -60,7 +60,7 @@ export default function CalendarPage() {
     if (!newEvent.title || !newEvent.date) return;
 
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/calendar', {
         method: 'POST',
         headers: { 

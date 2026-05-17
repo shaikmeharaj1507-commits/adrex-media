@@ -24,7 +24,7 @@ export default function ClientsPage() {
 
   const fetchClients = async () => {
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/clients', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -48,7 +48,7 @@ export default function ClientsPage() {
     if (!newClient.companyName) return;
 
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/clients', {
         method: 'POST',
         headers: { 

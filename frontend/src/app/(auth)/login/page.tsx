@@ -41,7 +41,7 @@ export default function LoginPage() {
       }
 
       // Store token in localStorage as fallback (cookie is set by backend)
-      if (data.token) localStorage.setItem('drex_token', data.token);
+      if (data.token) localStorage.setItem('adrex_token', data.token);
 
       setUser(data.user);
       router.push('/dashboard');
@@ -69,7 +69,7 @@ export default function LoginPage() {
             <span className="text-white font-bold text-xl">D</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground text-sm">Sign in to your DREX MEDIA OS account</p>
+          <p className="text-muted-foreground text-sm">Sign in to your Adrex Media OS account</p>
         </div>
 
         {/* Error Banner */}

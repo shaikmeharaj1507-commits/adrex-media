@@ -5,7 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Users, Briefcase, Megaphone,
-  CheckSquare, Calendar, BarChart, Settings, LogOut, Zap
+  CheckSquare, Calendar, BarChart, Settings, LogOut, Zap,
+  GitBranch, DollarSign, UserCheck, Sparkles, Folder
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
@@ -14,9 +15,14 @@ const menuItems = [
   { icon: Megaphone,       label: 'Campaigns',   href: '/dashboard/campaigns' },
   { icon: Users,           label: 'Influencers', href: '/dashboard/influencers' },
   { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients' },
+  { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline' },
   { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks' },
+  { icon: UserCheck,       label: 'Team',        href: '/dashboard/team' },
   { icon: Calendar,        label: 'Calendar',    href: '/dashboard/calendar' },
+  { icon: DollarSign,      label: 'Finance',     href: '/dashboard/finance' },
   { icon: BarChart,        label: 'Reports',     href: '/dashboard/reports' },
+  { icon: Folder,          label: 'Files',       href: '/dashboard/files' },
+  { icon: Sparkles,        label: 'AI Tools',    href: '/dashboard/ai' },
 ];
 
 export default function Sidebar() {
@@ -47,16 +53,14 @@ export default function Sidebar() {
             <Zap size={16} className="text-white" fill="white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold tracking-tight text-gradient">DREX OS</h2>
-            <p className="text-[10px] text-muted-foreground leading-none mt-0.5 truncate max-w-[120px]">
-              {user?.agencyId ? 'Agency Workspace' : 'Agency Workspace'}
-            </p>
+            <h2 className="text-lg font-bold tracking-tight text-gradient">Adrex Media</h2>
+            <p className="text-[10px] text-muted-foreground leading-none mt-0.5 truncate max-w-[120px]">Agency Workspace</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
@@ -75,7 +79,7 @@ export default function Sidebar() {
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
-              <Icon size={18} className={`relative z-10 transition-colors ${active ? 'text-primary' : 'group-hover:text-foreground'}`} />
+              <Icon size={17} className={`relative z-10 transition-colors ${active ? 'text-primary' : 'group-hover:text-foreground'}`} />
               <span className="relative z-10 font-medium text-sm">{item.label}</span>
               {active && <div className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
             </Link>
@@ -85,7 +89,6 @@ export default function Sidebar() {
 
       {/* User + Bottom */}
       <div className="p-3 border-t border-border/30 space-y-1">
-        {/* User profile strip */}
         {user && (
           <div className="flex items-center gap-2.5 px-4 py-2.5 mb-1 rounded-xl bg-white/3">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
@@ -93,7 +96,7 @@ export default function Sidebar() {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold truncate">{user.firstName} {user.lastName}</p>
-              <p className="text-[10px] text-muted-foreground capitalize">{user.role?.replace('_', ' ').toLowerCase()}</p>
+              <p className="text-[10px] text-muted-foreground capitalize">{user.role?.replace(/_/g, ' ').toLowerCase()}</p>
             </div>
           </div>
         )}
@@ -102,7 +105,7 @@ export default function Sidebar() {
           href="/dashboard/settings"
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
         >
-          <Settings size={18} />
+          <Settings size={17} />
           <span className="font-medium text-sm">Settings</span>
         </Link>
 
@@ -111,7 +114,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-destructive hover:bg-destructive/10 transition-all"
         >
-          <LogOut size={18} />
+          <LogOut size={17} />
           <span className="font-medium text-sm">Logout</span>
         </button>
       </div>

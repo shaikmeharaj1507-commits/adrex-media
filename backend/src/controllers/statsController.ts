@@ -10,21 +10,24 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 
     const agencyId = user.agencyId;
 
-    const [campaignCount, activeCampaigns, influencers, clients] = await Promise.all([
+    const [campaignCount, activeCampaigns, influencers, clientCount, taskCount] = await Promise.all([
       prisma.campaign.count({ where: { agencyId } }),
       prisma.campaign.count({ where: { agencyId, status: 'ACTIVE' } }),
       prisma.influencer.count({ where: { agencyId } }),
-      prisma.client.findMany({ where: { agencyId }, select: { monthlyBudget: true } })
+      prisma.client.count({ where: { agencyId } }),
+      prisma.task.count({ where: { agencyId } }),
     ]);
 
+    const clients = await prisma.client.findMany({ where: { agencyId }, select: { monthlyBudget: true } });
     const totalMRR = clients.reduce((acc, c) => acc + (c.monthlyBudget || 0), 0);
 
-    // For charts, since we don't track historical revenue/spend in DB yet, 
-    // we return empty arrays so it's a "clean" application without fake data.
     res.json({
-      totalRevenue: totalMRR,
+      campaigns: campaignCount,
+      clients: clientCount,
+      influencers,
+      tasks: taskCount,
       activeCampaigns,
-      totalInfluencers: influencers,
+      totalRevenue: totalMRR,
       chartData: [],
       recentActivity: []
     });
@@ -45,8 +48,18 @@ export const getReportStats = async (req: Request, res: Response) => {
     const campaigns = await prisma.campaign.findMany({ where: { agencyId }, select: { budget: true } });
     const totalBudget = campaigns.reduce((acc, c) => acc + (c.budget || 0), 0);
 
-    // Again, no historical mock data. Just clean empty charts.
+    const [campaignCount, influencerCount, clientCount, taskCount] = await Promise.all([
+      prisma.campaign.count({ where: { agencyId } }),
+      prisma.influencer.count({ where: { agencyId } }),
+      prisma.client.count({ where: { agencyId } }),
+      prisma.task.count({ where: { agencyId } }),
+    ]);
+
     res.json({
+      campaigns: campaignCount,
+      clients: clientCount,
+      influencers: influencerCount,
+      tasks: taskCount,
       totalRevenue: 0,
       totalAdSpend: totalBudget,
       avgRoi: 0,

@@ -8,6 +8,8 @@ interface User {
   lastName: string;
   role: string;
   agencyId: string;
+  bio?: string;
+  phone?: string;
 }
 
 interface AuthState {
@@ -24,12 +26,12 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       logout: () => {
-        localStorage.removeItem('drex_token');
+        localStorage.removeItem('adrex_token');
         set({ user: null, isAuthenticated: false });
       },
     }),
     {
-      name: 'drex-auth', // localStorage key
+      name: 'adrex-auth', // localStorage key
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, MoreHorizontal, Star, X } from 'lucide-react';
+import { Plus, Search, Filter, Mail, MessageCircle, MoreVertical, X, Sparkles, Loader2, MessageSquare, Send, Star } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 interface Influencer {
@@ -21,11 +21,15 @@ export default function InfluencersPage() {
   const [influencers, setInfluencers] = useState<Influencer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showWhatsApp, setShowWhatsApp] = useState<string | null>(null);
+  const [waMessage, setWaMessage] = useState('');
+  const [waHistory, setWaHistory] = useState<any[]>([]);
+  const [sendingWa, setSendingWa] = useState(false);
   const [newInf, setNewInf] = useState({ name: '', niche: '', platform: 'Instagram', followers: '100K', rating: 5, instagram: '', tiktok: '', youtube: '' });
 
   const fetchInfluencers = async () => {
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const res = await fetch('http://localhost:5000/api/influencers', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -44,12 +48,47 @@ export default function InfluencersPage() {
     fetchInfluencers();
   }, []);
 
+  const fetchWaHistory = async (phone: string) => {
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`http://localhost:5000/api/whatsapp/history?phoneNumber=${encodeURIComponent(phone)}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) setWaHistory(await res.json());
+    } catch (error) { console.error('Failed to fetch WA history'); }
+  };
+
+  const openWhatsApp = (inf: Influencer) => {
+    setShowWhatsApp(inf.id);
+    // In a real app we'd use inf.phone. For demo, we use a placeholder:
+    fetchWaHistory('+1234567890');
+  };
+
+  const sendWhatsApp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!waMessage.trim() || !showWhatsApp) return;
+    setSendingWa(true);
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch('http://localhost:5000/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ to: '+1234567890', body: waMessage }) // Placeholder to number
+      });
+      if (res.ok) {
+        setWaMessage('');
+        fetchWaHistory('+1234567890');
+      }
+    } catch (error) { console.error('Failed to send WA', error); } 
+    finally { setSendingWa(false); }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newInf.name) return;
 
     try {
-      const token = localStorage.getItem('drex_token');
+      const token = localStorage.getItem('adrex_token');
       const payload = {
         name: newInf.name,
         niche: newInf.niche,
@@ -157,9 +196,17 @@ export default function InfluencersPage() {
                       </div>
                     </td>
                     <td className="py-4 text-right">
-                      <button className="p-2 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreHorizontal size={18} />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => openWhatsApp(inf)}
+                          className="p-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors"
+                          title="Send WhatsApp"
+                        >
+                          <MessageSquare size={16} />
+                        </button>
+                        <button className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors"><Mail size={16} /></button>
+                        <button className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors"><MoreVertical size={16} /></button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -223,6 +270,60 @@ export default function InfluencersPage() {
                   Add Influencer
                 </button>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* WhatsApp Modal */}
+      <AnimatePresence>
+        {showWhatsApp && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowWhatsApp(null)} />
+            <motion.div className="relative z-10 w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col h-[600px]" initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
+              <div className="flex items-center justify-between p-5 border-b border-white/10 bg-green-500/10 rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                    <MessageSquare size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white">{influencers.find(i => i.id === showWhatsApp)?.name}</h2>
+                    <p className="text-xs text-green-400 font-medium flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400" /> WhatsApp Connected</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowWhatsApp(null)} className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white"><X size={20} /></button>
+              </div>
+
+              {/* Chat History */}
+              <div className="flex-1 p-5 overflow-y-auto space-y-4 bg-zinc-950/50">
+                {waHistory.length === 0 ? (
+                  <div className="text-center text-zinc-500 text-sm mt-10">No messages yet. Start the conversation!</div>
+                ) : (
+                  waHistory.slice().reverse().map((msg: any) => (
+                    <div key={msg.id} className={`flex ${msg.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.direction === 'outbound' ? 'bg-green-600 text-white rounded-br-none' : 'bg-zinc-800 text-white border border-white/10 rounded-bl-none'}`}>
+                        <p>{msg.body}</p>
+                        <p className="text-[10px] mt-1 opacity-70 text-right">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {msg.status}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="p-4 border-t border-white/10 bg-zinc-900 rounded-b-2xl">
+                <form onSubmit={sendWhatsApp} className="flex gap-2">
+                  <input
+                    value={waMessage}
+                    onChange={e => setWaMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/50 transition-all"
+                  />
+                  <button type="submit" disabled={sendingWa || !waMessage.trim()} className="px-4 bg-green-600 text-white rounded-xl hover:bg-green-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    {sendingWa ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                  </button>
+                </form>
+              </div>
             </motion.div>
           </motion.div>
         )}
