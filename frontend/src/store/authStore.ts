@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface User {
   id: string;
@@ -16,8 +16,10 @@ interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  _hasHydrated: boolean;
   setUser: (user: User | null) => void;
   logout: () => void;
+  setHasHydrated: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -25,15 +27,20 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
+      _hasHydrated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       logout: () => {
         localStorage.removeItem('adrex_token');
         set({ user: null, isAuthenticated: false });
       },
+      setHasHydrated: () => set({ _hasHydrated: true }),
     }),
     {
-      name: 'adrex-auth', // localStorage key
+      name: 'adrex-auth',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated();
+      },
     }
   )
 );
