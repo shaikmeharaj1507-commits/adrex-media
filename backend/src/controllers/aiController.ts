@@ -3,6 +3,8 @@ import Groq from 'groq-sdk';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+const MODEL = 'llama-3.1-8b-instant';
+
 export const generateCampaignIdea = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
@@ -53,7 +55,7 @@ Return this exact JSON structure:
     }
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: promptText }],
       temperature: 0.8,
       max_tokens: 600,
@@ -68,8 +70,8 @@ Return this exact JSON structure:
     res.json(result);
 
   } catch (error: any) {
-    console.error('Groq AI Error (campaign):', error.message);
-    res.status(500).json({ error: 'AI generation failed. Please try again.' });
+    console.error('Groq AI Error:', error?.status, error?.message, error?.response?.data || '');
+    res.status(500).json({ error: `AI generation failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
@@ -95,7 +97,7 @@ Agency: ${agencyName || 'Adrex Media Agency'}
 Write the email body (2-3 short paragraphs). Start with "Hi ${influencerName}," and end with the agency name signature.`;
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.75,
       max_tokens: 400,
@@ -105,8 +107,8 @@ Write the email body (2-3 short paragraphs). Start with "Hi ${influencerName}," 
     res.json({ email: emailBody.trim() });
 
   } catch (error: any) {
-    console.error('Groq AI Error (outreach):', error.message);
-    res.status(500).json({ error: 'AI generation failed. Please try again.' });
+    console.error('Groq AI Error (outreach):', error?.status, error?.message);
+    res.status(500).json({ error: `AI generation failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
@@ -135,7 +137,7 @@ Return exactly this structure (5-7 tasks):
 Priority must be HIGH, MEDIUM, or LOW.`;
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.6,
       max_tokens: 500,
@@ -149,8 +151,8 @@ Priority must be HIGH, MEDIUM, or LOW.`;
     res.json({ tasks });
 
   } catch (error: any) {
-    console.error('Groq AI Error (tasks):', error.message);
-    res.status(500).json({ error: 'AI generation failed. Please try again.' });
+    console.error('Groq AI Error (tasks):', error?.status, error?.message);
+    res.status(500).json({ error: `AI generation failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
@@ -164,7 +166,7 @@ export const generateCaption = async (req: Request, res: Response) => {
     if (!input) return res.status(400).json({ error: 'Prompt is required.' });
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: `You are a viral social media expert. Generate 3 engaging captions with relevant hashtags for:\n\n${input}\n\nFormat each caption clearly numbered. Make them conversational, engaging, and platform-optimized.` }],
       temperature: 0.9,
       max_tokens: 500,
@@ -172,8 +174,8 @@ export const generateCaption = async (req: Request, res: Response) => {
     const result = completion.choices[0].message.content ?? '';
     res.json({ result: result.trim() });
   } catch (error: any) {
-    console.error('Groq AI Error (caption):', error.message);
-    res.status(500).json({ error: 'AI generation failed.' });
+    console.error('Groq AI Error (caption):', error?.status, error?.message);
+    res.status(500).json({ error: `AI generation failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
@@ -187,7 +189,7 @@ export const generateStrategy = async (req: Request, res: Response) => {
     if (!input) return res.status(400).json({ error: 'Context is required.' });
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: `You are a world-class influencer & performance marketing strategist. Provide a detailed, actionable strategy recommendation for:\n\n${input}\n\nInclude: Platform strategy, content pillars, influencer tier recommendations, budget allocation advice, KPIs to track, and a 30-60-90 day roadmap.` }],
       temperature: 0.75,
       max_tokens: 1000,
@@ -195,8 +197,8 @@ export const generateStrategy = async (req: Request, res: Response) => {
     const result = completion.choices[0].message.content ?? '';
     res.json({ result: result.trim() });
   } catch (error: any) {
-    console.error('Groq AI Error (strategy):', error.message);
-    res.status(500).json({ error: 'AI generation failed.' });
+    console.error('Groq AI Error (strategy):', error?.status, error?.message);
+    res.status(500).json({ error: `AI generation failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
@@ -210,7 +212,7 @@ export const generateOutreachMessage = async (req: Request, res: Response) => {
     if (!input) return res.status(400).json({ error: 'Context is required.' });
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: `You are a professional influencer relationship manager. Write a compelling, personalized outreach message (both a DM version and email version) for:\n\n${input}\n\nMake it warm, professional, specific, and include a clear call-to-action. Format clearly with DM and Email sections.` }],
       temperature: 0.8,
       max_tokens: 600,
@@ -218,8 +220,8 @@ export const generateOutreachMessage = async (req: Request, res: Response) => {
     const result = completion.choices[0].message.content ?? '';
     res.json({ result: result.trim() });
   } catch (error: any) {
-    console.error('Groq AI Error (outreach):', error.message);
-    res.status(500).json({ error: 'AI generation failed.' });
+    console.error('Groq AI Error (outreach msg):', error?.status, error?.message);
+    res.status(500).json({ error: `AI generation failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
@@ -233,7 +235,7 @@ export const chatWithAI = async (req: Request, res: Response) => {
     if (!input) return res.status(400).json({ error: 'Prompt is required.' });
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: MODEL,
       messages: [{ role: 'user', content: `You are a helpful AI assistant for Adrex Media, an influencer and performance marketing agency management platform. Answer questions about agency operations, campaign management, team coordination, finance, and marketing strategy. Be concise, professional, and actionable.\n\nUser question: ${input}` }],
       temperature: 0.7,
       max_tokens: 500,
@@ -241,8 +243,8 @@ export const chatWithAI = async (req: Request, res: Response) => {
     const result = completion.choices[0].message.content ?? '';
     res.json({ result: result.trim(), response: result.trim() });
   } catch (error: any) {
-    console.error('Groq AI Error (chat):', error.message);
-    res.status(500).json({ error: 'AI chat failed.' });
+    console.error('Groq AI Error (chat):', error?.status, error?.message);
+    res.status(500).json({ error: `AI chat failed: ${error?.message || 'Unknown error'}` });
   }
 };
 
