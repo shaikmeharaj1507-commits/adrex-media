@@ -28,41 +28,45 @@ export const generateCampaignIdea = async (req: Request, res: Response) => {
 
     if (!input) return badRequest(res, 'Provide a prompt, or clientName + industry.');
 
-    const systemPrompt = `You are a world-class influencer marketing strategist at Adrex Media. Generate creative, data-driven campaign briefs. When asked for structured output, return ONLY valid JSON with no markdown, no code blocks, no extra text.`;
+    const systemPrompt = `You are a world-class influencer marketing strategist at Adrex Media. Generate creative, data-driven campaign briefs. Return your response as clear, well-formatted text with headings, bullet points, and sections. Do NOT return JSON. Use markdown-style formatting with **bold** for emphasis.`;
 
     let userPrompt: string;
     if (clientName && industry) {
-      userPrompt = `Create a campaign brief:
+      userPrompt = `Create a detailed campaign brief:
 Client: ${clientName}
 Industry: ${industry}
 Budget: ${budget ? `₹${budget}` : 'Not specified'}
 Goals: ${goals || 'Brand awareness and conversions'}
 
-Return ONLY a JSON object with this exact structure:
-{"name":"Campaign name","tagline":"One-line tagline","description":"2-3 sentence concept","targetAudience":"Audience description","recommendedPlatforms":["Platform1","Platform2"],"contentPillars":["Pillar1","Pillar2","Pillar3"],"kpis":["KPI 1","KPI 2","KPI 3"]}`;
+Include these sections:
+- Campaign Name (catchy, under 6 words)
+- Tagline
+- Concept Description (2-3 sentences)
+- Target Audience
+- Recommended Platforms
+- Content Pillars (3 pillars)
+- KPIs to Track (3-5 metrics)`;
     } else {
-      userPrompt = `Create a campaign brief for this request: ${input}
+      userPrompt = `Create a detailed campaign brief for: ${input}
 
-Return ONLY a JSON object with this exact structure:
-{"name":"Campaign name","tagline":"One-line tagline","description":"2-3 sentence concept","targetAudience":"Audience description","recommendedPlatforms":["Platform1","Platform2"],"contentPillars":["Pillar1","Pillar2","Pillar3"],"kpis":["KPI 1","KPI 2","KPI 3"]}`;
+Include these sections:
+- Campaign Name (catchy, under 6 words)
+- Tagline
+- Concept Description (2-3 sentences)
+- Target Audience
+- Recommended Platforms
+- Content Pillars (3 pillars)
+- KPIs to Track (3-5 metrics)`;
     }
 
     const result = await aiService.chat({
       systemPrompt,
       userPrompt,
       temperature: 0.8,
-      maxTokens: 800,
+      maxTokens: 1500,
     });
 
-    const jsonMatch = result.content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(500).json({ error: 'AI returned an invalid response format.' });
-
-    try {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return res.json(parsed);
-    } catch {
-      return res.json({ name: 'AI Campaign', description: result.content, tagline: '', targetAudience: '', recommendedPlatforms: [], contentPillars: [], kpis: [] });
-    }
+    return res.json({ result: result.content.trim() });
   } catch (error: any) {
     return serverError(res, error, 'campaign-idea');
   }
@@ -81,7 +85,7 @@ export const generateCaption = async (req: Request, res: Response) => {
       systemPrompt: `You are a viral social media copywriting expert. Generate 3 engaging, platform-optimized captions with relevant hashtags. Be conversational, trendy, and engaging.`,
       userPrompt: `Write 3 captions for: ${input}\n\nNumber each caption clearly. Include relevant hashtags.`,
       temperature: 0.9,
-      maxTokens: 600,
+      maxTokens: 1000,
     });
 
     return res.json({ result: result.content.trim() });
@@ -117,7 +121,7 @@ Write both a DM version (short, casual) and an Email version (professional, deta
       systemPrompt: `You are a professional influencer relationship manager at Adrex Media. Write compelling, personalized outreach messages that get replies. Be warm, professional, and specific with clear CTAs.`,
       userPrompt,
       temperature: 0.8,
-      maxTokens: 700,
+      maxTokens: 1200,
     });
 
     return res.json({ result: result.content.trim() });
@@ -139,7 +143,7 @@ export const generateStrategy = async (req: Request, res: Response) => {
       systemPrompt: `You are a world-class influencer & performance marketing strategist at Adrex Media. Provide detailed, actionable strategy recommendations with specific steps, timelines, and metrics.`,
       userPrompt: `Create a comprehensive strategy for: ${input}\n\nInclude: platform strategy, content pillars, influencer tier recommendations, budget allocation, KPIs to track, and a 30-60-90 day roadmap.`,
       temperature: 0.75,
-      maxTokens: 1200,
+      maxTokens: 2000,
     });
 
     return res.json({ result: result.content.trim() });
@@ -160,7 +164,7 @@ export const chatWithAI = async (req: Request, res: Response) => {
       systemPrompt: `You are the Adrex Media AI assistant — an expert in influencer marketing, campaign management, team coordination, finance, and agency operations. Be concise, professional, and provide actionable advice. Use bullet points and clear formatting.`,
       userPrompt: prompt,
       temperature: 0.7,
-      maxTokens: 800,
+      maxTokens: 1500,
     });
 
     return res.json({ result: result.content.trim(), response: result.content.trim() });

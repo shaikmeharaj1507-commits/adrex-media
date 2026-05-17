@@ -14,21 +14,6 @@ const tools: { id: Tool; label: string; desc: string; icon: React.ElementType; c
   { id: 'strategy', label: 'Strategy Advisor', desc: 'Data-backed strategy recommendations', icon: Lightbulb, color: 'from-amber-500 to-orange-500', placeholder: 'e.g. We run performance marketing for a D2C skincare brand with 3L monthly ad budget. Suggest an influencer strategy.' },
 ];
 
-function formatOutput(data: any, tool: Tool): string {
-  if (tool === 'campaign') {
-    const parts: string[] = [];
-    if (data.name) parts.push(`## ${data.name}`);
-    if (data.tagline) parts.push(`_${data.tagline}_`);
-    if (data.description) parts.push(`\n${data.description}`);
-    if (data.targetAudience) parts.push(`\n**Target:** ${data.targetAudience}`);
-    if (data.recommendedPlatforms?.length) parts.push(`\n**Platforms:** ${data.recommendedPlatforms.join(', ')}`);
-    if (data.contentPillars?.length) parts.push(`\n**Content Pillars:**\n${data.contentPillars.map((p: string, i: number) => `${i + 1}. ${p}`).join('\n')}`);
-    if (data.kpis?.length) parts.push(`\n**KPIs:**\n${data.kpis.map((k: string, i: number) => `• ${k}`).join('\n')}`);
-    return parts.join('\n') || JSON.stringify(data, null, 2);
-  }
-  return data.result || data.idea || data.caption || data.email || data.strategy || JSON.stringify(data, null, 2);
-}
-
 export default function AIToolsPage() {
   const [activeTool, setActiveTool] = useState<Tool>('campaign');
   const [prompt, setPrompt] = useState('');
@@ -62,7 +47,7 @@ export default function AIToolsPage() {
         return;
       }
 
-      setResult(formatOutput(data, activeTool));
+      setResult(data.result || 'No response generated.');
     } catch (err: any) {
       setResult('⚠️ Failed to connect to AI. Make sure the backend is running and GROQ_API_KEY is set.');
     } finally {
