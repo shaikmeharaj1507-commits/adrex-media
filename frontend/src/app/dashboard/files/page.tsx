@@ -67,9 +67,13 @@ export default function FilesPage() {
 
       if (res.ok) {
         await fetchFiles();
+      } else {
+        const err = await res.json();
+        alert(`Upload failed: ${err.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Upload failed', error);
+      alert('Upload failed. Check console for details.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
