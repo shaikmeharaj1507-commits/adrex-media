@@ -33,9 +33,11 @@ const priorityConfig: Record<Priority, { label: string; color: string; bg: strin
 };
 
 export default function TasksPage() {
+  const { user, isAdmin } = useAuthStore();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [teamMembers, setTeamMembers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', assignee: '', priority: 'MEDIUM' as Priority, campaign: '', dueDate: '', status: 'TODO' as TaskStatus });
+  const [newTask, setNewTask] = useState({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', dueDate: '', status: 'TODO' as TaskStatus });
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = async () => {
@@ -55,9 +57,24 @@ export default function TasksPage() {
     }
   };
 
+  const fetchTeamMembers = async () => {
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/team`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setTeamMembers(await res.json());
+      }
+    } catch (error) {
+      console.error('Failed to fetch team', error);
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
-  }, []);
+    if (isAdmin) fetchTeamMembers();
+  }, [isAdmin]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +94,7 @@ export default function TasksPage() {
       if (res.ok) {
         const created = await res.json();
         setTasks(prev => [created, ...prev]);
-        setNewTask({ title: '', assignee: '', priority: 'MEDIUM', campaign: '', dueDate: '', status: 'TODO' });
+        setNewTask({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM', campaign: '', dueDate: '', status: 'TODO' });
         setShowModal(false);
       }
     } catch (error) {
@@ -242,11 +259,26 @@ export default function TasksPage() {
                     className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1.5">Assignee</label>
-                    <input value={newTask.assignee} onChange={e => setNewTask(p => ({ ...p, assignee: e.target.value }))}
-                      type="text" placeholder="Name" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
-                  </div>
+                  {isAdmin ? (
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">Assignee</label>
+                      <select value={newTask.assigneeId || ''} onChange={e => {
+                        const member = teamMembers.find(m => m.id === e.target.value);
+                        setNewTask(p => ({ ...p, assigneeId: e.target.value, assignee: member ? `${member.firstName} ${member.lastName}` : '' }));
+                      }} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
+                        <option value="">Unassigned</option>
+                        {teamMembers.map(m => (
+                          <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">Assignee</label>
+                      <input value={newTask.assignee} onChange={e => setNewTask(p => ({ ...p, assignee: e.target.value }))}
+                        type="text" placeholder="Name" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium mb-1.5">Priority</label>
                     <select value={newTask.priority} onChange={e => setNewTask(p => ({ ...p, priority: e.target.value as Priority }))}

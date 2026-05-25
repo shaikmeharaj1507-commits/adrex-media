@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Mail, MessageCircle, MoreVertical, X, Sparkles, Loader2, MessageSquare, Send, Star } from 'lucide-react';
+import { Plus, Search, Filter, Mail, MessageCircle, MoreVertical, X, Sparkles, Loader2, MessageSquare, Send, Star, Pencil, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 interface Influencer {
@@ -26,6 +26,8 @@ export default function InfluencersPage() {
   const [waMessage, setWaMessage] = useState('');
   const [waHistory, setWaHistory] = useState<any[]>([]);
   const [sendingWa, setSendingWa] = useState(false);
+  const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [newInf, setNewInf] = useState({ name: '', niche: '', platform: 'Instagram', followers: '100K', rating: 5, instagram: '', tiktok: '', youtube: '' });
 
   const fetchInfluencers = async () => {
@@ -119,6 +121,75 @@ export default function InfluencersPage() {
     }
   };
 
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingInfluencer) return;
+
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const payload = {
+        name: newInf.name,
+        niche: newInf.niche,
+        instagram: newInf.platform === 'Instagram' ? newInf.followers : '',
+        tiktok: newInf.platform === 'TikTok' ? newInf.followers : '',
+        youtube: newInf.platform === 'YouTube' ? newInf.followers : '',
+        rating: newInf.rating
+      };
+
+      const res = await fetch(`${API_URL}/api/influencers/${editingInfluencer.id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        const updated = await res.json();
+        setInfluencers(prev => prev.map(i => i.id === updated.id ? updated : i));
+        setEditingInfluencer(null);
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error('Failed to update influencer', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this influencer?')) return;
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/influencers/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setInfluencers(prev => prev.filter(i => i.id !== id));
+        setOpenMenuId(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete influencer', error);
+    }
+  };
+
+  const openEditModal = (inf: Influencer) => {
+    const plat = getPlatform(inf);
+    setEditingInfluencer(inf);
+    setNewInf({
+      name: inf.name,
+      niche: inf.niche || '',
+      platform: plat.name === 'Other' ? 'Instagram' : plat.name,
+      followers: plat.followers,
+      rating: inf.rating || 5,
+      instagram: inf.instagram || '',
+      tiktok: inf.tiktok || '',
+      youtube: inf.youtube || ''
+    });
+    setShowModal(true);
+    setOpenMenuId(null);
+  };
+
   const getPlatform = (inf: Influencer) => {
     if (inf.youtube) return { name: 'YouTube', followers: inf.youtube };
     if (inf.tiktok) return { name: 'TikTok', followers: inf.tiktok };
@@ -197,7 +268,7 @@ export default function InfluencersPage() {
                       </div>
                     </td>
                     <td className="py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2 relative">
                         <button 
                           onClick={() => openWhatsApp(inf)}
                           className="p-2 bg-green-500/10 text-green-400 hover:bg-green-500/20 rounded-lg transition-colors"
@@ -205,8 +276,17 @@ export default function InfluencersPage() {
                         >
                           <MessageSquare size={16} />
                         </button>
-                        <button className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors"><Mail size={16} /></button>
-                        <button className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors"><MoreVertical size={16} /></button>
+                        <button onClick={() => setOpenMenuId(openMenuId === inf.id ? null : inf.id)} className="p-2 hover:bg-white/5 rounded-lg text-muted-foreground transition-colors"><MoreVertical size={16} /></button>
+                        {openMenuId === inf.id && (
+                          <div className="absolute right-0 top-full mt-1 w-32 bg-zinc-900 border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden text-left">
+                            <button onClick={() => openEditModal(inf)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 transition-all">
+                              <Pencil size={13} /> Edit
+                            </button>
+                            <button onClick={() => handleDelete(inf.id)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-all">
+                              <Trash2 size={13} /> Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -226,10 +306,10 @@ export default function InfluencersPage() {
             <motion.div className="relative z-10 w-full max-w-md glassmorphism rounded-2xl p-8"
               initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Add Influencer</h2>
-                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/5 rounded-lg"><X size={20} /></button>
+                <h2 className="text-2xl font-bold">{editingInfluencer ? 'Edit Influencer' : 'Add Influencer'}</h2>
+                <button onClick={() => { setShowModal(false); setEditingInfluencer(null); }} className="p-2 hover:bg-white/5 rounded-lg"><X size={20} /></button>
               </div>
-              <form className="space-y-4" onSubmit={handleCreate}>
+              <form className="space-y-4" onSubmit={editingInfluencer ? handleUpdate : handleCreate}>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Name</label>
                   <input value={newInf.name} onChange={e => setNewInf(p => ({ ...p, name: e.target.value }))}
@@ -268,7 +348,7 @@ export default function InfluencersPage() {
                   </div>
                 </div>
                 <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] mt-4">
-                  Add Influencer
+                  {editingInfluencer ? 'Update Influencer' : 'Add Influencer'}
                 </button>
               </form>
             </motion.div>

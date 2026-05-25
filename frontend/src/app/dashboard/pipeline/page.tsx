@@ -97,12 +97,12 @@ export default function PipelinePage() {
       </div>
 
       {/* Kanban Pipeline */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="flex gap-5 overflow-x-auto pb-6 snap-x scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {stages.map((stage) => {
           const stageLeads = leads.filter(l => l.stage === stage.id);
           const stageValue = stageLeads.reduce((s, l) => s + l.value, 0);
           return (
-            <div key={stage.id} className={`flex flex-col gap-3 rounded-2xl p-3 border ${stage.border} ${dragOverStage === stage.id ? 'bg-white/5' : 'bg-white/[0.02]'} min-h-[300px] transition-colors`}
+            <div key={stage.id} className={`shrink-0 w-[300px] snap-center flex flex-col gap-3 rounded-2xl p-3 border ${stage.border} ${dragOverStage === stage.id ? 'bg-white/5' : 'bg-white/[0.02]'} min-h-[400px] transition-colors`}
               onDragOver={(e) => { e.preventDefault(); setDragOverStage(stage.id); }}
               onDragLeave={() => setDragOverStage(null)}
               onDrop={(e) => { e.preventDefault(); setDragOverStage(null); const id = e.dataTransfer.getData('leadId'); if (id) moveToStage(id, stage.id); }}>

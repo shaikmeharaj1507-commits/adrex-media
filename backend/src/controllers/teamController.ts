@@ -75,11 +75,11 @@ export const updateTeamMember = async (req: Request, res: Response) => {
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { id } = req.params;
-    const { role, isActive } = req.body;
+    const { role, isActive, firstName, lastName, email } = req.body;
 
     const updatedMember = await prisma.user.update({
       where: { id, agencyId: user.agencyId },
-      data: { role, isActive },
+      data: { role, isActive, firstName, lastName, email },
       select: {
         id: true,
         firstName: true,
