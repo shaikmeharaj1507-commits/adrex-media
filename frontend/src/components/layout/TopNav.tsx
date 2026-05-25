@@ -22,9 +22,30 @@ export default function TopNav() {
   const [showProfile, setShowProfile] = useState(false);
   const [notifications, setNotifications] = useState<BackendNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { user, logout } = useAuthStore();
+  const { user, logout, setUser } = useAuthStore();
   const { socket } = useSocketStore();
   const router = useRouter();
+
+  const handleQuickThemeChange = async (themeId: string) => {
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/user/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ theme: themeId })
+      });
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setUser(updatedUser);
+        localStorage.setItem('adrex-theme', themeId);
+      }
+    } catch (error) {
+      console.error('Failed to change theme:', error);
+    }
+  };
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -237,6 +258,40 @@ export default function TopNav() {
                   );
                 })}
               </div>
+              
+              {/* Quick Theme Switcher Row (For Admin/Agency) */}
+              {(user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') && (
+                <div className="px-4 py-2.5 border-t border-white/10">
+                  <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">Workspace Theme</p>
+                  <div className="flex items-center justify-between gap-1.5">
+                    {[
+                      { id: 'purple', name: 'Purple', color: '#a855f7' },
+                      { id: 'emerald', name: 'Emerald', color: '#10b981' },
+                      { id: 'ocean', name: 'Ocean', color: '#3b82f6' },
+                      { id: 'sunset', name: 'Sunset', color: '#f97316' },
+                      { id: 'plum', name: 'Plum', color: '#ec4899' },
+                    ].map((themeOpt) => {
+                      const active = (user?.theme || 'purple') === themeOpt.id;
+                      return (
+                        <button
+                          key={themeOpt.id}
+                          title={themeOpt.name}
+                          onClick={() => handleQuickThemeChange(themeOpt.id)}
+                          className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+                            active 
+                              ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.4)]' 
+                              : 'border-transparent hover:scale-105 opacity-60 hover:opacity-100'
+                          }`}
+                          style={{ backgroundColor: themeOpt.color }}
+                        >
+                          {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-white/10 p-1.5">
                 <button
                   onClick={handleLogout}

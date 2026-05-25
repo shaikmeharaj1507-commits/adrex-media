@@ -10,6 +10,7 @@ interface User {
   agencyId: string;
   bio?: string;
   phone?: string;
+  theme?: string;
 }
 
 interface AuthState {

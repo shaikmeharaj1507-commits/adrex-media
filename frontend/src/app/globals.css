@@ -30,9 +30,87 @@
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --ring: 255 85% 65%;
 
     --radius: 0.75rem;
+
+    --gradient-from: #a855f7;
+    --gradient-to: #3b82f6;
+  }
+
+  .theme-purple {
+    --background: 240 10% 3.9%;
+    --card: 240 10% 3.9%;
+    --popover: 240 10% 3.9%;
+    --primary: 255 85% 65%;
+    --secondary: 240 3.7% 15.9%;
+    --muted: 240 3.7% 15.9%;
+    --accent: 240 3.7% 15.9%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 255 85% 65%;
+    --gradient-from: #a855f7;
+    --gradient-to: #3b82f6;
+  }
+
+  .theme-emerald {
+    --background: 150 20% 4%;
+    --card: 150 20% 5%;
+    --popover: 150 20% 5%;
+    --primary: 142.1 76.2% 45.3%;
+    --secondary: 150 15% 12%;
+    --muted: 150 10% 12%;
+    --accent: 150 15% 12%;
+    --border: 150 15% 12%;
+    --input: 150 15% 12%;
+    --ring: 142.1 76.2% 45.3%;
+    --gradient-from: #10b981;
+    --gradient-to: #06b6d4;
+  }
+
+  .theme-ocean {
+    --background: 222.2 84% 4.9%;
+    --card: 222.2 84% 6%;
+    --popover: 222.2 84% 6%;
+    --primary: 217.2 91.2% 59.8%;
+    --secondary: 217.2 32.6% 14%;
+    --muted: 217.2 32.6% 14%;
+    --accent: 217.2 32.6% 14%;
+    --border: 217.2 32.6% 14%;
+    --input: 217.2 32.6% 14%;
+    --ring: 224.3 76.3% 48%;
+    --gradient-from: #3b82f6;
+    --gradient-to: #06b6d4;
+  }
+
+  .theme-sunset {
+    --background: 20 14.3% 4.1%;
+    --card: 20 14.3% 5%;
+    --popover: 20 14.3% 5%;
+    --primary: 24.6 95% 53.1%;
+    --secondary: 20 10% 12%;
+    --muted: 20 10% 12%;
+    --accent: 20 10% 12%;
+    --border: 20 10% 15%;
+    --input: 20 10% 15%;
+    --ring: 24.6 95% 53.1%;
+    --gradient-from: #f97316;
+    --gradient-to: #e11d48;
+  }
+
+  .theme-plum {
+    --background: 324 25% 5.5%;
+    --card: 324 25% 7%;
+    --popover: 324 25% 7%;
+    --primary: 346.8 77.2% 49.8%;
+    --secondary: 324 15% 12%;
+    --muted: 324 15% 12%;
+    --accent: 324 20% 12%;
+    --border: 324 20% 15%;
+    --input: 324 20% 15%;
+    --ring: 346.8 77.2% 49.8%;
+    --gradient-from: #ec4899;
+    --gradient-to: #f43f5e;
   }
 }
 
@@ -50,7 +128,7 @@
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)];
 }
 
 /* Performance-optimized CSS animations */

@@ -104,7 +104,8 @@ export const signup = async (req: Request, res: Response) => {
         firstName: result.user.firstName,
         lastName: result.user.lastName,
         role: result.user.role,
-        agencyId: result.user.agencyId
+        agencyId: result.user.agencyId,
+        theme: result.user.theme
       },
       token
     });
@@ -157,7 +158,8 @@ export const login = async (req: Request, res: Response) => {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        agencyId: user.agencyId
+        agencyId: user.agencyId,
+        theme: user.theme
       },
       token
     });

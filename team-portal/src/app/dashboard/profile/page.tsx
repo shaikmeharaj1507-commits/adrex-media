@@ -14,6 +14,7 @@ export default function ProfilePage() {
     email: user?.email ?? '',
     bio: '',
     phone: '',
+    theme: user?.theme ?? 'purple',
   });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ export default function ProfilePage() {
           email: data.email ?? p.email,
           bio: data.bio ?? '',
           phone: data.phone ?? '',
+          theme: data.theme ?? 'purple',
         }));
       }
     }).catch(console.error).finally(() => setLoading(false));
@@ -40,9 +42,11 @@ export default function ProfilePage() {
         lastName: profile.lastName,
         bio: profile.bio,
         phone: profile.phone,
+        theme: profile.theme,
       });
       if (res && !res.error) {
         setUser(res);
+        localStorage.setItem('adrex-theme', profile.theme);
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
       }
@@ -106,6 +110,37 @@ export default function ProfilePage() {
           <textarea value={profile.bio} onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))} rows={3}
             placeholder="Tell us about yourself..."
             className="w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition-all resize-none" />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-zinc-300 mb-2">Workspace Theme</label>
+          <div className="flex gap-3">
+            {[
+              { id: 'purple', name: 'Purple', color: '#a855f7' },
+              { id: 'emerald', name: 'Emerald', color: '#10b981' },
+              { id: 'ocean', name: 'Ocean', color: '#3b82f6' },
+              { id: 'sunset', name: 'Sunset', color: '#f97316' },
+              { id: 'plum', name: 'Plum', color: '#ec4899' },
+            ].map((themeOpt) => {
+              const active = profile.theme === themeOpt.id;
+              return (
+                <button
+                  key={themeOpt.id}
+                  type="button"
+                  title={themeOpt.name}
+                  onClick={() => setProfile(p => ({ ...p, theme: themeOpt.id }))}
+                  className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+                    active 
+                      ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.4)]' 
+                      : 'border-transparent hover:scale-105 opacity-60 hover:opacity-100'
+                  }`}
+                  style={{ backgroundColor: themeOpt.color }}
+                >
+                  {active && <div className="w-2 h-2 rounded-full bg-white" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="flex justify-end">

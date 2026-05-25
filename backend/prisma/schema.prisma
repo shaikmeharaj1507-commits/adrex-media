@@ -65,6 +65,7 @@ model User {
   
   // Notification preferences stored as JSON string
   notificationPrefs String? @default("{\"emailCampaigns\":true,\"emailTasks\":true,\"emailInfluencers\":false,\"browserAlerts\":true,\"weeklyDigest\":true}")
+  theme             String  @default("purple")
   
   campaignAssignments CampaignAssignment[]
   notifications       Notification[]
