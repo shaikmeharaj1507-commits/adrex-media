@@ -8,12 +8,19 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const _hasHydrated = useAuthStore(s => s._hasHydrated);
+  const user = useAuthStore(s => s.user);
+  const logout = useAuthStore(s => s.logout);
 
   useEffect(() => {
-    if (_hasHydrated && !isAuthenticated) {
-      router.replace('/login');
+    if (_hasHydrated) {
+      if (!isAuthenticated) {
+        router.replace('/login');
+      } else if (user && user.role === 'TEAM_MEMBER') {
+        logout();
+        router.replace('/login');
+      }
     }
-  }, [_hasHydrated, isAuthenticated, router]);
+  }, [_hasHydrated, isAuthenticated, user, router, logout]);
 
   if (!_hasHydrated) {
     return (

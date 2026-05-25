@@ -44,6 +44,13 @@ export default function LoginPage() {
       // Store token in localStorage as fallback (cookie is set by backend)
       if (data.token) localStorage.setItem('adrex_token', data.token);
 
+      if (data.user.role === 'TEAM_MEMBER') {
+        localStorage.removeItem('adrex_token');
+        setError('Access denied. Team Members must log in through the Team Portal.');
+        setLoading(false);
+        return;
+      }
+
       setUser(data.user);
       // Hard redirect to ensure auth store rehydrates before AuthGuard checks
       window.location.href = '/dashboard';

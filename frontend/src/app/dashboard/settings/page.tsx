@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
-  User, Building2, CreditCard, Bell, Shield,
+  User, Building2, CreditCard, Bell, Shield, Palette,
   Save, Camera, Check, ChevronRight, Settings, Upload, Loader2
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
@@ -12,6 +12,7 @@ import { useSearchParams } from 'next/navigation';
 
 const tabs = [
   { id: 'profile', label: 'Profile', icon: User },
+  { id: 'theme', label: 'Theme Customization', icon: Palette },
   { id: 'agency', label: 'Agency', icon: Building2 },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'security', label: 'Security', icon: Shield },
@@ -111,6 +112,44 @@ function SettingsContent() {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const [passwords, setPasswords] = useState({ current: '', newPass: '', confirm: '' });
+
+  const isAuthorized = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
+  const visibleTabs = isAuthorized 
+    ? tabs 
+    : tabs.filter(t => t.id !== 'theme');
+
+  const currentTheme = user?.theme || 'purple';
+
+  const themesList = [
+    { id: 'purple', name: 'Classic Midnight', previewBg: '#0f0f12', previewPrimary: '#a855f7', desc: 'Sleek dark theme with classic royal purple accents.' },
+    { id: 'emerald', name: 'Emerald Horizon', previewBg: '#070d0a', previewPrimary: '#10b981', desc: 'Vibrant green highlights for a natural, forest-inspired blend.' },
+    { id: 'ocean', name: 'Ocean Breeze', previewBg: '#020813', previewPrimary: '#3b82f6', desc: 'Calming deep blues for an elegant, professional workspace.' },
+    { id: 'sunset', name: 'Sunset Flare', previewBg: '#0c0706', previewPrimary: '#f97316', desc: 'Energizing amber gradients inspired by twilight skies.' },
+    { id: 'plum', name: 'Plum Blossom', previewBg: '#11060b', previewPrimary: '#ec4899', desc: 'Sophisticated rose-gold accents for a vibrant layout.' },
+  ];
+
+  const handleThemeChange = async (themeId: string) => {
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/user/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ theme: themeId })
+      });
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setUser(updatedUser);
+        localStorage.setItem('adrex-theme', themeId);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      }
+    } catch (error) {
+      console.error('Failed to change theme:', error);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -305,7 +344,7 @@ function SettingsContent() {
       {/* Sidebar Nav */}
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glassmorphism rounded-2xl p-3 h-fit">
         <nav className="space-y-1">
-          {tabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
@@ -334,6 +373,46 @@ function SettingsContent() {
         transition={{ duration: 0.2 }}
         className="lg:col-span-3 glassmorphism rounded-2xl p-8 space-y-8"
       >
+        {/* THEME */}
+        {activeTab === 'theme' && (
+          <>
+            <div>
+              <h2 className="text-xl font-bold mb-1">Theme Customization</h2>
+              <p className="text-sm text-zinc-500">Select one of our premium prebuilt themes. It will immediately apply to your workspace and persist across your logins.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {themesList.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => handleThemeChange(t.id)}
+                  className={`relative p-5 rounded-2xl text-left border transition-all flex flex-col gap-4 group ${
+                    currentTheme === t.id
+                      ? 'border-purple-500/50 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]'
+                      : 'border-white/10 bg-zinc-950/60 hover:bg-zinc-900/80 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">{t.name}</span>
+                    {currentTheme === t.id && (
+                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-purple-500 text-white shadow-sm">
+                        <Check size={11} className="stroke-[3]" />
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Color Bubbles */}
+                  <div className="flex gap-2 items-center">
+                    <div className="w-6 h-6 rounded-full border border-white/10 shadow-inner" style={{ backgroundColor: t.previewBg }} />
+                    <div className="w-6 h-6 rounded-full border border-white/10 shadow-sm" style={{ backgroundColor: t.previewPrimary }} />
+                  </div>
+                  
+                  <p className="text-xs text-zinc-400 leading-relaxed">{t.desc}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
         {/* PROFILE */}
         {activeTab === 'profile' && (
           <>

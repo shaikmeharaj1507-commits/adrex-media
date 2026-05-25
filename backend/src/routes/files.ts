@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { uploadFile, getFiles, deleteFile } from '../controllers/fileController';
+import { uploadFile, getFiles, deleteFile, createFolder, getFolders, deleteFolder } from '../controllers/fileController';
 import { requireAuth } from '../middlewares/auth';
 
 const router = express.Router();
@@ -26,5 +26,9 @@ router.use(requireAuth);
 router.get('/', getFiles);
 router.post('/upload', upload.single('file'), uploadFile);
 router.delete('/:id', deleteFile);
+
+router.get('/folders', getFolders);
+router.post('/folders', createFolder);
+router.delete('/folders/:id', deleteFolder);
 
 export default router;

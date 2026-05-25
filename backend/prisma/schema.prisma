@@ -32,6 +32,7 @@ model Agency {
   activityLogs    ActivityLog[]
   messages        Message[]
   files           File[]
+  folders         Folder[]
   whatsappMessages WhatsAppMessage[]
   announcements   Announcement[]
   aiChats         AIChat[]
@@ -65,6 +66,7 @@ model User {
   
   // Notification preferences stored as JSON string
   notificationPrefs String? @default("{\"emailCampaigns\":true,\"emailTasks\":true,\"emailInfluencers\":false,\"browserAlerts\":true,\"weeklyDigest\":true}")
+  theme             String  @default("purple")
   
   campaignAssignments CampaignAssignment[]
   notifications       Notification[]
@@ -275,8 +277,22 @@ model File {
   size        Int
   type        String
   category    String   @default("GENERAL")
+  folderId    String?
+  folder      Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  tags        String?  @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String
+  agencyId  String
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  tags      String?  @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  files     File[]
 }
 
 model WhatsAppMessage {

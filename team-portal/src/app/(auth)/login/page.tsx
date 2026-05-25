@@ -42,6 +42,14 @@ export default function LoginPage() {
       }
 
       if (data.token) localStorage.setItem('adrex_token', data.token);
+      
+      if (data.user.role === 'SUPER_ADMIN' || data.user.role === 'MANAGER') {
+        localStorage.removeItem('adrex_token');
+        setError('Access denied. Admins and Managers must log in through the Admin Dashboard.');
+        setLoading(false);
+        return;
+      }
+
       setUser(data.user);
       router.push('/dashboard');
     } catch (err) {

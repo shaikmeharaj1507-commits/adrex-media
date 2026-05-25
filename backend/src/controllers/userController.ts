@@ -9,6 +9,7 @@ const ProfileUpdateSchema = z.object({
   lastName: z.string().min(2, 'Last name must be at least 2 characters').optional(),
   bio: z.string().max(500, 'Bio must be under 500 characters').optional(),
   phone: z.string().optional(),
+  theme: z.string().optional(),
 });
 
 export const updateProfile = async (req: Request, res: Response) => {
@@ -21,7 +22,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       return res.status(400).json({ error: validation.error.errors[0].message });
     }
 
-    const { firstName, lastName, bio, phone } = validation.data;
+    const { firstName, lastName, bio, phone, theme } = validation.data;
 
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
@@ -30,6 +31,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         ...(lastName && { lastName }),
         ...(bio !== undefined && { bio }),
         ...(phone !== undefined && { phone }),
+        ...(theme !== undefined && { theme }),
       },
       select: {
         id: true,
@@ -41,6 +43,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         phone: true,
         agencyId: true,
         avatar: true,
+        theme: true,
       }
     });
 

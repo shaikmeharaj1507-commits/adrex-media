@@ -11,6 +11,7 @@ interface User {
   bio?: string;
   phone?: string;
   avatar?: string;
+  theme?: string;
 }
 
 interface AuthState {

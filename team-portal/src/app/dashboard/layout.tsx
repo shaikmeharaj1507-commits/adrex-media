@@ -26,9 +26,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const token = localStorage.getItem('adrex_token');
-    if (token) connect(token);
+    if (!token || !user) {
+      router.push('/login');
+    } else if (user && (user.role === 'SUPER_ADMIN' || user.role === 'MANAGER')) {
+      logout();
+      router.push('/login');
+    } else {
+      connect(token);
+    }
     return () => disconnect();
-  }, [connect, disconnect]);
+  }, [user, connect, disconnect, router, logout]);
 
   const handleLogout = async () => {
     try {

@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, MoreHorizontal, User, Shield, ShieldAlert, Mail, Trash2, X } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, User, Shield, ShieldAlert, Mail, Trash2, X, Edit2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 interface TeamMember {
@@ -30,6 +30,52 @@ export default function TeamPage() {
     role: 'TEAM_MEMBER',
     password: ''
   });
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    role: 'TEAM_MEMBER',
+    isActive: true,
+  });
+
+  const handleEditClick = (member: TeamMember) => {
+    setEditingMember(member);
+    setEditForm({
+      firstName: member.firstName,
+      lastName: member.lastName,
+      role: member.role,
+      isActive: member.isActive,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/team/${editingMember.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(editForm)
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setTeam(prev => prev.map(m => m.id === editingMember.id ? { ...m, ...updated } : m));
+        setShowEditModal(false);
+        setEditingMember(null);
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to update member');
+      }
+    } catch (error) {
+      console.error('Update member failed', error);
+    }
+  };
 
   const fetchTeam = async () => {
     try {
@@ -192,9 +238,14 @@ export default function TeamPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     {isAdmin && m.id !== user?.id && (
-                      <button onClick={() => handleDelete(m.id)} className="p-2 rounded-lg text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100">
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => handleEditClick(m)} className="p-2 rounded-lg text-zinc-500 hover:bg-purple-500/10 hover:text-purple-400 transition-all">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(m.id)} className="p-2 rounded-lg text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-all">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </motion.tr>
@@ -260,6 +311,73 @@ export default function TeamPage() {
                   <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-sm font-medium text-zinc-300 hover:text-white transition-colors">Cancel</button>
                   <button type="submit" className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                     Send Invitation
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {showEditModal && editingMember && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowEditModal(false); setEditingMember(null); }} />
+            <motion.div className="relative z-10 w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-6 shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}>
+              
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-white">Edit Team Member</h2>
+                  <p className="text-sm text-zinc-400 mt-1">Update profile, role, and workspace access.</p>
+                </div>
+                <button onClick={() => { setShowEditModal(false); setEditingMember(null); }} className="p-2 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"><X size={18} /></button>
+              </div>
+
+              <form onSubmit={handleUpdateMember} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">First Name</label>
+                    <input type="text" required value={editForm.firstName} onChange={e => setEditForm(p => ({...p, firstName: e.target.value}))}
+                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-zinc-400 mb-1.5">Last Name</label>
+                    <input type="text" required value={editForm.lastName} onChange={e => setEditForm(p => ({...p, lastName: e.target.value}))}
+                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1.5">Role</label>
+                  <select value={editForm.role} onChange={e => setEditForm(p => ({...p, role: e.target.value}))}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors">
+                    <option value="TEAM_MEMBER">Team Member</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="SUPER_ADMIN">Super Admin</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Active Status</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">Toggle user's ability to log in and access data.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditForm(p => ({ ...p, isActive: !p.isActive }))}
+                    className={`w-11 h-6 rounded-full transition-all relative ${editForm.isActive ? 'bg-purple-500' : 'bg-zinc-700'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all ${editForm.isActive ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+
+                <div className="pt-4 mt-6 border-t border-white/10 flex justify-end gap-3">
+                  <button type="button" onClick={() => { setShowEditModal(false); setEditingMember(null); }} className="px-5 py-2.5 text-sm font-medium text-zinc-300 hover:text-white transition-colors">Cancel</button>
+                  <button type="submit" className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                    Save Changes
                   </button>
                 </div>
               </form>

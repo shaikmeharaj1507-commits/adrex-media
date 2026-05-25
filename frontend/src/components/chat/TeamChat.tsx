@@ -37,6 +37,7 @@ export default function TeamChat() {
   const [input, setInput] = useState('');
   const [selectedUser, setSelectedUser] = useState<TeamMember | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [allMembers, setAllMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -81,12 +82,19 @@ export default function TeamChat() {
       });
       if (res.ok) {
         const data = await res.json();
+        setAllMembers(data);
         setTeamMembers(data.filter((m: TeamMember) => m.id !== user?.id));
       }
     } catch (error) {
       console.error('Failed to fetch team members', error);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchTeamMembers();
+    }
+  }, [user]);
 
   const selectPrivateChat = async (member: TeamMember) => {
     setSelectedUser(member);
@@ -325,19 +333,30 @@ export default function TeamChat() {
                       </p>
                     </div>
                   ) : (
-                    messages.map((msg) => (
-                      <div key={msg.id} className={`flex ${isMe(msg) ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2 ${
-                          msg.isAI ? 'bg-amber-600/20 border border-amber-500/30 text-white rounded-bl-sm' :
-                          isMe(msg) ? 'bg-purple-600 text-white rounded-br-sm' :
-                          'bg-zinc-800 text-white border border-white/5 rounded-bl-sm'
-                        }`}>
-                          {msg.isAI && <p className="text-xs text-amber-400 font-medium mb-1">AI Assistant</p>}
-                          <p className="text-sm">{getMessageText(msg)}</p>
-                          <p className="text-[10px] text-right mt-1 opacity-60">{getMessageTime(msg)}</p>
+                    messages.map((msg) => {
+                      const msgMe = isMe(msg);
+                      const sender = allMembers.find((m) => m.id === msg.userId || m.id === msg.senderId);
+                      const senderName = sender ? `${sender.firstName} ${sender.lastName}` : 'Team Member';
+
+                      return (
+                        <div key={msg.id} className={`flex flex-col ${msgMe ? 'items-end' : 'items-start'}`}>
+                          {mode === 'team' && !msgMe && (
+                            <span className="text-[10px] text-zinc-500 mb-1 ml-2 font-medium">
+                              {senderName}
+                            </span>
+                          )}
+                          <div className={`max-w-[85%] rounded-2xl px-4 py-2 ${
+                            msg.isAI ? 'bg-amber-600/20 border border-amber-500/30 text-white rounded-bl-sm' :
+                            msgMe ? 'bg-purple-600 text-white rounded-br-sm' :
+                            'bg-zinc-800 text-white border border-white/5 rounded-bl-sm'
+                          }`}>
+                            {msg.isAI && <p className="text-xs text-amber-400 font-medium mb-1">AI Assistant</p>}
+                            <p className="text-sm">{getMessageText(msg)}</p>
+                            <p className="text-[10px] text-right mt-1 opacity-60">{getMessageTime(msg)}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                   <div ref={messagesEndRef} />
                 </div>
