@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon } from 'lucide-react';
+import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon, Palette, Check } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useAuthStore } from '@/store/authStore';
@@ -21,6 +21,7 @@ interface BackendNotification {
 export default function TopNav() {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [notifications, setNotifications] = useState<BackendNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout } = useAuthStore();
@@ -29,6 +30,20 @@ export default function TopNav() {
   const router = useRouter();
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const themeRef = useRef<HTMLDivElement>(null);
+
+  const THEMES = [
+    { id: 'light', name: 'Light', color: '#ffffff' },
+    { id: 'dark', name: 'Dark', color: '#09090b' },
+    { id: 'midnight', name: 'Midnight', color: '#020617' },
+    { id: 'ocean', name: 'Ocean', color: '#083344' },
+    { id: 'sunset', name: 'Sunset', color: '#3b0764' },
+    { id: 'forest', name: 'Forest', color: '#052e16' },
+    { id: 'rose', name: 'Rose', color: '#4c0519' },
+    { id: 'solarized', name: 'Solarized', color: '#073642' },
+    { id: 'cyberpunk', name: 'Cyberpunk', color: '#2e0249' },
+    { id: 'nord', name: 'Nord', color: '#2e3440' },
+  ];
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -68,6 +83,7 @@ export default function TopNav() {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifs(false);
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfile(false);
+      if (themeRef.current && !themeRef.current.contains(e.target as Node)) setShowThemeMenu(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -138,20 +154,48 @@ export default function TopNav() {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-xl hover:bg-white/8 dark:hover:bg-white/8 text-zinc-600 dark:text-zinc-400 hover:text-purple-600 dark:hover:text-white transition-all"
-        >
-          <Sun size={19} className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon size={19} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        </button>
+        {/* Theme Dropdown */}
+        <div className="relative" ref={themeRef}>
+          <button
+            onClick={() => { setShowThemeMenu(p => !p); setShowNotifs(false); setShowProfile(false); }}
+            className="p-2 rounded-xl hover:bg-white/8 dark:hover:bg-white/8 text-zinc-600 dark:text-zinc-400 hover:text-purple-600 dark:hover:text-white transition-all flex items-center gap-2"
+          >
+            <Palette size={19} />
+          </button>
+          
+          {showThemeMenu && (
+            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-white/15 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 dark:bg-zinc-900/95 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-zinc-200 dark:border-white/10">
+                <span className="text-sm font-semibold text-zinc-800 dark:text-white">Select Theme</span>
+              </div>
+              <div className="p-1.5 max-h-[300px] overflow-y-auto">
+                {THEMES.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-all ${
+                      theme === t.id 
+                        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium' 
+                        : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/8'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded-full border border-black/10 dark:border-white/20 shadow-inner" style={{ backgroundColor: t.color }} />
+                      {t.name}
+                    </div>
+                    {theme === t.id && <Check size={16} />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button
             id="notif-btn"
-            onClick={() => { setShowNotifs(p => !p); setShowProfile(false); if (!showNotifs) fetchNotifications(); }}
+            onClick={() => { setShowNotifs(p => !p); setShowProfile(false); setShowThemeMenu(false); if (!showNotifs) fetchNotifications(); }}
             className="relative p-2 rounded-xl hover:bg-white/8 text-zinc-400 hover:text-white transition-all"
           >
             <Bell size={19} />
@@ -203,7 +247,7 @@ export default function TopNav() {
         <div className="relative" ref={profileRef}>
           <button
             id="profile-btn"
-            onClick={() => { setShowProfile(p => !p); setShowNotifs(false); }}
+            onClick={() => { setShowProfile(p => !p); setShowNotifs(false); setShowThemeMenu(false); }}
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-white/8 transition-all"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
