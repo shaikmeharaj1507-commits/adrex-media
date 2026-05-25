@@ -1,7 +1,8 @@
 'use client';
 
-import { Bell, Search, ChevronDown, Settings, LogOut, User } from 'lucide-react';
+import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTheme } from 'next-themes';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
 import { useRouter } from 'next/navigation';
@@ -23,6 +24,7 @@ export default function TopNav() {
   const [notifications, setNotifications] = useState<BackendNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout } = useAuthStore();
+  const { theme, setTheme } = useTheme();
   const { socket } = useSocketStore();
   const router = useRouter();
   const notifRef = useRef<HTMLDivElement>(null);
@@ -136,6 +138,15 @@ export default function TopNav() {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 rounded-xl hover:bg-white/8 dark:hover:bg-white/8 text-zinc-600 dark:text-zinc-400 hover:text-purple-600 dark:hover:text-white transition-all"
+        >
+          <Sun size={19} className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon size={19} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        </button>
+
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button

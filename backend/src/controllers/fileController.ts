@@ -22,8 +22,17 @@ export const uploadFile = async (req: Request, res: Response) => {
       fs.mkdirSync(UPLOAD_DIR, { recursive: true });
     }
 
-    const { category, name } = req.body;
+    const { category, name, folderId, tags } = req.body;
     const fileUrl = `/uploads/${req.file.filename}`;
+
+    let parsedTags: string[] = [];
+    if (tags) {
+      try {
+        parsedTags = JSON.parse(tags);
+      } catch (e) {
+        parsedTags = tags.split(',').map((t: string) => t.trim());
+      }
+    }
 
     console.log('File upload success:', {
       originalName: req.file.originalname,
@@ -31,6 +40,8 @@ export const uploadFile = async (req: Request, res: Response) => {
       size: req.file.size,
       mimetype: req.file.mimetype,
       category: category || 'general',
+      folderId,
+      tags: parsedTags,
       fileUrl,
       agencyId: user.agencyId,
       uploaderId: user.userId,
@@ -43,6 +54,8 @@ export const uploadFile = async (req: Request, res: Response) => {
         size: req.file.size,
         type: req.file.mimetype,
         category: category || 'general',
+        folderId: folderId || null,
+        tags: parsedTags,
         agencyId: user.agencyId,
         uploaderId: user.userId
       },
@@ -61,11 +74,15 @@ export const getFiles = async (req: Request, res: Response) => {
     const user = (req as any).user;
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { search, category } = req.query;
+    const { search, category, folderId, tag } = req.query;
     const where: any = { agencyId: user.agencyId };
 
     if (search) where.name = { contains: search as string, mode: 'insensitive' };
     if (category && category !== 'All') where.category = category;
+    if (folderId !== undefined) {
+      where.folderId = folderId === 'root' ? null : folderId;
+    }
+    if (tag) where.tags = { has: tag };
 
     const files = await prisma.file.findMany({
       where,
