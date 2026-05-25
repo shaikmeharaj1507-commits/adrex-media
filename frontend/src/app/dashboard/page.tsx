@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Megaphone, Users, Briefcase, Activity,
-  ArrowUpRight, DollarSign, ChevronRight, Sparkles
+  ArrowUpRight, DollarSign, ChevronRight, Sparkles, CheckSquare
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -29,51 +29,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 const staggerContainer = { animate: { transition: { staggerChildren: 0.06 } } };
 
-function DashboardContent() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const [stats, setStats] = useState({
-    campaigns: 0, clients: 0, influencers: 0, tasks: 0,
-    activeCampaigns: 0, totalRevenue: 0, totalExpenses: 0, totalMRR: 0,
-  });
-  const [monthlyRevenue, setMonthlyRevenue] = useState<any[]>([]);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('adrex_token');
-    if (!token) { router.push('/login'); return; }
-    fetch(`${API_URL}/api/stats/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => {
-        if (d && !d.error) {
-          setStats(d);
-          setMonthlyRevenue(d.monthlyRevenue || []);
-          setRecentActivity(d.recentActivity || []);
-          setRecentCampaigns(d.recentCampaigns || []);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [router]);
-
-  const kpiCards = useMemo(() => [
-    { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-purple-400', bg: 'from-purple-500/20 to-purple-500/5' },
-    { label: 'Total Clients', value: stats.clients, icon: Briefcase, color: 'text-blue-400', bg: 'from-blue-500/20 to-blue-500/5' },
-    { label: 'Influencers', value: stats.influencers, icon: Users, color: 'text-emerald-400', bg: 'from-emerald-500/20 to-emerald-500/5' },
-    { label: 'Open Tasks', value: stats.tasks, icon: Activity, color: 'text-amber-400', bg: 'from-amber-500/20 to-amber-500/5' },
-  ], [stats]);
-
-  const quickLinks = useMemo(() => [
-    { href: '/dashboard/campaigns', label: 'Create Campaign', icon: Megaphone, color: 'bg-purple-500' },
-    { href: '/dashboard/influencers', label: 'Add Influencer', icon: Users, color: 'bg-blue-500' },
-    { href: '/dashboard/pipeline', label: 'View Pipeline', icon: ArrowUpRight, color: 'bg-emerald-500' },
-    { href: '/dashboard/ai', label: 'AI Tools', icon: Sparkles, color: 'bg-gradient-to-r from-purple-500 to-blue-500' },
-  ], []);
-
-  const hasRevenueData = monthlyRevenue.some(m => m.revenue > 0);
-
+function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenueData, kpiCards, quickLinks, recentActivity, recentCampaigns }: any) {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -86,7 +42,7 @@ function DashboardContent() {
 
       {/* KPI Cards */}
       <motion.div className="grid grid-cols-2 xl:grid-cols-4 gap-4" variants={staggerContainer} initial="initial" animate="animate">
-        {kpiCards.map((card, i) => {
+        {kpiCards.map((card: any, i: number) => {
           const Icon = card.icon;
           return (
             <motion.div key={i} variants={fadeIn}
@@ -143,7 +99,7 @@ function DashboardContent() {
           className="glassmorphism rounded-2xl p-6">
           <h3 className="font-semibold text-white mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            {quickLinks.map((link, i) => {
+            {quickLinks.map((link: any, i: number) => {
               const Icon = link.icon;
               return (
                 <Link key={i} href={link.href}
@@ -180,7 +136,7 @@ function DashboardContent() {
             <p className="text-sm text-zinc-500 text-center py-8">No activity yet. Start creating campaigns, clients, and tasks.</p>
           ) : (
             <div className="space-y-4">
-              {recentActivity.slice(0, 6).map((a, i) => (
+              {recentActivity.slice(0, 6).map((a: any, i: number) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className={`w-2 h-2 rounded-full ${a.color} mt-1.5 shrink-0`} />
                   <div className="flex-1 min-w-0">
@@ -207,7 +163,7 @@ function DashboardContent() {
             <p className="text-sm text-zinc-500 text-center py-8">No campaigns yet. Create your first campaign to get started.</p>
           ) : (
             <div className="space-y-3">
-              {recentCampaigns.slice(0, 5).map((c, i) => {
+              {recentCampaigns.slice(0, 5).map((c: any, i: number) => {
                 const statusColors: Record<string, string> = {
                   ACTIVE: 'text-emerald-400 bg-emerald-400/10',
                   DRAFT: 'text-zinc-400 bg-zinc-400/10',
@@ -232,6 +188,131 @@ function DashboardContent() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+function TeamMemberDashboardContent({ user, stats, loading, recentActivity }: any) {
+  return (
+    <div className="space-y-6">
+      <motion.div {...fadeIn}>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Welcome back, {user?.firstName}
+        </h1>
+        <p className="text-muted-foreground mt-1">Here are your active tasks and assignments.</p>
+      </motion.div>
+      
+      {/* KPI Cards for Team Member */}
+      <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={staggerContainer} initial="initial" animate="animate">
+        <motion.div variants={fadeIn} className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-white/10">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-amber-400"><Activity size={20} /></div>
+          <p className="text-3xl font-bold text-white mt-3">{loading ? '-' : (stats.tasks || 0)}</p>
+          <p className="text-sm text-zinc-400 mt-1">My Open Tasks</p>
+        </motion.div>
+        <motion.div variants={fadeIn} className="p-5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-white/10">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-purple-400"><Megaphone size={20} /></div>
+          <p className="text-3xl font-bold text-white mt-3">{loading ? '-' : (stats.activeCampaigns || 0)}</p>
+          <p className="text-sm text-zinc-400 mt-1">Active Campaigns</p>
+        </motion.div>
+        <motion.div variants={fadeIn} className="col-span-2 glassmorphism rounded-2xl p-6 flex flex-col justify-center">
+          <h3 className="font-semibold text-white mb-3">Quick Actions</h3>
+          <div className="flex gap-4">
+            <Link href="/dashboard/tasks" className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all">
+              <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white shrink-0"><CheckSquare size={14} /></div>
+              <span className="text-sm text-zinc-300 font-medium">View My Tasks</span>
+            </Link>
+            <Link href="/dashboard/team" className="flex-1 flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/15 transition-all">
+              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white shrink-0"><Users size={14} /></div>
+              <span className="text-sm text-zinc-300 font-medium">Team Directory</span>
+            </Link>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Recent Activity */}
+      <motion.div {...fadeIn} className="glassmorphism rounded-2xl p-6">
+        <h3 className="font-semibold text-white mb-4">Agency Updates</h3>
+        {recentActivity && recentActivity.length === 0 ? (
+          <p className="text-sm text-zinc-500 text-center py-8">No recent activity.</p>
+        ) : (
+          <div className="space-y-4">
+            {recentActivity?.slice(0, 5).map((a: any, i: number) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className={`w-2 h-2 rounded-full ${a.color} mt-1.5 shrink-0`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-zinc-300 font-medium">{a.action}</p>
+                  <p className="text-xs text-zinc-500 truncate">{a.detail}</p>
+                </div>
+                <span className="text-xs text-zinc-600 whitespace-nowrap">{a.time}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+function DashboardContent() {
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const [stats, setStats] = useState({
+    campaigns: 0, clients: 0, influencers: 0, tasks: 0,
+    activeCampaigns: 0, totalRevenue: 0, totalExpenses: 0, totalMRR: 0,
+  });
+  const [monthlyRevenue, setMonthlyRevenue] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adrex_token');
+    if (!token) { router.push('/login'); return; }
+    fetch(`${API_URL}/api/stats/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => {
+        if (d && !d.error) {
+          setStats(d);
+          setMonthlyRevenue(d.monthlyRevenue || []);
+          setRecentActivity(d.recentActivity || []);
+          setRecentCampaigns(d.recentCampaigns || []);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [router]);
+
+  const kpiCards = useMemo(() => [
+    { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-purple-400', bg: 'from-purple-500/20 to-purple-500/5' },
+    { label: 'Total Clients', value: stats.clients, icon: Briefcase, color: 'text-blue-400', bg: 'from-blue-500/20 to-blue-500/5' },
+    { label: 'Influencers', value: stats.influencers, icon: Users, color: 'text-emerald-400', bg: 'from-emerald-500/20 to-emerald-500/5' },
+    { label: 'Open Tasks', value: stats.tasks, icon: Activity, color: 'text-amber-400', bg: 'from-amber-500/20 to-amber-500/5' },
+  ], [stats]);
+
+  const quickLinks = useMemo(() => [
+    { href: '/dashboard/campaigns', label: 'Create Campaign', icon: Megaphone, color: 'bg-purple-500' },
+    { href: '/dashboard/influencers', label: 'Add Influencer', icon: Users, color: 'bg-blue-500' },
+    { href: '/dashboard/pipeline', label: 'View Pipeline', icon: ArrowUpRight, color: 'bg-emerald-500' },
+    { href: '/dashboard/ai', label: 'AI Tools', icon: Sparkles, color: 'bg-gradient-to-r from-purple-500 to-blue-500' },
+  ], []);
+
+  const hasRevenueData = monthlyRevenue.some(m => m.revenue > 0);
+
+  if (user?.role === 'TEAM_MEMBER') {
+    return <TeamMemberDashboardContent user={user} stats={stats} loading={loading} recentActivity={recentActivity} />;
+  }
+
+  return (
+    <AdminDashboardContent 
+      user={user} 
+      stats={stats} 
+      loading={loading} 
+      monthlyRevenue={monthlyRevenue} 
+      hasRevenueData={hasRevenueData} 
+      kpiCards={kpiCards} 
+      quickLinks={quickLinks} 
+      recentActivity={recentActivity} 
+      recentCampaigns={recentCampaigns} 
+    />
   );
 }
 

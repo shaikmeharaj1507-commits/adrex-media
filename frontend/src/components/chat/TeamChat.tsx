@@ -73,6 +73,10 @@ export default function TeamChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
   const fetchTeamMembers = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
@@ -189,6 +193,13 @@ export default function TeamChat() {
   const isMe = (msg: ChatMessage) => {
     if (mode === 'team') return msg.userId === user?.id;
     return msg.senderId === user?.id;
+  };
+
+  const getSenderName = (id?: string) => {
+    if (!id) return 'Unknown';
+    if (id === user?.id) return 'You';
+    const member = teamMembers.find(m => m.id === id);
+    return member ? `${member.firstName} ${member.lastName}` : 'Team Member';
   };
 
   const openChat = () => {
@@ -333,6 +344,9 @@ export default function TeamChat() {
                           'bg-zinc-800 text-white border border-white/5 rounded-bl-sm'
                         }`}>
                           {msg.isAI && <p className="text-xs text-amber-400 font-medium mb-1">AI Assistant</p>}
+                          {!isMe(msg) && !msg.isAI && mode === 'team' && (
+                            <p className="text-xs text-purple-400 font-medium mb-1">{getSenderName(msg.userId || msg.senderId)}</p>
+                          )}
                           <p className="text-sm">{getMessageText(msg)}</p>
                           <p className="text-[10px] text-right mt-1 opacity-60">{getMessageTime(msg)}</p>
                         </div>

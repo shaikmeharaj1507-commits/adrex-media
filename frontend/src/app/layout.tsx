@@ -20,10 +20,10 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-foreground min-h-screen antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="neon-velocity"
+          enableSystem={false}
           disableTransitionOnChange
-          themes={['light', 'dark', 'midnight', 'ocean', 'sunset', 'forest', 'rose', 'solarized', 'cyberpunk', 'nord']}
+          themes={['neon-velocity', 'minimal-luxe', 'aurora-glass', 'midnight-matrix', 'clay-studio', 'royal-obsidian', 'neo-brutal', 'hologram-os', 'nordic', 'retro-future']}
         >
           {children}
         </ThemeProvider>

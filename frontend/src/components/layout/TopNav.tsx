@@ -33,16 +33,16 @@ export default function TopNav() {
   const themeRef = useRef<HTMLDivElement>(null);
 
   const THEMES = [
-    { id: 'light', name: 'Light', color: '#ffffff' },
-    { id: 'dark', name: 'Dark', color: '#09090b' },
-    { id: 'midnight', name: 'Midnight', color: '#020617' },
-    { id: 'ocean', name: 'Ocean', color: '#083344' },
-    { id: 'sunset', name: 'Sunset', color: '#3b0764' },
-    { id: 'forest', name: 'Forest', color: '#052e16' },
-    { id: 'rose', name: 'Rose', color: '#4c0519' },
-    { id: 'solarized', name: 'Solarized', color: '#073642' },
-    { id: 'cyberpunk', name: 'Cyberpunk', color: '#2e0249' },
-    { id: 'nord', name: 'Nord', color: '#2e3440' },
+    { id: 'neon-velocity', name: 'Neon Velocity', color: '#9333ea' },
+    { id: 'minimal-luxe', name: 'Minimal Luxe', color: '#171717' },
+    { id: 'aurora-glass', name: 'Aurora Glass', color: '#f472b6' },
+    { id: 'midnight-matrix', name: 'Midnight Matrix', color: '#00ff9d' },
+    { id: 'clay-studio', name: 'Clay Studio', color: '#fca5a5' },
+    { id: 'royal-obsidian', name: 'Royal Obsidian', color: '#fbbf24' },
+    { id: 'neo-brutal', name: 'Neo Brutal', color: '#ff0055' },
+    { id: 'hologram-os', name: 'Hologram OS', color: '#06b6d4' },
+    { id: 'nordic', name: 'Nordic', color: '#81a1c1' },
+    { id: 'retro-future', name: 'Retro Future', color: '#d946ef' },
   ];
 
   const fetchNotifications = useCallback(async () => {

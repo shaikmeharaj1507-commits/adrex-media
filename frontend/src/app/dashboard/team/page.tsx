@@ -22,6 +22,7 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   
   const [newMember, setNewMember] = useState({
     firstName: '',
@@ -158,7 +159,8 @@ export default function TeamPage() {
                 <tr><td colSpan={5} className="px-6 py-16 text-center text-zinc-500">No members found.</td></tr>
               ) : filteredTeam.map((m, i) => (
                 <motion.tr key={m.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                  onClick={() => { if(isAdmin) setSelectedMember(m); }}
+                  className={`border-b border-white/5 hover:bg-white/5 transition-colors group ${isAdmin ? 'cursor-pointer' : ''}`}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 font-bold">
@@ -192,7 +194,10 @@ export default function TeamPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     {isAdmin && m.id !== user?.id && (
-                      <button onClick={() => handleDelete(m.id)} className="p-2 rounded-lg text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDelete(m.id); }} 
+                        className="p-2 rounded-lg text-zinc-500 hover:bg-red-500/10 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                      >
                         <Trash2 size={16} />
                       </button>
                     )}
@@ -263,6 +268,63 @@ export default function TeamPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+      </AnimatePresence>
+
+      {/* Official Team Member Profile Modal (Admins Only) */}
+      <AnimatePresence>
+        {selectedMember && isAdmin && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedMember(null)} />
+            <motion.div className="relative z-10 w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}>
+              
+              <div className="bg-gradient-to-r from-primary/20 to-transparent p-6 border-b border-white/10 flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold border-2 border-white/20 shadow-inner">
+                    {selectedMember.firstName[0]}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">{selectedMember.firstName} {selectedMember.lastName}</h2>
+                    <p className="text-sm text-primary font-medium tracking-wide">{selectedMember.role.replace('_', ' ')}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedMember(null)} className="p-2 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"><X size={18} /></button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Email Address</p>
+                    <p className="text-sm text-white font-medium flex items-center gap-2 truncate" title={selectedMember.email}>
+                      <Mail size={14} className="text-zinc-400 shrink-0"/> {selectedMember.email}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Status</p>
+                    <p className="text-sm text-white font-medium flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${selectedMember.isActive ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                      {selectedMember.isActive ? 'Active Member' : 'Inactive Account'}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Join Date</p>
+                    <p className="text-sm text-white font-medium">{new Date(selectedMember.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">System ID</p>
+                    <p className="text-xs text-zinc-400 font-mono truncate" title={selectedMember.id}>{selectedMember.id}</p>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10 flex justify-end gap-3">
+                  <button onClick={() => setSelectedMember(null)} className="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl transition-all">
+                    Close Profile
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}

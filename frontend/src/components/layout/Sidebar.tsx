@@ -12,24 +12,29 @@ import {
 import { useAuthStore } from '@/store/authStore';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard',   href: '/dashboard' },
-  { icon: Megaphone,       label: 'Campaigns',   href: '/dashboard/campaigns' },
-  { icon: Users,           label: 'Influencers', href: '/dashboard/influencers' },
-  { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients' },
-  { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline' },
-  { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks' },
-  { icon: UserCheck,       label: 'Team',        href: '/dashboard/team' },
-  { icon: Calendar,        label: 'Calendar',    href: '/dashboard/calendar' },
-  { icon: DollarSign,      label: 'Finance',     href: '/dashboard/finance' },
-  { icon: BarChart,        label: 'Reports',     href: '/dashboard/reports' },
-  { icon: Folder,          label: 'Files',       href: '/dashboard/files' },
-  { icon: Sparkles,        label: 'AI Tools',    href: '/dashboard/ai' },
+  { icon: LayoutDashboard, label: 'Dashboard',   href: '/dashboard',         roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: Megaphone,       label: 'Campaigns',   href: '/dashboard/campaigns',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: Users,           label: 'Influencers', href: '/dashboard/influencers',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks',   roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: UserCheck,       label: 'Team',        href: '/dashboard/team',    roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: Calendar,        label: 'Calendar',    href: '/dashboard/calendar', roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: DollarSign,      label: 'Finance',     href: '/dashboard/finance',  roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { icon: BarChart,        label: 'Reports',     href: '/dashboard/reports',  roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { icon: Folder,          label: 'Files',       href: '/dashboard/files',    roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: Sparkles,        label: 'AI Tools',    href: '/dashboard/ai',      roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+
+  const filteredMenuItems = menuItems.filter(item => {
+    if (!item.roles) return true;
+    return item.roles.includes(user?.role || 'TEAM_MEMBER');
+  });
 
   const isActive = (href: string) =>
     href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
@@ -60,7 +65,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {menuItems.map((item) => {
+        {filteredMenuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
           return (
