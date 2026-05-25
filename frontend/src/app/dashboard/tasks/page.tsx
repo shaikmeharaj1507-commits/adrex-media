@@ -33,7 +33,8 @@ const priorityConfig: Record<Priority, { label: string; color: string; bg: strin
 };
 
 export default function TasksPage() {
-  const { user, isAdmin } = useAuthStore();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
   const [tasks, setTasks] = useState<Task[]>([]);
   const [teamMembers, setTeamMembers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
   const [showModal, setShowModal] = useState(false);
