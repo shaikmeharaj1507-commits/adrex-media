@@ -304,6 +304,7 @@ export default function TeamPage() {
               </form>
             </motion.div>
           </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Edit Member Modal */}
