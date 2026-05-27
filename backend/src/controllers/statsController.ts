@@ -23,7 +23,15 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       }),
       prisma.expense.findMany({ where: { agencyId }, orderBy: { date: 'desc' }, take: 6 }),
       prisma.invoice.findMany({ where: { agencyId }, orderBy: { createdAt: 'desc' }, take: 6 }),
-      prisma.activityLog.findMany({ where: { agencyId }, orderBy: { createdAt: 'desc' }, take: 8, include: { user: { select: { firstName: true, lastName: true } } } }),
+      prisma.activityLog.findMany({
+        where: {
+          agencyId,
+          ...(user.role === 'TEAM_MEMBER' ? { userId: user.userId } : {})
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        include: { user: { select: { firstName: true, lastName: true } } }
+      }),
     ]);
 
     const clientList = await prisma.client.findMany({ where: { agencyId }, select: { monthlyBudget: true } });

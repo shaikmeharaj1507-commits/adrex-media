@@ -33,17 +33,16 @@ export default function TopNav() {
   const themeRef = useRef<HTMLDivElement>(null);
 
   const THEMES = [
-    { id: 'elegant-white', name: 'Elegant White', color: '#7c3aed' },
-    { id: 'neon-velocity', name: 'Neon Velocity', color: '#9333ea' },
-    { id: 'minimal-luxe', name: 'Minimal Luxe', color: '#171717' },
     { id: 'aurora-glass', name: 'Aurora Glass', color: '#f472b6' },
-    { id: 'midnight-matrix', name: 'Midnight Matrix', color: '#00ff9d' },
-    { id: 'clay-studio', name: 'Clay Studio', color: '#fca5a5' },
-    { id: 'royal-obsidian', name: 'Royal Obsidian', color: '#fbbf24' },
-    { id: 'neo-brutal', name: 'Neo Brutal', color: '#ff0055' },
-    { id: 'hologram-os', name: 'Hologram OS', color: '#06b6d4' },
-    { id: 'nordic', name: 'Nordic', color: '#81a1c1' },
-    { id: 'retro-future', name: 'Retro Future', color: '#d946ef' },
+    { id: 'cotton-candy', name: 'Cotton Candy', color: '#fbcfe8' },
+    { id: 'midnight-enterprise', name: 'Midnight Enterprise', color: '#1e3a8a' },
+    { id: 'neon-ai', name: 'Neon AI Command', color: '#06b6d4' },
+    { id: 'minimal-white', name: 'Minimal White Workspace', color: '#6366f1' },
+    { id: 'luxury-gold', name: 'Luxury Black Gold', color: '#fbbf24' },
+    { id: 'creator-studio', name: 'Creator Studio', color: '#ec4899' },
+    { id: 'apple-frost', name: 'Apple Frost', color: '#94a3b8' },
+    { id: 'space-gradient', name: 'Space Gradient', color: '#8b5cf6' },
+    { id: 'soft-clay', name: 'Soft Claymorphism', color: '#f87171' },
   ];
 
   const fetchNotifications = useCallback(async () => {
