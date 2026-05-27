@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, DollarSign, TrendingUp, Trophy, XCircle, Phone, Mail, FileText, Loader2 } from 'lucide-react';
+import { Plus, X, DollarSign, TrendingUp, Trophy, XCircle, Phone, Mail, FileText, Loader2, Download } from 'lucide-react';
 
 type Stage = 'LEAD' | 'CONTACTED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST';
 
@@ -74,6 +74,29 @@ export default function PipelinePage() {
     setLeads(p => p.filter(l => l.id !== id));
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Company Name', 'Contact Name', 'Email', 'Phone', 'Value', 'Stage', 'Notes', 'Created At'];
+    const rows = leads.map(l => [
+      `"${l.companyName.replace(/"/g, '""')}"`,
+      `"${l.contactName.replace(/"/g, '""')}"`,
+      `"${l.email.replace(/"/g, '""')}"`,
+      `"${(l.phone || '').replace(/"/g, '""')}"`,
+      l.value,
+      l.stage,
+      `"${(l.notes || '').replace(/"/g, '""')}"`,
+      new Date(l.createdAt).toLocaleDateString()
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `adrex-leads-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const totalPipelineValue = leads.filter(l => l.stage !== 'LOST').reduce((s, l) => s + l.value, 0);
   const wonValue = leads.filter(l => l.stage === 'WON').reduce((s, l) => s + l.value, 0);
   const winRate = leads.length > 0 ? Math.round((leads.filter(l => l.stage === 'WON').length / leads.length) * 100) : 0;
@@ -85,9 +108,14 @@ export default function PipelinePage() {
           <h1 className="text-3xl font-bold tracking-tight">Sales Pipeline</h1>
           <p className="text-muted-foreground mt-1">Track leads from first contact to closed deal.</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-          <Plus size={18} /> Add Lead
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl font-semibold transition-all">
+            <Download size={16} /> Export CSV
+          </button>
+          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            <Plus size={18} /> Add Lead
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}

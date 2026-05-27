@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Users, Briefcase, Megaphone,
   CheckSquare, Calendar, BarChart, Settings, LogOut, Zap,
-  GitBranch, DollarSign, UserCheck, Sparkles, Folder
+  GitBranch, DollarSign, UserCheck, Sparkles, Folder, Award
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
@@ -17,6 +17,7 @@ const menuItems = [
   { icon: Users,           label: 'Influencers', href: '/dashboard/influencers',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
   { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: Users,           label: 'Client Portal', href: '/dashboard/client-portal', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { icon: Award,           label: 'Influencer Portal', href: '/dashboard/influencer-portal', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks',   roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
   { icon: UserCheck,       label: 'Team',        href: '/dashboard/team',    roles: ['SUPER_ADMIN', 'MANAGER'] },

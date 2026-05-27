@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, MoreHorizontal, User, Shield, ShieldAlert, Mail, Trash2, X, Edit2 } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, User, Shield, ShieldAlert, Mail, Trash2, X, Edit2, Download } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import AccessRestricted from '@/components/AccessRestricted';
 
@@ -118,7 +118,26 @@ export default function TeamPage() {
       console.error('Delete failed', error);
     }
   };
-
+  const handleExportCSV = () => {
+    const headers = ['First Name', 'Last Name', 'Email', 'Role', 'Status', 'Joined Date'];
+    const rows = team.map(m => [
+      `"${m.firstName.replace(/"/g, '""')}"`,
+      `"${m.lastName.replace(/"/g, '""')}"`,
+      `"${m.email.replace(/"/g, '""')}"`,
+      m.role,
+      m.isActive ? 'Active' : 'Inactive',
+      new Date(m.createdAt).toLocaleDateString()
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `adrex-team-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const filteredTeam = team.filter(m => 
     `${m.firstName} ${m.lastName}`.toLowerCase().includes(search.toLowerCase()) || 
     m.email.toLowerCase().includes(search.toLowerCase())
@@ -138,9 +157,14 @@ export default function TeamPage() {
           <p className="text-muted-foreground mt-1">Manage agency members, roles, and access.</p>
         </div>
         {isAdmin && (
-          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-            <Plus size={18} /> Invite Member
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl font-semibold transition-all">
+              <Download size={16} /> Export CSV
+            </button>
+            <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+              <Plus size={18} /> Invite Member
+            </button>
+          </div>
         )}
       </div>
 

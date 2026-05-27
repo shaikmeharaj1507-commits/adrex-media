@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Mail, MessageCircle, MoreVertical, X, Sparkles, Loader2, MessageSquare, Send, Star, Pencil, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Filter, Mail, MessageCircle, MoreVertical, X, Sparkles, Loader2, MessageSquare, Send, Star, Pencil, Trash2, CheckCircle, XCircle, Download } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 interface Influencer {
@@ -241,6 +241,32 @@ export default function InfluencersPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Name', 'Email', 'WhatsApp', 'Instagram', 'TikTok', 'YouTube', 'Niche', 'Rating', 'Location', 'Status', 'Pricing'];
+    const rows = influencers.map(i => [
+      `"${i.name.replace(/"/g, '""')}"`,
+      `"${(i.email || '').replace(/"/g, '""')}"`,
+      `"${(i.whatsapp || '').replace(/"/g, '""')}"`,
+      `"${(i.instagram || '').replace(/"/g, '""')}"`,
+      `"${(i.tiktok || '').replace(/"/g, '""')}"`,
+      `"${(i.youtube || '').replace(/"/g, '""')}"`,
+      `"${(i.niche || '').replace(/"/g, '""')}"`,
+      i.rating,
+      `"${(i.location || '').replace(/"/g, '""')}"`,
+      i.status,
+      `"${(i.pricing || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `adrex-influencers-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const resetForm = () => {
     setNewInf({ name: '', niche: '', platform: 'Instagram', followers: '100K', rating: 5, instagram: '', tiktok: '', youtube: '', email: '', whatsapp: '', location: '', status: 'APPROVED', pricing: '', audienceStats: '' });
   };
@@ -291,12 +317,20 @@ export default function InfluencersPage() {
           <h1 className="text-3xl font-bold tracking-tight">Influencer CRM</h1>
           <p className="text-muted-foreground mt-1">Manage your roster of content creators and review applications.</p>
         </div>
-        <button 
-          onClick={() => { resetForm(); setEditingInfluencer(null); setShowModal(true); }}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-          <Plus size={18} />
-          <span>Add Influencer</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 bg-white/5 border border-white/10 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all">
+            <Download size={18} />
+            <span>Export CSV</span>
+          </button>
+          <button 
+            onClick={() => { resetForm(); setEditingInfluencer(null); setShowModal(true); }}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            <Plus size={18} />
+            <span>Add Influencer</span>
+          </button>
+        </div>
       </div>
 
       <div className="glassmorphism rounded-2xl p-6">

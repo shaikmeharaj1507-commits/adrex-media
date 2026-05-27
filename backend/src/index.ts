@@ -77,6 +77,7 @@ import messageRoutes from './routes/messages';
 import pdfRoutes from './routes/pdf';
 import notificationRoutes from './routes/notifications';
 import clientPortalRoutes from './routes/clientPortal';
+import influencerPortalRoutes from './routes/influencerPortal';
 
 // Basic Health Check
 app.get('/api/health', (req, res) => {
@@ -103,6 +104,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/pdf', pdfRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/client-portal', clientPortalRoutes);
+app.use('/api/influencer-portal', influencerPortalRoutes);
 
 import { createServer } from 'http';
 import { setupSocketIO } from './socket';

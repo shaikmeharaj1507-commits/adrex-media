@@ -99,6 +99,44 @@ export default function FinancePage() {
     return `${API_URL}${path}?token=${token}`;
   };
 
+  const handleExportCSV = () => {
+    if (tab === 'invoices') {
+      const headers = ['Client', 'Amount', 'Status', 'Due Date'];
+      const rows = invoices.map(i => [
+        `"${(i.client?.companyName || '').replace(/"/g, '""')}"`,
+        i.amount,
+        i.status,
+        new Date(i.dueDate).toLocaleDateString()
+      ]);
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `adrex-invoices-${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const headers = ['Category', 'Amount', 'Description', 'Date'];
+      const rows = expenses.map(e => [
+        `"${e.category.replace(/"/g, '""')}"`,
+        e.amount,
+        `"${(e.description || '').replace(/"/g, '""')}"`,
+        new Date(e.date).toLocaleDateString()
+      ]);
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `adrex-expenses-${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const updateInvoiceStatus = async (id: string, status: string) => {
     const res = await fetch(`${API_URL}/api/finance/invoices/${id}`, { method: 'PUT', headers: getHeaders(), body: JSON.stringify({ status }) });
     if (res.ok) { const d = await res.json(); setInvoices(p => p.map(i => i.id === id ? d : i)); }
@@ -111,9 +149,14 @@ export default function FinancePage() {
           <h1 className="text-3xl font-bold tracking-tight">Finance</h1>
           <p className="text-muted-foreground mt-1">Manage invoices, expenses & profitability.</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-          <Plus size={18} /> {tab === 'invoices' ? 'New Invoice' : 'Add Expense'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={handleExportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl font-semibold transition-all">
+            <Download size={16} /> Export CSV
+          </button>
+          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            <Plus size={18} /> {tab === 'invoices' ? 'New Invoice' : 'Add Expense'}
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}

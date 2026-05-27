@@ -316,3 +316,93 @@ export const verifyEmail = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to verify email' });
   }
 };
+
+const otpCache = new Map<string, { otp: string; expires: Date }>();
+
+export const sendOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    otpCache.set(email.toLowerCase(), { otp, expires });
+
+    // Send email (non-blocking)
+    setImmediate(async () => {
+      try {
+        await transporter.sendMail({
+          from: '"Adrex Media OS" <noreply@adrexmedia.com>',
+          to: user.email,
+          subject: 'Your Adrex Media OS Login OTP',
+          html: `
+            <h3>Login Verification Code</h3>
+            <p>Your one-time password (OTP) is: <strong>${otp}</strong></p>
+            <p>This code is valid for 10 minutes. If you did not request this, please ignore this email.</p>
+          `
+        });
+      } catch (err) {
+        console.error('Failed to send OTP email:', err);
+      }
+    });
+
+    res.json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    res.status(500).json({ error: 'Failed to send OTP code' });
+  }
+};
+
+export const loginOtp = async (req: Request, res: Response) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP code are required' });
+
+    const cached = otpCache.get(email.toLowerCase());
+    if (!cached) return res.status(400).json({ error: 'No OTP code sent for this email address' });
+
+    if (cached.otp !== otp) return res.status(400).json({ error: 'Invalid OTP code' });
+    if (new Date() > cached.expires) {
+      otpCache.delete(email.toLowerCase());
+      return res.status(400).json({ error: 'OTP code has expired' });
+    }
+
+    otpCache.delete(email.toLowerCase());
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const token = jwt.sign(
+      { userId: user.id, agencyId: user.agencyId, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        agencyId: user.agencyId
+      },
+      token
+    });
+  } catch (error) {
+    console.error('Login OTP error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
