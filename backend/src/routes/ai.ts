@@ -7,6 +7,8 @@ import {
   chatWithAI,
   getChatHistory,
   deleteChat,
+  generateWorkflowSuggestions,
+  generateContentCalendar,
 } from '../controllers/aiController';
 import { requireAuth } from '../middlewares/auth';
 
@@ -19,6 +21,8 @@ router.post('/campaign-idea', generateCampaignIdea);
 router.post('/caption', generateCaption);
 router.post('/outreach', generateOutreachMessage);
 router.post('/strategy', generateStrategy);
+router.post('/workflow', generateWorkflowSuggestions);
+router.post('/content-calendar', generateContentCalendar);
 router.post('/chat', chatWithAI);
 
 export default router;

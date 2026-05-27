@@ -4,18 +4,136 @@ import { logActivity, createNotification } from '../utils/activityLogger';
 
 const prisma = new PrismaClient();
 
+// Helper: check if user has access to a specific task
+async function userCanAccessTask(userId: string, userRole: string, agencyId: string, task: any): Promise<boolean> {
+  if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') return true;
+  if (task.assigneeId === userId) return true;
+
+  // Check if the task belongs to a campaign the user is assigned to
+  if (task.campaignId) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { teamId: true, email: true }
+    });
+    if (!dbUser) return false;
+
+    let influencerId: string | null = null;
+    if (userRole === 'INFLUENCER') {
+      const influencer = await prisma.influencer.findFirst({
+        where: { email: dbUser.email, agencyId }
+      });
+      if (influencer) influencerId = influencer.id;
+    }
+
+    const assignment = await prisma.campaignAssignment.findFirst({
+      where: {
+        campaignId: task.campaignId,
+        OR: [
+          { userId },
+          ...(dbUser.teamId ? [{ teamId: dbUser.teamId }] : []),
+          ...(influencerId ? [{ influencerId }] : [])
+        ]
+      }
+    });
+    if (assignment) return true;
+  }
+
+  return false;
+}
+
 export const getTasks = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
+    if (user.role === 'SUPER_ADMIN' || user.role === 'MANAGER') {
+      // Admins see everything
+      const tasks = await prisma.task.findMany({
+        where: { agencyId: user.agencyId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          assigneeUser: { select: { firstName: true, lastName: true, avatar: true, role: true } },
+          campaignObj: { select: { id: true, name: true } }
+        }
+      });
+      return res.json(tasks);
+    }
+
+    // Non-admins: get tasks assigned to them + tasks from campaigns they're assigned to
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { teamId: true, email: true }
+    });
+    if (!dbUser) return res.status(404).json({ error: 'User not found' });
+
+    let influencerId: string | null = null;
+    if (user.role === 'INFLUENCER') {
+      const influencer = await prisma.influencer.findFirst({
+        where: { email: dbUser.email, agencyId: user.agencyId }
+      });
+      if (influencer) influencerId = influencer.id;
+    }
+
+    // Get campaign IDs the user is assigned to
+    const assignedCampaigns = await prisma.campaignAssignment.findMany({
+      where: {
+        campaign: { agencyId: user.agencyId },
+        OR: [
+          { userId: user.userId },
+          ...(dbUser.teamId ? [{ teamId: dbUser.teamId }] : []),
+          ...(influencerId ? [{ influencerId }] : [])
+        ]
+      },
+      select: { campaignId: true }
+    });
+
+    const campaignIds = assignedCampaigns.map(a => a.campaignId);
+
     const tasks = await prisma.task.findMany({
-      where: { agencyId: user.agencyId },
+      where: {
+        agencyId: user.agencyId,
+        OR: [
+          { assigneeId: user.userId },
+          ...(campaignIds.length > 0 ? [{ campaignId: { in: campaignIds } }] : [])
+        ]
+      },
       orderBy: { createdAt: 'desc' },
-      include: { assigneeUser: { select: { firstName: true, lastName: true, avatar: true } } }
+      include: {
+        assigneeUser: { select: { firstName: true, lastName: true, avatar: true, role: true } },
+        campaignObj: { select: { id: true, name: true } }
+      }
     });
 
     res.json(tasks);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const getTaskById = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+
+    const task = await prisma.task.findFirst({
+      where: { id, agencyId: user.agencyId },
+      include: {
+        assigneeUser: { select: { firstName: true, lastName: true, avatar: true, role: true } },
+        campaignObj: { select: { id: true, name: true } }
+      }
+    });
+
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    const hasAccess = await userCanAccessTask(user.userId, user.role, user.agencyId, task);
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Access Denied: You are not authorized to view this task' });
+    }
+
+    res.json(task);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -27,7 +145,7 @@ export const createTask = async (req: Request, res: Response) => {
     const user = (req as any).user;
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { title, assignee, assigneeId, priority, campaign, dueDate, status } = req.body;
+    const { title, assignee, assigneeId, priority, campaign, campaignId, dueDate, status } = req.body;
 
     const task = await prisma.task.create({
       data: {
@@ -37,6 +155,7 @@ export const createTask = async (req: Request, res: Response) => {
         assigneeId: assigneeId || null,
         priority,
         campaign,
+        campaignId: campaignId || null,
         dueDate,
         status: status || 'TODO'
       }
@@ -58,6 +177,10 @@ export const createTask = async (req: Request, res: Response) => {
         message: `New task created: "${title}"`,
         type: 'TASK'
       });
+      io.to(`agency_${user.agencyId}`).emit('task_updated', {
+        action: 'CREATE',
+        taskId: task.id
+      });
     }
 
     res.status(201).json(task);
@@ -73,7 +196,18 @@ export const updateTask = async (req: Request, res: Response) => {
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { id } = req.params;
-    const { status, title, assignee, assigneeId, priority, campaign, dueDate } = req.body;
+    const { status, title, assignee, assigneeId, priority, campaign, campaignId, dueDate } = req.body;
+
+    // Verify authorization
+    const existingTask = await prisma.task.findFirst({
+      where: { id, agencyId: user.agencyId }
+    });
+    if (!existingTask) return res.status(404).json({ error: 'Task not found' });
+
+    const hasAccess = await userCanAccessTask(user.userId, user.role, user.agencyId, existingTask);
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Access Denied: You are not authorized to modify this task' });
+    }
 
     const task = await prisma.task.update({
       where: { id, agencyId: user.agencyId },
@@ -83,12 +217,22 @@ export const updateTask = async (req: Request, res: Response) => {
         ...(assigneeId !== undefined && { assigneeId }),
         ...(priority && { priority }),
         ...(campaign !== undefined && { campaign }),
+        ...(campaignId !== undefined && { campaignId }),
         ...(dueDate !== undefined && { dueDate }),
         ...(status && { status })
       }
     });
 
     await logActivity(user.agencyId, user.userId, 'UPDATE', 'TASK', id, `Status: ${status || 'unchanged'}`);
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`agency_${user.agencyId}`).emit('task_updated', {
+        action: 'UPDATE',
+        taskId: id
+      });
+    }
 
     res.json(task);
   } catch (error) {
@@ -103,9 +247,24 @@ export const deleteTask = async (req: Request, res: Response) => {
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { id } = req.params;
+
+    // Only admins can delete tasks
+    if (user.role !== 'SUPER_ADMIN' && user.role !== 'MANAGER') {
+      return res.status(403).json({ error: 'Only admins can delete tasks' });
+    }
+
     await prisma.task.delete({ where: { id, agencyId: user.agencyId } });
 
     await logActivity(user.agencyId, user.userId, 'DELETE', 'TASK', id);
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`agency_${user.agencyId}`).emit('task_updated', {
+        action: 'DELETE',
+        taskId: id
+      });
+    }
 
     res.status(204).send();
   } catch (error) {

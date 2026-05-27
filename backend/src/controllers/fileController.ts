@@ -118,3 +118,86 @@ export const deleteFile = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to delete file' });
   }
 };
+
+export const renameFile = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    const updated = await prisma.file.update({
+      where: { id, agencyId: user.agencyId },
+      data: { name: name.trim() },
+      include: { uploader: { select: { firstName: true, lastName: true } } }
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Rename file error:', error);
+    res.status(500).json({ error: 'Failed to rename file' });
+  }
+};
+
+export const moveFile = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+    const { folderId } = req.body;
+
+    if (folderId) {
+      const folder = await prisma.folder.findFirst({
+        where: { id: folderId, agencyId: user.agencyId }
+      });
+      if (!folder) {
+        return res.status(404).json({ error: 'Target folder not found' });
+      }
+    }
+
+    const updated = await prisma.file.update({
+      where: { id, agencyId: user.agencyId },
+      data: { folderId: folderId || null },
+      include: { uploader: { select: { firstName: true, lastName: true } } }
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Move file error:', error);
+    res.status(500).json({ error: 'Failed to move file' });
+  }
+};
+
+export const getFileStats = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const files = await prisma.file.findMany({
+      where: { agencyId: user.agencyId },
+      select: { size: true, category: true }
+    });
+
+    const totalSize = files.reduce((acc, f) => acc + f.size, 0);
+    const countByCategory = files.reduce((acc: Record<string, number>, f) => {
+      acc[f.category] = (acc[f.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    res.json({
+      totalSize,
+      totalFiles: files.length,
+      countByCategory,
+      storageLimit: 104857600 // 100 MB
+    });
+  } catch (error) {
+    console.error('File stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch file stats' });
+  }
+};

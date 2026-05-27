@@ -143,6 +143,65 @@ export const getReportStats = async (req: Request, res: Response) => {
       });
     }
 
+    // MoM Growth Rate
+    let revenueGrowthRate = 0;
+    if (monthlyData.length >= 2) {
+      const currentMonthRev = monthlyData[monthlyData.length - 1].revenue;
+      const prevMonthRev = monthlyData[monthlyData.length - 2].revenue;
+      if (prevMonthRev > 0) {
+        revenueGrowthRate = ((currentMonthRev - prevMonthRev) / prevMonthRev) * 100;
+      } else if (currentMonthRev > 0) {
+        revenueGrowthRate = 100;
+      }
+    }
+
+    // Campaign Status Breakdown
+    const campaignStatuses = await prisma.campaign.groupBy({
+      by: ['status'],
+      where: { agencyId },
+      _count: { id: true }
+    });
+    const campaignStatusBreakdown = campaignStatuses.map(item => ({
+      status: item.status,
+      count: item._count.id
+    }));
+
+    // Top Influencers
+    const topInfluencersByRating = await prisma.influencer.findMany({
+      where: { agencyId },
+      orderBy: { rating: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        name: true,
+        rating: true,
+        niche: true,
+        instagram: true,
+        tiktok: true
+      }
+    });
+
+    // Task Completion Trend (past 6 weeks)
+    const taskCompletionTrend = [];
+    const today = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (i * 7) - today.getDay());
+      const endOfWeek = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + 6, 23, 59, 59);
+      
+      const completedCount = await prisma.task.count({
+        where: {
+          agencyId,
+          status: 'DONE',
+          updatedAt: { gte: startOfWeek, lte: endOfWeek }
+        }
+      });
+
+      taskCompletionTrend.push({
+        week: `Week -${i === 0 ? 'Current' : i}`,
+        completed: completedCount
+      });
+    }
+
     res.json({
       campaigns: campaignCount,
       clients: clientCount,
@@ -154,6 +213,10 @@ export const getReportStats = async (req: Request, res: Response) => {
       activeCampaigns,
       monthlyData,
       channelData,
+      revenueGrowthRate,
+      campaignStatusBreakdown,
+      topInfluencersByRating,
+      taskCompletionTrend
     });
 
   } catch (error) {

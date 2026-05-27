@@ -36,6 +36,7 @@ model Agency {
   whatsappMessages WhatsAppMessage[]
   announcements   Announcement[]
   aiChats         AIChat[]
+  teams           Team[]
 }
 
 enum Role {
@@ -76,6 +77,8 @@ model User {
   files               File[]
   assignedTasks       Task[]    @relation("TaskAssignee")
   aiChats             AIChat[]  @relation("AIChatUser")
+  teamId              String?
+  team                Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
 }
 
 model Influencer {
@@ -134,6 +137,7 @@ model Campaign {
   updatedAt   DateTime @updatedAt
   
   assignments CampaignAssignment[]
+  tasks       Task[]
 }
 
 model Task {
@@ -152,6 +156,8 @@ model Task {
   updatedAt   DateTime @updatedAt
   
   comments    TaskComment[]
+  campaignId  String?
+  campaignObj Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 model TaskComment {
@@ -188,6 +194,19 @@ model CampaignAssignment {
   status       String     @default("PENDING")
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  teamId       String?
+  team         Team?      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+model Team {
+  id                  String               @id @default(uuid())
+  agencyId            String
+  agency              Agency               @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  name                String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  members             User[]
+  campaignAssignments CampaignAssignment[]
 }
 
 model PipelineLead {

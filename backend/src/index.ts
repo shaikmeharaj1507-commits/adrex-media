@@ -76,6 +76,7 @@ import folderRoutes from './routes/folders';
 import messageRoutes from './routes/messages';
 import pdfRoutes from './routes/pdf';
 import notificationRoutes from './routes/notifications';
+import clientPortalRoutes from './routes/clientPortal';
 
 // Basic Health Check
 app.get('/api/health', (req, res) => {
@@ -101,6 +102,7 @@ app.use('/api/folders', folderRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/pdf', pdfRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/client-portal', clientPortalRoutes);
 
 import { createServer } from 'http';
 import { setupSocketIO } from './socket';

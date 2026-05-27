@@ -230,3 +230,59 @@ export const chatWithAI = async (req: Request, res: Response) => {
     return serverError(res, error, 'chat');
   }
 };
+
+export const generateWorkflowSuggestions = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user?.agencyId) return unauthorized(res);
+
+    const { campaignName, description, platform } = req.body;
+    const campaignInput = campaignName || req.body.prompt || req.body.context || '';
+    if (!campaignInput) return badRequest(res, 'Campaign Name is required.');
+
+    const result = await aiService.chat({
+      systemPrompt: `You are an expert operations manager at a world-class influencer marketing agency. Generate a prioritized 3-step action workflow for setting up a campaign. Respond only in clear markdown bullet points with headers.`,
+      userPrompt: `Generate a 3-step action workflow for:
+Campaign: ${campaignInput}
+Description: ${description || 'Not specified'}
+Platform: ${platform || 'Instagram/TikTok'}`,
+      temperature: 0.7,
+      maxTokens: 800
+    });
+
+    const trimmed = result.content.trim();
+    await saveChat(user.userId, user.agencyId, 'workflow', campaignInput, trimmed);
+
+    return res.json({ result: trimmed });
+  } catch (error: any) {
+    return serverError(res, error, 'workflow');
+  }
+};
+
+export const generateContentCalendar = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user?.agencyId) return unauthorized(res);
+
+    const { campaignName, durationWeeks, platforms } = req.body;
+    const campaignInput = campaignName || req.body.prompt || req.body.context || '';
+    if (!campaignInput) return badRequest(res, 'Campaign Name is required.');
+
+    const result = await aiService.chat({
+      systemPrompt: `You are an expert social media content coordinator. Generate a structured weekly content calendar for a marketing campaign. Return the response as a valid JSON array of objects representing days. Each object MUST have keys: "day" (e.g. "Monday"), "platform" (e.g. "Instagram"), "topic" (short title), "format" (e.g. "Reel"), and "description" (brief concept). Output ONLY the raw JSON string, nothing else. Do not include markdown formatting or wrapping code blocks in your output.`,
+      userPrompt: `Generate a structured calendar for:
+Campaign: ${campaignInput}
+Duration: ${durationWeeks || 1} week(s)
+Platforms: ${platforms ? (Array.isArray(platforms) ? platforms.join(', ') : platforms) : 'Instagram'}`,
+      temperature: 0.75,
+      maxTokens: 1500
+    });
+
+    const trimmed = result.content.trim();
+    await saveChat(user.userId, user.agencyId, 'calendar', campaignInput, trimmed);
+
+    return res.json({ result: trimmed });
+  } catch (error: any) {
+    return serverError(res, error, 'content-calendar');
+  }
+};

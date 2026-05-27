@@ -3,8 +3,9 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2, Shield, Lock } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useSocketStore } from '@/store/socketStore';
 
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
@@ -13,10 +14,27 @@ interface Task {
   id: string;
   title: string;
   assignee: string | null;
+  assigneeId: string | null;
   priority: Priority;
   campaign: string | null;
+  campaignId: string | null;
   dueDate: string | null;
   status: TaskStatus;
+  assigneeUser?: {
+    firstName: string;
+    lastName: string;
+    avatar: string | null;
+    role: string;
+  } | null;
+  campaignObj?: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+interface CampaignOption {
+  id: string;
+  name: string;
 }
 
 const columns: { id: TaskStatus; label: string; icon: React.ElementType; color: string }[] = [
@@ -34,11 +52,13 @@ const priorityConfig: Record<Priority, { label: string; color: string; bg: strin
 
 export default function TasksPage() {
   const { user } = useAuthStore();
+  const { socket } = useSocketStore();
   const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
   const [tasks, setTasks] = useState<Task[]>([]);
   const [teamMembers, setTeamMembers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', dueDate: '', status: 'TODO' as TaskStatus });
+  const [newTask, setNewTask] = useState({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', campaignId: '', dueDate: '', status: 'TODO' as TaskStatus });
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = async () => {
@@ -72,10 +92,43 @@ export default function TasksPage() {
     }
   };
 
+  const fetchCampaigns = async () => {
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/campaigns`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCampaigns(data.map((c: any) => ({ id: c.id, name: c.name })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch campaigns', error);
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
-    if (isAdmin) fetchTeamMembers();
+    if (isAdmin) {
+      fetchTeamMembers();
+    }
+    fetchCampaigns();
   }, [isAdmin]);
+
+  // Real-time sync
+  useEffect(() => {
+    if (!socket) return;
+    const handler = () => { fetchTasks(); };
+    socket.on('task_updated', handler);
+    return () => { socket.off('task_updated', handler); };
+  }, [socket]);
+
+  // Determine if current user can modify a task
+  const canModifyTask = (task: Task): boolean => {
+    if (isAdmin) return true;
+    if (task.assigneeId === user?.id) return true;
+    return false;
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,17 +138,17 @@ export default function TasksPage() {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/tasks`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(newTask)
       });
-      
+
       if (res.ok) {
         const created = await res.json();
         setTasks(prev => [created, ...prev]);
-        setNewTask({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM', campaign: '', dueDate: '', status: 'TODO' });
+        setNewTask({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM', campaign: '', campaignId: '', dueDate: '', status: 'TODO' });
         setShowModal(false);
       }
     } catch (error) {
@@ -104,6 +157,9 @@ export default function TasksPage() {
   };
 
   const moveTask = async (taskId: string, newStatus: TaskStatus) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !canModifyTask(task)) return;
+
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
     try {
       const token = localStorage.getItem('adrex_token');
@@ -114,11 +170,16 @@ export default function TasksPage() {
       });
     } catch (error) {
       console.error('Failed to update task status', error);
-      fetchTasks(); 
+      fetchTasks();
     }
   };
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !canModifyTask(task)) {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer.setData('taskId', taskId);
   };
 
@@ -137,7 +198,9 @@ export default function TasksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground mt-1">Track work across all campaigns and team members.</p>
+          <p className="text-muted-foreground mt-1">
+            {isAdmin ? 'Track work across all campaigns and team members.' : 'Your assigned tasks and campaign work.'}
+          </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -165,6 +228,20 @@ export default function TasksPage() {
         })}
       </div>
 
+      {/* RBAC Notice for non-admins */}
+      {!isAdmin && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/20"
+        >
+          <Shield size={16} className="text-blue-400 shrink-0" />
+          <p className="text-xs text-blue-300">
+            You are viewing tasks assigned to you or related to your campaigns. Contact an admin to modify assignments.
+          </p>
+        </motion.div>
+      )}
+
       {/* Kanban Board */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {columns.map((col, ci) => {
@@ -180,7 +257,7 @@ export default function TasksPage() {
               </div>
 
               {/* Cards */}
-              <div 
+              <div
                 className="space-y-3 min-h-[300px] p-2 -mx-2 rounded-xl transition-colors hover:bg-white/5"
                 onDrop={(e) => handleDrop(e, col.id)}
                 onDragOver={handleDragOver}
@@ -188,6 +265,12 @@ export default function TasksPage() {
                 <AnimatePresence>
                   {colTasks.map((task, ti) => {
                     const pri = priorityConfig[task.priority];
+                    const canDrag = canModifyTask(task);
+                    const displayName = task.assigneeUser
+                      ? `${task.assigneeUser.firstName} ${task.assigneeUser.lastName}`
+                      : task.assignee;
+                    const campaignName = task.campaignObj?.name || task.campaign;
+
                     return (
                       <motion.div
                         key={task.id}
@@ -196,26 +279,33 @@ export default function TasksPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ delay: ti * 0.04 }}
-                        draggable
+                        draggable={canDrag}
                         onDragStart={(e: any) => handleDragStart(e, task.id)}
-                        className="glassmorphism rounded-xl p-4 border border-border/30 hover:border-primary/50 transition-all cursor-grab active:cursor-grabbing group shadow-sm hover:shadow-md"
+                        className={`glassmorphism rounded-xl p-4 border transition-all group shadow-sm hover:shadow-md ${
+                          canDrag
+                            ? 'border-border/30 hover:border-primary/50 cursor-grab active:cursor-grabbing'
+                            : 'border-border/20 opacity-90'
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <p className="text-sm font-medium leading-snug">{task.title}</p>
-                          <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${pri.color} ${pri.bg}`}>
-                            {pri.label}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {!canDrag && <Lock size={11} className="text-zinc-500" />}
+                            <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${pri.color} ${pri.bg}`}>
+                              {pri.label}
+                            </span>
+                          </div>
                         </div>
-                        {task.campaign && (
-                          <p className="text-xs text-muted-foreground mb-3 truncate">📁 {task.campaign}</p>
+                        {campaignName && (
+                          <p className="text-xs text-muted-foreground mb-3 truncate">📁 {campaignName}</p>
                         )}
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          {task.assignee ? (
+                          {displayName ? (
                             <span className="flex items-center gap-1">
                               <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
-                                {task.assignee[0].toUpperCase()}
+                                {displayName[0].toUpperCase()}
                               </div>
-                              {task.assignee}
+                              {displayName}
                             </span>
                           ) : <span />}
                           {task.dueDate && <span className="text-[11px]">📅 {new Date(task.dueDate).toLocaleDateString()}</span>}
@@ -291,9 +381,17 @@ export default function TasksPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Campaign</label>
-                  <input value={newTask.campaign} onChange={e => setNewTask(p => ({ ...p, campaign: e.target.value }))}
-                    type="text" placeholder="Campaign name" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                  <label className="block text-sm font-medium mb-1.5">Campaign (Project)</label>
+                  <select value={newTask.campaignId || ''} onChange={e => {
+                    const camp = campaigns.find(c => c.id === e.target.value);
+                    setNewTask(p => ({ ...p, campaignId: e.target.value, campaign: camp?.name || '' }));
+                  }}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
+                    <option value="">No campaign</option>
+                    {campaigns.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Due Date</label>

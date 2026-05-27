@@ -16,6 +16,7 @@ const menuItems = [
   { icon: Megaphone,       label: 'Campaigns',   href: '/dashboard/campaigns',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
   { icon: Users,           label: 'Influencers', href: '/dashboard/influencers',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
   { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients', roles: ['SUPER_ADMIN', 'MANAGER'] },
+  { icon: Users,           label: 'Client Portal', href: '/dashboard/client-portal', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks',   roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
   { icon: UserCheck,       label: 'Team',        href: '/dashboard/team',    roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
