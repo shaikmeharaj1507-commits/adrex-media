@@ -32,7 +32,7 @@ export default function FinancePage() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const [invoiceForm, setInvoiceForm] = useState({ clientId: '', amount: '', status: 'DRAFT', dueDate: '' });
+  const [invoiceForm, setInvoiceForm] = useState({ clientId: '', amount: '', status: 'DRAFT', dueDate: '', description: '' });
   const [expenseForm, setExpenseForm] = useState({ category: '', amount: '', description: '', date: '' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -64,7 +64,7 @@ export default function FinancePage() {
     setSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/api/finance/invoices`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(invoiceForm) });
-      if (res.ok) { const d = await res.json(); setInvoices(p => [d, ...p]); setShowModal(false); setInvoiceForm({ clientId: '', amount: '', status: 'DRAFT', dueDate: '' }); }
+      if (res.ok) { const d = await res.json(); setInvoices(p => [d, ...p]); setShowModal(false); setInvoiceForm({ clientId: '', amount: '', status: 'DRAFT', dueDate: '', description: '' }); }
     } finally {
       setSubmitting(false);
     }
@@ -224,6 +224,8 @@ export default function FinancePage() {
                     </select></div>
                   <div><label className="block text-xs text-zinc-400 mb-1.5">Amount (₹)*</label>
                     <input type="number" required value={invoiceForm.amount} onChange={e => setInvoiceForm(p => ({...p, amount: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Purpose / Description</label>
+                    <input type="text" placeholder="e.g. Influencer Marketing Services" value={invoiceForm.description} onChange={e => setInvoiceForm(p => ({...p, description: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div><label className="block text-xs text-zinc-400 mb-1.5">Status</label>
                       <select value={invoiceForm.status} onChange={e => setInvoiceForm(p => ({...p, status: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50">

@@ -9,6 +9,9 @@ async function userCanAccessTask(userId: string, userRole: string, agencyId: str
   if (userRole === 'SUPER_ADMIN' || userRole === 'MANAGER') return true;
   if (task.assigneeId === userId) return true;
 
+  // TEAM_MEMBER role is strictly restricted to assigned tasks
+  if (userRole === 'TEAM_MEMBER') return false;
+
   // Check if the task belongs to a campaign the user is assigned to
   if (task.campaignId) {
     const dbUser = await prisma.user.findUnique({
@@ -59,7 +62,23 @@ export const getTasks = async (req: Request, res: Response) => {
       return res.json(tasks);
     }
 
-    // Non-admins: get tasks assigned to them + tasks from campaigns they're assigned to
+    if (user.role === 'TEAM_MEMBER') {
+      // Team members strictly see tasks assigned to them
+      const tasks = await prisma.task.findMany({
+        where: {
+          agencyId: user.agencyId,
+          assigneeId: user.userId
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          assigneeUser: { select: { firstName: true, lastName: true, avatar: true, role: true } },
+          campaignObj: { select: { id: true, name: true } }
+        }
+      });
+      return res.json(tasks);
+    }
+
+    // Other roles: get tasks assigned to them + tasks from campaigns they're assigned to
     const dbUser = await prisma.user.findUnique({
       where: { id: user.userId },
       select: { teamId: true, email: true }

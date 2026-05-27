@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2, Shield, Lock, Loader2 } from 'lucide-react';
+import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2, Shield, Lock, Loader2, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
 
@@ -82,6 +82,27 @@ export default function TasksPage() {
   const openCreateModal = () => {
     setIdempotencyKey(generateIdempotencyKey());
     setShowModal(true);
+  };
+
+  const handleDelete = async (taskId: string) => {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setTasks(prev => prev.filter(t => t.id !== taskId));
+        showToast('Task deleted successfully', 'success');
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || 'Failed to delete task', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to delete task', error);
+      showToast('Network error while deleting task', 'error');
+    }
   };
 
   const fetchTasks = async () => {
@@ -342,16 +363,25 @@ export default function TasksPage() {
                       >
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <p className="text-sm font-medium leading-snug">{task.title}</p>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }}
+                                className="p-1 rounded text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                title="Delete task"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
                             {!canDrag && <Lock size={11} className="text-zinc-500" />}
                             <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${pri.color} ${pri.bg}`}>
                               {pri.label}
                             </span>
                           </div>
                         </div>
-                        {campaignName && (
-                          <p className="text-xs text-muted-foreground mb-3 truncate">📁 {campaignName}</p>
-                        )}
+                        <p className="text-xs text-muted-foreground mb-3 truncate">
+                          📁 {campaignName || 'General / Agency Task'}
+                        </p>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           {displayName ? (
                             <span className="flex items-center gap-1">
@@ -440,7 +470,7 @@ export default function TasksPage() {
                     setNewTask(p => ({ ...p, campaignId: e.target.value, campaign: camp?.name || '' }));
                   }} disabled={isSubmitting}
                     className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60">
-                    <option value="">No campaign</option>
+                    <option value="">General / Agency Task (No Campaign)</option>
                     {campaigns.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}

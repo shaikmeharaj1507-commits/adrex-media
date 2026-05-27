@@ -234,6 +234,7 @@ model Invoice {
   status      String   @default("DRAFT")
   dueDate     DateTime
   issuedDate  DateTime @default(now())
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

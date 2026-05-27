@@ -23,7 +23,7 @@ export default function RootLayout({
           defaultTheme="neon-velocity"
           enableSystem={false}
           disableTransitionOnChange
-          themes={['neon-velocity', 'minimal-luxe', 'aurora-glass', 'midnight-matrix', 'clay-studio', 'royal-obsidian', 'neo-brutal', 'hologram-os', 'nordic', 'retro-future']}
+          themes={['elegant-white', 'neon-velocity', 'minimal-luxe', 'aurora-glass', 'midnight-matrix', 'clay-studio', 'royal-obsidian', 'neo-brutal', 'hologram-os', 'nordic', 'retro-future']}
         >
           {children}
         </ThemeProvider>

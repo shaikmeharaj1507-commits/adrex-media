@@ -135,7 +135,7 @@ export const generateInvoicePDF = async (req: Request, res: Response) => {
     ]);
 
     drawTableRow(doc, [
-      { text: 'Professional Marketing Services', x: 50, width: 300 },
+      { text: invoice.description || 'Professional Marketing Services', x: 50, width: 300 },
       { text: '1', x: 370, width: 50, align: 'center' },
       { text: `₹${invoice.amount.toLocaleString('en-IN')}`, x: 450, width: 100, align: 'right', bold: true },
     ]);

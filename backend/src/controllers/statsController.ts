@@ -15,7 +15,12 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       prisma.campaign.count({ where: { agencyId, status: 'ACTIVE' } }),
       prisma.influencer.count({ where: { agencyId } }),
       prisma.client.count({ where: { agencyId } }),
-      prisma.task.count({ where: { agencyId } }),
+      prisma.task.count({
+        where: {
+          agencyId,
+          ...(user.role === 'TEAM_MEMBER' ? { assigneeId: user.userId } : {})
+        }
+      }),
       prisma.expense.findMany({ where: { agencyId }, orderBy: { date: 'desc' }, take: 6 }),
       prisma.invoice.findMany({ where: { agencyId }, orderBy: { createdAt: 'desc' }, take: 6 }),
       prisma.activityLog.findMany({ where: { agencyId }, orderBy: { createdAt: 'desc' }, take: 8, include: { user: { select: { firstName: true, lastName: true } } } }),

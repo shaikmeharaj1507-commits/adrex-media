@@ -33,6 +33,7 @@ export default function TopNav() {
   const themeRef = useRef<HTMLDivElement>(null);
 
   const THEMES = [
+    { id: 'elegant-white', name: 'Elegant White', color: '#7c3aed' },
     { id: 'neon-velocity', name: 'Neon Velocity', color: '#9333ea' },
     { id: 'minimal-luxe', name: 'Minimal Luxe', color: '#171717' },
     { id: 'aurora-glass', name: 'Aurora Glass', color: '#f472b6' },

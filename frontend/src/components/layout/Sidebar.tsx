@@ -19,7 +19,7 @@ const menuItems = [
   { icon: Users,           label: 'Client Portal', href: '/dashboard/client-portal', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline', roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks',   roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
-  { icon: UserCheck,       label: 'Team',        href: '/dashboard/team',    roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: UserCheck,       label: 'Team',        href: '/dashboard/team',    roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: Calendar,        label: 'Calendar',    href: '/dashboard/calendar', roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
   { icon: DollarSign,      label: 'Finance',     href: '/dashboard/finance',  roles: ['SUPER_ADMIN', 'MANAGER'] },
   { icon: BarChart,        label: 'Reports',     href: '/dashboard/reports',  roles: ['SUPER_ADMIN', 'MANAGER'] },

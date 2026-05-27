@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, MoreHorizontal, User, Shield, ShieldAlert, Mail, Trash2, X, Edit2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import AccessRestricted from '@/components/AccessRestricted';
 
 interface TeamMember {
   id: string;
@@ -124,6 +125,10 @@ export default function TeamPage() {
   );
 
   const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
+
+  if (!isAdmin) {
+    return <AccessRestricted />;
+  }
 
   return (
     <div className="space-y-8">

@@ -9,6 +9,7 @@ const InvoiceSchema = z.object({
   amount: z.string().or(z.number()),
   status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE']).optional(),
   dueDate: z.string().date('Invalid date format'),
+  description: z.string().optional(),
 });
 
 const InvoiceUpdateSchema = InvoiceSchema.partial();
@@ -45,9 +46,16 @@ export const createInvoice = async (req: Request, res: Response) => {
       return res.status(400).json({ error: validation.error.errors[0].message });
     }
 
-    const { clientId, amount, status, dueDate } = validation.data;
+    const { clientId, amount, status, dueDate, description } = validation.data;
     const invoice = await prisma.invoice.create({
-      data: { agencyId: user.agencyId, clientId, amount: parseFloat(String(amount)), status: status || 'DRAFT', dueDate: new Date(dueDate) },
+      data: {
+        agencyId: user.agencyId,
+        clientId,
+        amount: parseFloat(String(amount)),
+        status: status || 'DRAFT',
+        dueDate: new Date(dueDate),
+        description
+      },
       include: { client: { select: { companyName: true } } }
     });
     res.status(201).json(invoice);
@@ -65,13 +73,14 @@ export const updateInvoice = async (req: Request, res: Response) => {
     }
 
     const { id } = req.params;
-    const { amount, status, dueDate } = validation.data;
+    const { amount, status, dueDate, description } = validation.data;
     const invoice = await prisma.invoice.update({
       where: { id, agencyId: user.agencyId },
       data: {
         ...(amount !== undefined && { amount: parseFloat(String(amount)) }),
         ...(status && { status }),
-        ...(dueDate && { dueDate: new Date(dueDate) })
+        ...(dueDate && { dueDate: new Date(dueDate) }),
+        ...(description !== undefined && { description })
       },
       include: { client: { select: { companyName: true } } }
     });
