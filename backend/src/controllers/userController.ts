@@ -14,7 +14,7 @@ const ProfileUpdateSchema = z.object({
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user || !user.id) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user || !user.userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const validation = ProfileUpdateSchema.safeParse(req.body);
     if (!validation.success) {
@@ -24,7 +24,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     const { firstName, lastName, bio, phone } = validation.data;
 
     const updatedUser = await prisma.user.update({
-      where: { id: user.id },
+      where: { id: user.userId },
       data: {
         ...(firstName && { firstName }),
         ...(lastName && { lastName }),
@@ -54,14 +54,14 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const uploadAvatar = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user || !user.id) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user || !user.userId) return res.status(401).json({ error: 'Unauthorized' });
 
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
     const updatedUser = await prisma.user.update({
-      where: { id: user.id },
+      where: { id: user.userId },
       data: { avatar: avatarUrl },
       select: { id: true, email: true, firstName: true, lastName: true, role: true, agencyId: true, avatar: true }
     });

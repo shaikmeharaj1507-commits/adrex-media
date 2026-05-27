@@ -104,7 +104,7 @@ export const deleteTeamMember = async (req: Request, res: Response) => {
 
     const { id } = req.params;
 
-    if (id === user.id) return res.status(400).json({ error: 'Cannot delete yourself' });
+    if (id === user.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
 
     await prisma.user.delete({
       where: { id, agencyId: user.agencyId },

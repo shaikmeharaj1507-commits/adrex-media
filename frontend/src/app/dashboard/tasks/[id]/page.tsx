@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import { API_URL } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { Shield, Lock, ArrowLeft, CheckCircle2, AlertCircle, Clock, CheckSquare } from 'lucide-react';
+import { Shield, Lock, ArrowLeft, CheckCircle2, AlertCircle, Clock, CheckSquare, MessageSquare, Send, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AccessRestricted from '@/components/AccessRestricted';
 
@@ -29,6 +29,20 @@ interface Task {
   } | null;
 }
 
+interface Comment {
+  id: string;
+  taskId: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar: string | null;
+  };
+}
+
 const statusConfig = {
   TODO:        { label: 'To Do',       icon: CheckSquare,  color: 'text-slate-400',  bg: 'bg-slate-400/10', border: 'border-slate-500/20' },
   IN_PROGRESS: { label: 'In Progress', icon: Clock,        color: 'text-blue-400',   bg: 'bg-blue-400/10',  border: 'border-blue-500/20' },
@@ -46,33 +60,76 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const { id } = use(params);
   const [task, setTask] = useState<Task | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchTask = async () => {
+    const fetchTaskAndComments = async () => {
       try {
         const token = localStorage.getItem('adrex_token');
-        const res = await fetch(`${API_URL}/api/tasks/${id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const [taskRes, commentsRes] = await Promise.all([
+          fetch(`${API_URL}/api/tasks/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_URL}/api/tasks/${id}/comments`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
 
-        if (res.ok) {
-          const data = await res.json();
-          setTask(data);
+        if (taskRes.ok) {
+          const taskData = await taskRes.json();
+          setTask(taskData);
         } else {
-          setError(res.status);
+          setError(taskRes.status);
+        }
+
+        if (commentsRes.ok) {
+          const commentsData = await commentsRes.json();
+          setComments(commentsData);
         }
       } catch (err) {
-        console.error('Error fetching task:', err);
+        console.error('Error fetching task details:', err);
         setError(500);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTask();
+    fetchTaskAndComments();
   }, [id]);
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    try {
+      setSubmittingComment(true);
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/tasks/${id}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: newComment.trim() })
+      });
+
+      if (res.ok) {
+        const addedComment = await res.json();
+        setComments(prev => [...prev, addedComment]);
+        setNewComment('');
+      } else {
+        alert('Failed to send comment. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error adding comment:', err);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -105,8 +162,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const displayName = task.assigneeUser ? `${task.assigneeUser.firstName} ${task.assigneeUser.lastName}` : task.assignee;
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
-      <button onClick={() => router.push('/dashboard/tasks')} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-200 transition-colors mb-8 text-sm font-medium">
+    <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
+      <button onClick={() => router.push('/dashboard/tasks')} className="flex items-center gap-2 text-zinc-400 hover:text-zinc-200 transition-colors mb-2 text-sm font-medium">
         <ArrowLeft size={16} /> Back to Tasks Board
       </button>
 
@@ -170,6 +227,73 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           <Shield size={14} className="text-blue-500/60" />
           <span>Access control verified. You have permission to view this task.</span>
         </div>
+      </motion.div>
+
+      {/* Task Comments Panel */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="glassmorphism rounded-2xl p-6 border border-white/10 shadow-xl space-y-6"
+      >
+        <div className="flex items-center gap-2 border-b border-white/5 pb-4">
+          <MessageSquare size={18} className="text-primary" />
+          <h3 className="text-md font-bold text-white">Collaboration Comments</h3>
+          <span className="text-xs bg-white/5 text-zinc-400 px-2 py-0.5 rounded-full font-medium">
+            {comments.length}
+          </span>
+        </div>
+
+        {/* Comments List */}
+        <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          {comments.length === 0 ? (
+            <p className="text-sm text-zinc-500 italic py-4 text-center">No comments posted yet. Start the conversation!</p>
+          ) : (
+            comments.map((comment) => {
+              const commenterName = `${comment.user.firstName} ${comment.user.lastName}`;
+              return (
+                <div key={comment.id} className="flex gap-3 bg-white/3 p-3.5 rounded-xl border border-white/5">
+                  <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">
+                    {commenterName ? commenterName[0].toUpperCase() : <User size={12} />}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white">{commenterName}</span>
+                      <span className="text-[10px] text-zinc-500">
+                        {new Date(comment.createdAt).toLocaleDateString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-zinc-300 leading-relaxed font-light whitespace-pre-wrap">{comment.content}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* New Comment Form */}
+        <form onSubmit={handleSubmitComment} className="flex gap-2 items-end border-t border-white/5 pt-4">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Type your comment or update here..."
+            className="flex-1 min-h-[44px] max-h-[120px] bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-primary/50 transition-colors resize-none"
+            rows={1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmitComment(e);
+              }
+            }}
+          />
+          <button
+            type="submit"
+            disabled={submittingComment || !newComment.trim()}
+            className="p-3 bg-primary hover:bg-primary/95 text-white disabled:bg-zinc-800 disabled:text-zinc-600 rounded-xl transition-all shadow-[0_0_15px_rgba(168,85,247,0.35)] hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] shrink-0"
+          >
+            <Send size={16} />
+          </button>
+        </form>
       </motion.div>
     </div>
   );

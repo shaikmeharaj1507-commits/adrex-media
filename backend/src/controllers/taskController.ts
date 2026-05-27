@@ -365,8 +365,25 @@ export const getTaskComments = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    res.json(comments);
+    // Fetch commenter user details manually since there is no schema-level Prisma relation
+    const userIds = Array.from(new Set(comments.map(c => c.userId)));
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, firstName: true, lastName: true, avatar: true }
+    });
+
+    const userMap = new Map(users.map(u => [u.id, u]));
+    const commentsWithUser = comments.map(c => {
+      const { task, ...commentData } = c; // strip temporary task include
+      return {
+        ...commentData,
+        user: userMap.get(c.userId) || { firstName: 'Unknown', lastName: 'User', avatar: null }
+      };
+    });
+
+    res.json(commentsWithUser);
   } catch (error) {
+    console.error('Error fetching comments:', error);
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
 };
@@ -388,8 +405,17 @@ export const createTaskComment = async (req: Request, res: Response) => {
       data: { taskId, userId: user.userId, content }
     });
 
-    res.status(201).json(comment);
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { id: true, firstName: true, lastName: true, avatar: true }
+    });
+
+    res.status(201).json({
+      ...comment,
+      user: dbUser || { firstName: 'Unknown', lastName: 'User', avatar: null }
+    });
   } catch (error) {
+    console.error('Error creating comment:', error);
     res.status(500).json({ error: 'Failed to create comment' });
   }
 };
