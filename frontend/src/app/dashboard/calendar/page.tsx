@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -35,6 +35,7 @@ export default function CalendarPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalEvent | null>(null);
   const [newEvent, setNewEvent] = useState({ title: '', date: '', type: 'meeting', color: 'bg-blue-500/80' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchEvents = async () => {
     try {
@@ -59,8 +60,9 @@ export default function CalendarPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEvent.title || !newEvent.date) return;
+    if (!newEvent.title || !newEvent.date || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/calendar`, {
@@ -81,13 +83,16 @@ export default function CalendarPage() {
       }
     } catch (error) {
       console.error('Failed to create event', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingEvent || !newEvent.title || !newEvent.date) return;
+    if (!editingEvent || !newEvent.title || !newEvent.date || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/calendar/${editingEvent.id}`, {
@@ -107,6 +112,8 @@ export default function CalendarPage() {
       }
     } catch (error) {
       console.error('Failed to update event', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -363,8 +370,15 @@ export default function CalendarPage() {
                     </select>
                   </div>
                 </div>
-                <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] mt-4">
-                  {editingEvent ? 'Update Event' : 'Add Event'}
+                <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] mt-4 disabled:opacity-70 flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      {editingEvent ? 'Updating Event...' : 'Adding Event...'}
+                    </>
+                  ) : (
+                    editingEvent ? 'Update Event' : 'Add Event'
+                  )}
                 </button>
               </form>
             </motion.div>

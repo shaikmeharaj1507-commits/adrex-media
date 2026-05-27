@@ -34,6 +34,7 @@ export default function InfluencersPage() {
   const [sendingWa, setSendingWa] = useState(false);
   const [editingInfluencer, setEditingInfluencer] = useState<Influencer | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newInf, setNewInf] = useState({ 
     name: '', niche: '', platform: 'Instagram', followers: '100K', rating: 5, 
     instagram: '', tiktok: '', youtube: '', email: '', whatsapp: '', 
@@ -115,8 +116,9 @@ export default function InfluencersPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newInf.name) return;
+    if (!newInf.name || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const payload = {
@@ -151,13 +153,16 @@ export default function InfluencersPage() {
       }
     } catch (error) {
       console.error('Failed to create influencer', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingInfluencer) return;
+    if (!editingInfluencer || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const payload = {
@@ -192,6 +197,8 @@ export default function InfluencersPage() {
       }
     } catch (error) {
       console.error('Failed to update influencer', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -523,8 +530,15 @@ export default function InfluencersPage() {
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-white/10 sticky bottom-0 bg-zinc-900/90 backdrop-blur-md pb-4 z-20">
-                  <button type="submit" className="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                    {editingInfluencer ? 'Save Changes' : 'Add Influencer'}
+                  <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} />
+                        {editingInfluencer ? 'Saving Changes...' : 'Adding Influencer...'}
+                      </>
+                    ) : (
+                      editingInfluencer ? 'Save Changes' : 'Add Influencer'
+                    )}
                   </button>
                 </div>
               </form>

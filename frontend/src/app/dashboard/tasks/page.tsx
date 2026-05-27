@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2, Shield, Lock } from 'lucide-react';
+import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2, Shield, Lock, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
 
@@ -60,6 +60,29 @@ export default function TasksPage() {
   const [showModal, setShowModal] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', campaignId: '', dueDate: '', status: 'TODO' as TaskStatus });
   const [loading, setLoading] = useState(true);
+
+  // Idempotency and submit state guards
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState('');
+  const [updatingTaskIds, setUpdatingTaskIds] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const generateIdempotencyKey = () => {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    return `key-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  };
+
+  const openCreateModal = () => {
+    setIdempotencyKey(generateIdempotencyKey());
+    setShowModal(true);
+  };
 
   const fetchTasks = async () => {
     try {
@@ -132,7 +155,9 @@ export default function TasksPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTask.title.trim()) return;
+    if (!newTask.title.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem('adrex_token');
@@ -140,26 +165,51 @@ export default function TasksPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'X-Idempotency-Key': idempotencyKey
         },
         body: JSON.stringify(newTask)
       });
 
       if (res.ok) {
         const created = await res.json();
-        setTasks(prev => [created, ...prev]);
+
+        // 1. Optimistic UI Check: Avoid duplicates if already populated
+        setTasks(prev => {
+          if (prev.some(t => t.id === created.id)) return prev;
+          return [created, ...prev];
+        });
+
+        // 2. UX Toast Feedback
+        if (created._isDuplicate) {
+          showToast('Task already created', 'warning');
+        } else {
+          showToast('Task created successfully', 'success');
+        }
+
         setNewTask({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM', campaign: '', campaignId: '', dueDate: '', status: 'TODO' });
         setShowModal(false);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || 'Failed to create task', 'error');
       }
     } catch (error) {
       console.error('Failed to create task', error);
+      showToast('Network error. Retrying will safely use the same idempotency key.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const moveTask = async (taskId: string, newStatus: TaskStatus) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task || !canModifyTask(task)) return;
+    if (task.status === newStatus) return;
 
+    // Avoid parallel duplicate requests for status moves
+    if (updatingTaskIds.includes(taskId)) return;
+
+    setUpdatingTaskIds(prev => [...prev, taskId]);
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
     try {
       const token = localStorage.getItem('adrex_token');
@@ -170,13 +220,16 @@ export default function TasksPage() {
       });
     } catch (error) {
       console.error('Failed to update task status', error);
+      showToast('Failed to update status. Reverting change...', 'error');
       fetchTasks();
+    } finally {
+      setUpdatingTaskIds(prev => prev.filter(id => id !== taskId));
     }
   };
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
-    if (!task || !canModifyTask(task)) {
+    if (!task || !canModifyTask(task) || updatingTaskIds.includes(taskId)) {
       e.preventDefault();
       return;
     }
@@ -203,7 +256,7 @@ export default function TasksPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openCreateModal}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
         >
           <Plus size={18} /> Add Task
@@ -335,19 +388,19 @@ export default function TasksPage() {
         {showModal && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSubmitting && setShowModal(false)} />
             <motion.div className="relative z-10 w-full max-w-md glassmorphism rounded-2xl p-8"
               initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">New Task</h2>
-                <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/5 rounded-lg"><X size={20} /></button>
+                <button disabled={isSubmitting} onClick={() => setShowModal(false)} className="p-2 hover:bg-white/5 rounded-lg disabled:opacity-50"><X size={20} /></button>
               </div>
               <form className="space-y-4" onSubmit={handleCreate}>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Task Title</label>
                   <input value={newTask.title} onChange={e => setNewTask(p => ({ ...p, title: e.target.value }))}
-                    type="text" placeholder="e.g. Brief influencers for campaign" required
-                    className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                    type="text" placeholder="e.g. Brief influencers for campaign" required disabled={isSubmitting}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {isAdmin ? (
@@ -356,7 +409,7 @@ export default function TasksPage() {
                       <select value={newTask.assigneeId || ''} onChange={e => {
                         const member = teamMembers.find(m => m.id === e.target.value);
                         setNewTask(p => ({ ...p, assigneeId: e.target.value, assignee: member ? `${member.firstName} ${member.lastName}` : '' }));
-                      }} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
+                      }} disabled={isSubmitting} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60">
                         <option value="">Unassigned</option>
                         {teamMembers.map(m => (
                           <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>
@@ -367,13 +420,13 @@ export default function TasksPage() {
                     <div>
                       <label className="block text-sm font-medium mb-1.5">Assignee</label>
                       <input value={newTask.assignee} onChange={e => setNewTask(p => ({ ...p, assignee: e.target.value }))}
-                        type="text" placeholder="Name" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                        type="text" placeholder="Name" disabled={isSubmitting} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60" />
                     </div>
                   )}
                   <div>
                     <label className="block text-sm font-medium mb-1.5">Priority</label>
                     <select value={newTask.priority} onChange={e => setNewTask(p => ({ ...p, priority: e.target.value as Priority }))}
-                      className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
+                      disabled={isSubmitting} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60">
                       <option value="LOW">Low</option>
                       <option value="MEDIUM">Medium</option>
                       <option value="HIGH">High</option>
@@ -385,8 +438,8 @@ export default function TasksPage() {
                   <select value={newTask.campaignId || ''} onChange={e => {
                     const camp = campaigns.find(c => c.id === e.target.value);
                     setNewTask(p => ({ ...p, campaignId: e.target.value, campaign: camp?.name || '' }));
-                  }}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all">
+                  }} disabled={isSubmitting}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60">
                     <option value="">No campaign</option>
                     {campaigns.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
@@ -396,13 +449,45 @@ export default function TasksPage() {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Due Date</label>
                   <input value={newTask.dueDate} onChange={e => setNewTask(p => ({ ...p, dueDate: e.target.value }))}
-                    type="date" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                    type="date" disabled={isSubmitting} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all disabled:opacity-60" />
                 </div>
-                <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                  Create Task
+                <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      Creating Task...
+                    </>
+                  ) : (
+                    'Create Task'
+                  )}
                 </button>
               </form>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast Alert */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl ${
+              toast.type === 'success' 
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                : toast.type === 'warning'
+                ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                : 'bg-red-500/10 border-red-500/20 text-red-400'
+            }`}
+          >
+            {toast.type === 'success' ? (
+              <CheckCircle2 size={16} />
+            ) : (
+              <AlertCircle size={16} />
+            )}
+            <span className="text-xs font-semibold">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>

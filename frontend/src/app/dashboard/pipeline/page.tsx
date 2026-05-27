@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, DollarSign, TrendingUp, Trophy, XCircle, Phone, Mail, FileText } from 'lucide-react';
+import { Plus, X, DollarSign, TrendingUp, Trophy, XCircle, Phone, Mail, FileText, Loader2 } from 'lucide-react';
 
 type Stage = 'LEAD' | 'CONTACTED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST';
 
@@ -33,6 +33,7 @@ export default function PipelinePage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [dragOverStage, setDragOverStage] = useState<Stage | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD' as Stage, notes: ''
@@ -50,8 +51,16 @@ export default function PipelinePage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`${API_URL}/api/pipeline`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(form) });
-    if (res.ok) { const d = await res.json(); setLeads(p => [d, ...p]); setShowModal(false); setForm({ companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD', notes: '' }); }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/pipeline`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(form) });
+      if (res.ok) { const d = await res.json(); setLeads(p => [d, ...p]); setShowModal(false); setForm({ companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD', notes: '' }); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const moveToStage = async (leadId: string, newStage: Stage) => {
@@ -179,8 +188,17 @@ export default function PipelinePage() {
                 </div>
                 <div><label className="block text-xs text-zinc-400 mb-1.5">Notes</label><textarea rows={2} value={form.notes} onChange={e => setForm(p => ({...p, notes: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50 resize-none" /></div>
                 <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white">Cancel</button>
-                  <button type="submit" className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 shadow-[0_0_15px_rgba(168,85,247,0.3)]">Add Lead</button>
+                  <button type="button" disabled={isSubmitting} onClick={() => setShowModal(false)} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white disabled:opacity-50">Cancel</button>
+                  <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center gap-2">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin" size={16} />
+                        Adding Lead...
+                      </>
+                    ) : (
+                      'Add Lead'
+                    )}
+                  </button>
                 </div>
               </form>
             </motion.div>

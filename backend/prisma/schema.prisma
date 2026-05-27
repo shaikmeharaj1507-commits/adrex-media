@@ -355,3 +355,9 @@ model AIChat {
   result    String
   createdAt DateTime @default(now())
 }
+
+model IdempotencyKey {
+  key       String   @id
+  createdAt DateTime @default(now())
+  response  String?  // JSON stringified response data
+}

@@ -59,6 +59,7 @@ export default function CampaignsPage() {
   });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggested, setAiSuggested] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -96,7 +97,8 @@ export default function CampaignsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCamp.name || !newCamp.clientId || !newCamp.startDate || !newCamp.endDate) return;
+    if (!newCamp.name || !newCamp.clientId || !newCamp.startDate || !newCamp.endDate || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/campaigns`, {
@@ -111,12 +113,15 @@ export default function CampaignsPage() {
       }
     } catch (error) {
       console.error('Failed to create campaign', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCampaign) return;
+    if (!editingCampaign || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/campaigns/${editingCampaign.id}`, {
@@ -131,6 +136,8 @@ export default function CampaignsPage() {
       }
     } catch (error) {
       console.error('Failed to update campaign', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -487,8 +494,15 @@ export default function CampaignsPage() {
                 )}
               </div>
 
-              <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all mt-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                {editingCampaign ? 'Update Campaign' : 'Create Campaign'}
+              <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all mt-2 shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    {editingCampaign ? 'Updating...' : 'Creating...'}
+                  </>
+                ) : (
+                  editingCampaign ? 'Update Campaign' : 'Create Campaign'
+                )}
               </button>
             </form>
           </div>

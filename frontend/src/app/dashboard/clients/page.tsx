@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, MoreHorizontal, Briefcase, Mail, Phone, DollarSign, X, Building2, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Briefcase, Mail, Phone, DollarSign, X, Building2, Pencil, Trash2, Loader2 } from 'lucide-react';
 
 interface Client {
   id: string;
@@ -24,6 +24,7 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [newClient, setNewClient] = useState({ companyName: '', contactName: '', email: '', phone: '', monthlyBudget: '' });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const fetchClients = async () => {
@@ -59,8 +60,9 @@ export default function ClientsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newClient.companyName) return;
+    if (!newClient.companyName || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/clients`, {
@@ -80,13 +82,16 @@ export default function ClientsPage() {
       }
     } catch (error) {
       console.error('Failed to create client', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingClient) return;
+    if (!editingClient || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/clients/${editingClient.id}`, {
@@ -106,6 +111,8 @@ export default function ClientsPage() {
       }
     } catch (error) {
       console.error('Failed to update client', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -296,8 +303,15 @@ export default function ClientsPage() {
                 <label className="block text-sm font-medium mb-1.5">Monthly Budget ($)</label>
                 <input value={newClient.monthlyBudget} onChange={e => setNewClient(p => ({ ...p, monthlyBudget: e.target.value }))} type="number" placeholder="50000" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
               </div>
-              <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                {editingClient ? 'Update Client' : 'Add Client'}
+              <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    {editingClient ? 'Updating...' : 'Adding...'}
+                  </>
+                ) : (
+                  editingClient ? 'Update Client' : 'Add Client'
+                )}
               </button>
             </form>
           </div>

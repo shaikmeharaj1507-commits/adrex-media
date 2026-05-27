@@ -146,7 +146,52 @@ export const createTask = async (req: Request, res: Response) => {
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { title, assignee, assigneeId, priority, campaign, campaignId, dueDate, status } = req.body;
+    const idempotencyKey = req.headers['x-idempotency-key'] as string;
 
+    // 1. Direct Idempotency Key check
+    if (idempotencyKey) {
+      const existingKey = await prisma.idempotencyKey.findUnique({
+        where: { key: idempotencyKey }
+      });
+      if (existingKey) {
+        if (existingKey.response) {
+          try {
+            const parsed = JSON.parse(existingKey.response);
+            return res.status(200).json({ ...parsed, _isDuplicate: true });
+          } catch (e) {
+            // fallback if JSON parsing fails
+          }
+        }
+        return res.status(200).json({ message: 'Task already created', _isDuplicate: true });
+      }
+    }
+
+    // 2. Database duplicate heuristic check (same details created in last 15 seconds)
+    const fifteenSecondsAgo = new Date(Date.now() - 15000);
+    const heuristicDuplicate = await prisma.task.findFirst({
+      where: {
+        agencyId: user.agencyId,
+        title,
+        campaignId: campaignId || null,
+        assigneeId: assigneeId || null,
+        createdAt: {
+          gte: fifteenSecondsAgo
+        }
+      }
+    });
+
+    if (heuristicDuplicate) {
+      if (idempotencyKey) {
+        await prisma.idempotencyKey.upsert({
+          where: { key: idempotencyKey },
+          create: { key: idempotencyKey, response: JSON.stringify(heuristicDuplicate) },
+          update: { response: JSON.stringify(heuristicDuplicate) }
+        });
+      }
+      return res.status(200).json({ ...heuristicDuplicate, _isDuplicate: true });
+    }
+
+    // 3. Create the task since no duplicates were found
     const task = await prisma.task.create({
       data: {
         agencyId: user.agencyId,
@@ -160,6 +205,16 @@ export const createTask = async (req: Request, res: Response) => {
         status: status || 'TODO'
       }
     });
+
+    // 4. Save the idempotency key response
+    if (idempotencyKey) {
+      await prisma.idempotencyKey.create({
+        data: {
+          key: idempotencyKey,
+          response: JSON.stringify(task)
+        }
+      });
+    }
 
     // Log activity
     await logActivity(user.agencyId, user.userId, 'CREATE', 'TASK', task.id, title);
