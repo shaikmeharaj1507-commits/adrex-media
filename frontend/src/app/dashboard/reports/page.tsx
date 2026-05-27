@@ -1,9 +1,9 @@
 'use client';
 
 import { API_URL } from '@/lib/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, TrendingUp, Users, Megaphone, Download, FileText, PieChart, Activity } from 'lucide-react';
+import { BarChart2, TrendingUp, Users, Megaphone, Download, FileText, PieChart, Activity, Calendar, ChevronDown } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart as RechartsPie, Pie, Cell, Legend
@@ -25,6 +25,44 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+type TimelineOption = 'last7' | 'last30' | 'last6m' | 'custom';
+
+const TIMELINE_OPTIONS: { label: string; value: TimelineOption }[] = [
+  { label: 'Last 7 Days', value: 'last7' },
+  { label: 'Last 30 Days', value: 'last30' },
+  { label: 'Last 6 Months', value: 'last6m' },
+  { label: 'Custom Range', value: 'custom' },
+];
+
+function getDateRange(option: TimelineOption, customStart?: string, customEnd?: string): { startDate: Date; endDate: Date } {
+  const now = new Date();
+  const endDate = new Date(now);
+  let startDate: Date;
+
+  switch (option) {
+    case 'last7':
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'last30':
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() - 30);
+      break;
+    case 'last6m':
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 6);
+      break;
+    case 'custom':
+      startDate = customStart ? new Date(customStart) : new Date(now.setMonth(now.getMonth() - 1));
+      return { startDate, endDate: customEnd ? new Date(customEnd) : new Date() };
+    default:
+      startDate = new Date(now);
+      startDate.setMonth(now.getMonth() - 6);
+  }
+
+  return { startDate, endDate };
+}
+
 export default function ReportsPage() {
   const [stats, setStats] = useState({
     campaigns: 0, clients: 0, influencers: 0, tasks: 0,
@@ -34,35 +72,186 @@ export default function ReportsPage() {
   const [channelData, setChannelData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // Timeline state
+  const [selectedTimeline, setSelectedTimeline] = useState<TimelineOption>('last6m');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [showTimelineDropdown, setShowTimelineDropdown] = useState(false);
+  const [showCustomPickers, setShowCustomPickers] = useState(false);
+
+  const fetchStats = useCallback(async (timeline: TimelineOption, cs?: string, ce?: string) => {
+    setLoading(true);
+    const { startDate, endDate } = getDateRange(timeline, cs, ce);
     const token = localStorage.getItem('adrex_token');
-    fetch(`${API_URL}/api/stats/reports`, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => {
-        if (d) {
-          setStats(d);
-          setMonthlyData(d.monthlyData || []);
-          setChannelData(d.channelData || []);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const params = new URLSearchParams({
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+
+    try {
+      const res = await fetch(`${API_URL}/api/stats/reports?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const d = await res.json();
+      if (d) {
+        setStats(d);
+        setMonthlyData(d.monthlyData || []);
+        setChannelData(d.channelData || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchStats(selectedTimeline, customStart, customEnd);
+  }, []);
+
+  const handleTimelineSelect = (value: TimelineOption) => {
+    setSelectedTimeline(value);
+    setShowTimelineDropdown(false);
+    if (value === 'custom') {
+      setShowCustomPickers(true);
+    } else {
+      setShowCustomPickers(false);
+      fetchStats(value);
+    }
+  };
+
+  const applyCustomRange = () => {
+    if (!customStart || !customEnd) return;
+    fetchStats('custom', customStart, customEnd);
+  };
+
+  const handleExportCSV = () => {
+    const rows = [
+      ['Metric', 'Value'],
+      ['Active Campaigns', stats.activeCampaigns],
+      ['Total Clients', stats.clients],
+      ['Influencers', stats.influencers],
+      ['Open Tasks', stats.tasks],
+      ['Total Revenue (₹)', stats.totalRevenue],
+      ['Total Expenses (₹)', stats.totalExpenses],
+      ['Total Campaign Budget (₹)', stats.totalAdSpend],
+      [],
+      ['Month', 'Revenue', 'Expenses'],
+      ...monthlyData.map(m => [m.month, m.revenue, m.expenses]),
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `adrex-report-${selectedTimeline}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const selectedTimelineLabel = TIMELINE_OPTIONS.find(t => t.value === selectedTimeline)?.label ?? 'Last 6 Months';
   const hasRevenueData = monthlyData.some(m => m.revenue > 0);
   const hasExpenseData = monthlyData.some(m => m.expenses > 0);
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
           <p className="text-muted-foreground mt-1">Performance overview and business insights.</p>
         </div>
-        <button onClick={() => { const t = localStorage.getItem('adrex_token'); window.open(`${API_URL}/api/pdf/report?token=${t}`, '_blank'); }} className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-semibold hover:bg-white/10 transition-all text-sm">
-          <Download size={16} /> Export PDF
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Timeline Filter */}
+          <div className="relative">
+            <button
+              onClick={() => setShowTimelineDropdown(!showTimelineDropdown)}
+              id="timeline-filter-btn"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium hover:bg-white/10 transition-all text-sm"
+            >
+              <Calendar size={15} className="text-purple-400" />
+              {selectedTimelineLabel}
+              <ChevronDown size={15} className={`transition-transform ${showTimelineDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            {showTimelineDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-30 overflow-hidden">
+                {TIMELINE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    id={`timeline-${opt.value}`}
+                    onClick={() => handleTimelineSelect(opt.value)}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5 ${selectedTimeline === opt.value ? 'text-purple-400 bg-purple-500/10' : 'text-zinc-300'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* CSV Export */}
+          <button
+            onClick={handleExportCSV}
+            id="export-csv-btn"
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl font-medium hover:bg-emerald-500/20 transition-all text-sm"
+          >
+            <Download size={15} /> Export CSV
+          </button>
+
+          {/* PDF Export */}
+          <button
+            onClick={() => {
+              const t = localStorage.getItem('adrex_token');
+              window.open(`${API_URL}/api/pdf/report?token=${t}`, '_blank');
+            }}
+            id="export-pdf-btn"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium hover:bg-white/10 transition-all text-sm"
+          >
+            <FileText size={15} /> Export PDF
+          </button>
+        </div>
       </div>
+
+      {/* Custom Date Range Pickers */}
+      {showCustomPickers && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="glassmorphism rounded-2xl p-5"
+        >
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <label className="block text-xs text-zinc-400 mb-1.5">Start Date</label>
+              <input
+                type="date"
+                id="custom-start-date"
+                value={customStart}
+                onChange={e => setCustomStart(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-zinc-400 mb-1.5">End Date</label>
+              <input
+                type="date"
+                id="custom-end-date"
+                value={customEnd}
+                onChange={e => setCustomEnd(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
+            </div>
+            <button
+              id="apply-custom-range-btn"
+              onClick={applyCustomRange}
+              disabled={!customStart || !customEnd}
+              className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              Apply Range
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* KPI Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -100,7 +289,7 @@ export default function ReportsPage() {
             </ResponsiveContainer>
           ) : (
             <div className="h-[250px] flex items-center justify-center text-zinc-500 text-sm">
-              No financial data yet. Create invoices and expenses to see trends.
+              No financial data for this period. Try a wider date range.
             </div>
           )}
         </motion.div>
@@ -159,7 +348,7 @@ export default function ReportsPage() {
             </ResponsiveContainer>
           ) : (
             <div className="h-[250px] flex items-center justify-center text-zinc-500 text-sm">
-              No expense categories yet. Add expenses to see the breakdown.
+              No expense categories for this period.
             </div>
           )}
         </motion.div>

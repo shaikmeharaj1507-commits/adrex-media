@@ -78,20 +78,25 @@ model User {
 }
 
 model Influencer {
-  id        String   @id @default(uuid())
-  agencyId  String
-  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  name      String
-  email     String?
-  phone     String?
-  instagram String?
-  tiktok    String?
-  youtube   String?
-  niche     String?
-  rating    Int      @default(0)
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  agencyId      String
+  agency        Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  name          String
+  email         String?
+  phone         String?
+  whatsapp      String?
+  instagram     String?
+  tiktok        String?
+  youtube       String?
+  niche         String?
+  rating        Int      @default(0)
+  notes         String?
+  location      String?
+  status        String   @default("APPROVED")
+  pricing       String?
+  audienceStats String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
   campaignAssignments CampaignAssignment[]
 }

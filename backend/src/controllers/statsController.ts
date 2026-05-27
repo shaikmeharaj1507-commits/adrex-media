@@ -87,22 +87,35 @@ export const getReportStats = async (req: Request, res: Response) => {
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const agencyId = user.agencyId;
+    const { startDate, endDate } = req.query;
+
+    const dateFilter: any = {};
+    const expenseDateFilter: any = {};
+    const invoiceDateFilter: any = {};
+
+    if (startDate && endDate) {
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
+      dateFilter.createdAt = { gte: start, lte: end };
+      expenseDateFilter.date = { gte: start, lte: end };
+      invoiceDateFilter.issuedDate = { gte: start, lte: end };
+    }
 
     const [campaignCount, influencerCount, clientCount, taskCount] = await Promise.all([
-      prisma.campaign.count({ where: { agencyId } }),
-      prisma.influencer.count({ where: { agencyId } }),
-      prisma.client.count({ where: { agencyId } }),
-      prisma.task.count({ where: { agencyId } }),
+      prisma.campaign.count({ where: { agencyId, ...dateFilter } }),
+      prisma.influencer.count({ where: { agencyId, ...dateFilter } }),
+      prisma.client.count({ where: { agencyId, ...dateFilter } }),
+      prisma.task.count({ where: { agencyId, ...dateFilter } }),
     ]);
 
-    const campaigns = await prisma.campaign.findMany({ where: { agencyId }, select: { budget: true, status: true } });
+    const campaigns = await prisma.campaign.findMany({ where: { agencyId, ...dateFilter }, select: { budget: true, status: true } });
     const totalBudget = campaigns.reduce((acc, c) => acc + (c.budget || 0), 0);
     const activeCampaigns = campaigns.filter(c => c.status === 'ACTIVE').length;
 
-    const invoices = await prisma.invoice.findMany({ where: { agencyId }, select: { amount: true, status: true } });
+    const invoices = await prisma.invoice.findMany({ where: { agencyId, ...invoiceDateFilter }, select: { amount: true, status: true } });
     const totalRevenue = invoices.filter(i => i.status === 'PAID').reduce((s, i) => s + i.amount, 0);
 
-    const expenses = await prisma.expense.findMany({ where: { agencyId }, select: { amount: true, category: true } });
+    const expenses = await prisma.expense.findMany({ where: { agencyId, ...expenseDateFilter }, select: { amount: true, category: true } });
     const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
 
     const expenseByCategory: Record<string, number> = {};
