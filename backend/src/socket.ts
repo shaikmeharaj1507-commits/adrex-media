@@ -1,6 +1,9 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 interface SocketUser {
   userId: string;
@@ -56,34 +59,72 @@ const allowedOrigins = [
     socket.join(agencyRoom);
 
     // CHAT FEATURE - Team Channel
-    socket.on('send_team_message', (data: { text: string }) => {
+    socket.on('send_team_message', async (data: { text: string }) => {
       if (!data.text) return;
       
-      const messagePayload = {
-        id: Date.now().toString(),
-        userId: user.userId,
-        text: data.text,
-        timestamp: new Date().toISOString()
-      };
+      try {
+        const sender = await prisma.user.findUnique({
+          where: { id: user.userId },
+          select: { id: true, firstName: true, lastName: true, role: true, avatar: true }
+        });
 
-      io.to(agencyRoom).emit('receive_team_message', messagePayload);
+        const senderName = sender ? `${sender.firstName} ${sender.lastName}` : 'Team Member';
+
+        const message = await prisma.message.create({
+          data: {
+            agencyId: user.agencyId,
+            senderId: user.userId,
+            senderName,
+            receiverId: null,
+            content: data.text,
+          },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                avatar: true
+              }
+            }
+          }
+        });
+
+        io.to(agencyRoom).emit('receive_team_message', message);
+      } catch (error) {
+        console.error('Socket error in send_team_message:', error);
+      }
     });
 
     // PRIVATE MESSAGING - 1:1 Chat
     socket.on('send_private_message', async (data: { receiverId: string; content: string }) => {
       if (!data.receiverId || !data.content) return;
 
-      const messagePayload = {
-        id: Date.now().toString(),
-        senderId: user.userId,
-        receiverId: data.receiverId,
-        content: data.content,
-        isRead: false,
-        createdAt: new Date().toISOString()
-      };
+      try {
+        const sender = await prisma.user.findUnique({
+          where: { id: user.userId },
+          select: { id: true, firstName: true, lastName: true, role: true, avatar: true }
+        });
 
-      const receiverRoom = `user_${data.receiverId}`;
-      io.to(receiverRoom).emit('receive_private_message', messagePayload);
+        const senderName = sender ? `${sender.firstName} ${sender.lastName}` : 'Team Member';
+
+        const messagePayload = {
+          id: Date.now().toString(),
+          senderId: user.userId,
+          senderName,
+          receiverId: data.receiverId,
+          content: data.content,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          sender: sender || undefined
+        };
+
+        const receiverRoom = `user_${data.receiverId}`;
+        io.to(receiverRoom).emit('receive_private_message', messagePayload);
+      } catch (error) {
+        console.error('Socket error in send_private_message:', error);
+      }
     });
 
     // Join user-specific room for private messages

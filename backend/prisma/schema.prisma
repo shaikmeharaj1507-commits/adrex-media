@@ -42,6 +42,7 @@ enum Role {
   SUPER_ADMIN
   MANAGER
   TEAM_MEMBER
+  INFLUENCER
 }
 
 model User {
@@ -262,8 +263,9 @@ model Message {
   agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   senderId    String
   sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId  String
-  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId  String?
+  receiver    User?    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  senderName  String?
   content     String
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())

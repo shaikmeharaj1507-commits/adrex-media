@@ -19,10 +19,18 @@ interface TeamMember {
 interface ChatMessage {
   id: string;
   senderId: string;
+  senderName?: string;
   receiverId: string;
   content: string;
   isRead: boolean;
   createdAt: string;
+  sender?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    avatar?: string;
+  };
 }
 
 export default function ChatPage() {
@@ -93,6 +101,80 @@ export default function ChatPage() {
     } finally {
       setSending(false);
     }
+  };
+
+  const getSenderDetails = (msg: ChatMessage) => {
+    if (msg.senderId === user?.id) {
+      return {
+        name: user ? `${user.firstName} ${user.lastName}` : 'You',
+        avatar: (user as any).avatar || null,
+        role: user.role || 'TEAM_MEMBER',
+        initials: user ? `${user.firstName[0]}${user.lastName[0]}` : 'U'
+      };
+    }
+
+    if (msg.sender) {
+      return {
+        name: `${msg.sender.firstName} ${msg.sender.lastName}`,
+        avatar: msg.sender.avatar || null,
+        role: msg.sender.role,
+        initials: `${msg.sender.firstName[0]}${msg.sender.lastName[0]}`
+      };
+    }
+
+    if (selectedUser) {
+      return {
+        name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+        avatar: null,
+        role: selectedUser.role,
+        initials: `${selectedUser.firstName[0]}${selectedUser.lastName[0]}`
+      };
+    }
+
+    return {
+      name: msg.senderName || 'Team Member',
+      avatar: null,
+      role: 'TEAM_MEMBER',
+      initials: msg.senderName ? msg.senderName[0] : 'T'
+    };
+  };
+
+  const getRoleAccentClasses = (role: string, isMe: boolean) => {
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
+    const isInfluencer = role === 'INFLUENCER';
+
+    if (isMe) {
+      if (isInfluencer) {
+        return 'bg-purple-600/90 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)] text-white rounded-br-none';
+      }
+      if (isAdmin) {
+        return 'bg-blue-600/90 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.15)] text-white rounded-br-none';
+      }
+      return 'bg-zinc-700/90 border border-zinc-600 text-white rounded-br-none';
+    } else {
+      if (isInfluencer) {
+        return 'bg-zinc-900 border border-purple-500/30 text-zinc-100 shadow-[0_0_10px_rgba(168,85,247,0.05)] rounded-bl-none';
+      }
+      if (isAdmin) {
+        return 'bg-zinc-900 border border-blue-500/30 text-zinc-100 shadow-[0_0_10px_rgba(59,130,246,0.05)] rounded-bl-none';
+      }
+      return 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-bl-none';
+    }
+  };
+
+  const getRoleBadgeClasses = (role: string) => {
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
+    const isInfluencer = role === 'INFLUENCER';
+    if (isInfluencer) return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
+    if (isAdmin) return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
+    return 'text-zinc-500 border-zinc-800 bg-zinc-900/50';
+  };
+
+  const getRoleBadgeLabel = (role: string) => {
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') return 'Admin';
+    if (role === 'MANAGER') return 'Manager';
+    if (role === 'INFLUENCER') return 'Creator';
+    return 'Team';
   };
 
   const filteredMembers = members.filter(m =>
@@ -177,17 +259,49 @@ export default function ChatPage() {
                 </div>
               ) : (
                 messages.map((msg) => {
+                  const sender = getSenderDetails(msg);
                   const isMe = msg.senderId === user?.id;
                   return (
-                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
-                        isMe ? 'bg-purple-600 text-white rounded-br-sm' : 'bg-zinc-800 text-white border border-white/5 rounded-bl-sm'
-                      }`}>
-                        <p className="text-sm">{msg.content}</p>
-                        <p className="text-[10px] text-right mt-1 opacity-60">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
+                    <div key={msg.id} className={`flex items-end gap-2.5 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      {/* Avatar for incoming */}
+                      {!isMe && (
+                        <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10 shadow-md">
+                          {sender.avatar ? (
+                            <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{sender.initials}</span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-1 max-w-[70%]">
+                        {/* Message Header (Sender Name, Role Badge, Time) */}
+                        <div className={`flex items-center gap-1.5 px-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                          <span className="text-xs font-semibold text-zinc-200">{isMe ? 'You' : sender.name}</span>
+                          <span className={`text-[9px] px-1 py-0.2 rounded border font-medium ${getRoleBadgeClasses(sender.role)}`}>
+                            {getRoleBadgeLabel(sender.role)}
+                          </span>
+                          <span className="text-[9px] text-zinc-500">
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+
+                        {/* Message Bubble */}
+                        <div className={`rounded-2xl px-4 py-2.5 shadow-sm transition-all ${getRoleAccentClasses(sender.role, isMe)}`}>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                        </div>
                       </div>
+
+                      {/* Avatar for outgoing */}
+                      {isMe && (
+                        <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-gradient-to-br from-purple-600/30 to-purple-800/30 border border-purple-500/30 shadow-md">
+                          {sender.avatar ? (
+                            <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{sender.initials}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })

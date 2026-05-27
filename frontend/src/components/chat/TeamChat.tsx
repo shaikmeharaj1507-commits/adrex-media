@@ -17,6 +17,14 @@ interface ChatMessage {
   timestamp?: string;
   createdAt?: string;
   isAI?: boolean;
+  senderName?: string;
+  sender?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    avatar?: string;
+  };
 }
 
 interface TeamMember {
@@ -77,6 +85,42 @@ export default function TeamChat() {
     fetchTeamMembers();
   }, []);
 
+  const loadTeamMessages = async () => {
+    setMessages([]);
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('adrex_token');
+      const res = await fetch(`${API_URL}/api/messages/team`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data.map((m: any) => ({
+          id: m.id,
+          senderId: m.senderId,
+          senderName: m.senderName,
+          receiverId: m.receiverId,
+          content: m.content,
+          createdAt: m.createdAt,
+          sender: m.sender,
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to load team messages', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (mode === 'team') {
+      loadTeamMessages();
+    } else if (mode === 'private' && selectedUser) {
+      selectPrivateChat(selectedUser);
+    }
+  }, [isOpen, mode, selectedUser]);
+
   const fetchTeamMembers = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
@@ -110,6 +154,7 @@ export default function TeamChat() {
           receiverId: m.receiverId,
           content: m.content,
           createdAt: m.createdAt,
+          sender: m.sender,
         })));
       }
     } catch (error) {
@@ -143,6 +188,7 @@ export default function TeamChat() {
             receiverId: msg.receiverId,
             content: msg.content,
             createdAt: msg.createdAt,
+            sender: msg.sender,
           }]);
           if (socket && isConnected) {
             socket.emit('send_private_message', { receiverId: selectedUser.id, content: input });
@@ -191,15 +237,103 @@ export default function TeamChat() {
     return time ? new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
   };
   const isMe = (msg: ChatMessage) => {
-    if (mode === 'team') return msg.userId === user?.id;
+    if (mode === 'team') return msg.userId === user?.id || msg.senderId === user?.id;
     return msg.senderId === user?.id;
   };
 
-  const getSenderName = (id?: string) => {
-    if (!id) return 'Unknown';
-    if (id === user?.id) return 'You';
-    const member = teamMembers.find(m => m.id === id);
-    return member ? `${member.firstName} ${member.lastName}` : 'Team Member';
+  const getSenderDetails = (msg: ChatMessage) => {
+    if (msg.isAI) {
+      return {
+        name: 'AI Assistant',
+        avatar: null,
+        role: 'AI',
+        initials: 'AI'
+      };
+    }
+
+    if (isMe(msg)) {
+      return {
+        name: user ? `${user.firstName} ${user.lastName}` : 'You',
+        avatar: user?.avatar || null,
+        role: user?.role || 'TEAM_MEMBER',
+        initials: user ? `${user.firstName[0]}${user.lastName[0]}` : 'U'
+      };
+    }
+
+    if (msg.sender) {
+      return {
+        name: `${msg.sender.firstName} ${msg.sender.lastName}`,
+        avatar: msg.sender.avatar || null,
+        role: msg.sender.role,
+        initials: `${msg.sender.firstName[0]}${msg.sender.lastName[0]}`
+      };
+    }
+
+    // Fallback search teamMembers
+    const senderId = msg.senderId || msg.userId;
+    const member = teamMembers.find(m => m.id === senderId);
+    if (member) {
+      return {
+        name: `${member.firstName} ${member.lastName}`,
+        avatar: null,
+        role: member.role,
+        initials: `${member.firstName[0]}${member.lastName[0]}`
+      };
+    }
+
+    return {
+      name: msg.senderName || 'Team Member',
+      avatar: null,
+      role: 'TEAM_MEMBER',
+      initials: msg.senderName ? msg.senderName[0] : 'T'
+    };
+  };
+
+  const getRoleAccentClasses = (role: string, isMe: boolean) => {
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
+    const isInfluencer = role === 'INFLUENCER';
+
+    if (isMe) {
+      if (isInfluencer) {
+        return 'bg-purple-600/90 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)] text-white rounded-br-none';
+      }
+      if (isAdmin) {
+        return 'bg-blue-600/90 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.15)] text-white rounded-br-none';
+      }
+      return 'bg-zinc-700/90 border border-zinc-600 text-white rounded-br-none';
+    } else {
+      if (isInfluencer) {
+        return 'bg-zinc-900 border border-purple-500/30 text-zinc-100 shadow-[0_0_10px_rgba(168,85,247,0.05)] rounded-bl-none';
+      }
+      if (isAdmin) {
+        return 'bg-zinc-900 border border-blue-500/30 text-zinc-100 shadow-[0_0_10px_rgba(59,130,246,0.05)] rounded-bl-none';
+      }
+      return 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-bl-none';
+    }
+  };
+
+  const getRoleTextClasses = (role: string) => {
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
+    const isInfluencer = role === 'INFLUENCER';
+    if (isInfluencer) return 'text-purple-400';
+    if (isAdmin) return 'text-blue-400';
+    return 'text-zinc-400';
+  };
+
+  const getRoleBadgeClasses = (role: string) => {
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
+    const isInfluencer = role === 'INFLUENCER';
+    if (isInfluencer) return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
+    if (isAdmin) return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
+    return 'text-zinc-500 border-zinc-800 bg-zinc-900/50';
+  };
+
+  const getRoleBadgeLabel = (role: string) => {
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') return 'Admin';
+    if (role === 'MANAGER') return 'Manager';
+    if (role === 'INFLUENCER') return 'Creator';
+    if (role === 'AI') return 'AI';
+    return 'Team';
   };
 
   const openChat = () => {
@@ -239,7 +373,7 @@ export default function TeamChat() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-screen w-[420px] bg-zinc-950/90 backdrop-blur-2xl border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-screen w-full sm:w-[420px] bg-zinc-950/90 backdrop-blur-2xl border-l border-white/10 shadow-2xl z-50 flex flex-col"
           >
             <div className="p-4 border-b border-white/10 bg-zinc-900/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -336,22 +470,51 @@ export default function TeamChat() {
                       </p>
                     </div>
                   ) : (
-                    messages.map((msg) => (
-                      <div key={msg.id} className={`flex ${isMe(msg) ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2 ${
-                          msg.isAI ? 'bg-amber-600/20 border border-amber-500/30 text-white rounded-bl-sm' :
-                          isMe(msg) ? 'bg-purple-600 text-white rounded-br-sm' :
-                          'bg-zinc-800 text-white border border-white/5 rounded-bl-sm'
-                        }`}>
-                          {msg.isAI && <p className="text-xs text-amber-400 font-medium mb-1">AI Assistant</p>}
-                          {!isMe(msg) && !msg.isAI && mode === 'team' && (
-                            <p className="text-xs text-purple-400 font-medium mb-1">{getSenderName(msg.userId || msg.senderId)}</p>
+                    messages.map((msg) => {
+                      const sender = getSenderDetails(msg);
+                      const me = isMe(msg);
+                      return (
+                        <div key={msg.id} className={`flex items-end gap-2.5 ${me ? 'justify-end' : 'justify-start'}`}>
+                          {/* Avatar for incoming */}
+                          {!me && (
+                            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10 shadow-md">
+                              {sender.avatar ? (
+                                <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <span>{sender.initials}</span>
+                              )}
+                            </div>
                           )}
-                          <p className="text-sm">{getMessageText(msg)}</p>
-                          <p className="text-[10px] text-right mt-1 opacity-60">{getMessageTime(msg)}</p>
+
+                          <div className="flex flex-col gap-1 max-w-[75%]">
+                            {/* Message Header (Sender Name, Role Badge, Time) */}
+                            <div className={`flex items-center gap-1.5 px-1 ${me ? 'justify-end' : 'justify-start'}`}>
+                              <span className="text-xs font-semibold text-zinc-200">{me ? 'You' : sender.name}</span>
+                              <span className={`text-[9px] px-1 py-0.2 rounded border font-medium ${getRoleBadgeClasses(sender.role)}`}>
+                                {getRoleBadgeLabel(sender.role)}
+                              </span>
+                              <span className="text-[9px] text-zinc-500">{getMessageTime(msg)}</span>
+                            </div>
+
+                            {/* Message Bubble */}
+                            <div className={`rounded-2xl px-4 py-2.5 shadow-sm transition-all ${getRoleAccentClasses(sender.role, me)}`}>
+                              <p className="text-sm leading-relaxed whitespace-pre-wrap">{getMessageText(msg)}</p>
+                            </div>
+                          </div>
+
+                          {/* Avatar for outgoing */}
+                          {me && (
+                            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-gradient-to-br from-purple-600/30 to-purple-800/30 border border-purple-500/30 shadow-md">
+                              {sender.avatar ? (
+                                <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <span>{sender.initials}</span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                   <div ref={messagesEndRef} />
                 </div>
