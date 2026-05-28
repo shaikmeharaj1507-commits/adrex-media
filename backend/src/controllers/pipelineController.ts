@@ -10,7 +10,7 @@ const LeadSchema = z.object({
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
   value: z.string().or(z.number()).optional(),
-  stage: z.enum(['LEAD', 'CONTACTED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST']).optional(),
+  stage: z.enum(['LEAD', 'CONTACTED', 'PROPOSAL', 'NEGOTIATION', 'WON', 'LOST', 'PAUSED']).optional(),
   notes: z.string().optional(),
 });
 

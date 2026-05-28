@@ -346,11 +346,11 @@ export default function ReportsPage() {
                   { label: 'Influencers', value: stats.influencers, icon: Activity, color: 'text-rose-400' },
                   { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, icon: FileText, color: 'text-amber-400' },
                 ].map((s, i) => (
-                  <div key={i} className="p-5 rounded-2xl glassmorphism flex items-center gap-4 border border-white/5 shadow-sm">
-                    <div className={`w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center ${s.color}`}><s.icon size={22} /></div>
-                    <div>
-                      <p className="text-xs text-zinc-400">{s.label}</p>
-                      <p className="text-2xl font-bold text-white mt-0.5">{loading ? '—' : s.value}</p>
+                  <div key={i} className="p-4 sm:p-5 rounded-2xl glassmorphism flex items-center gap-3 sm:gap-4 border border-white/5 shadow-sm min-w-0">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 ${s.color}`}><s.icon size={20} /></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-zinc-400 truncate">{s.label}</p>
+                      <p className="text-base sm:text-2xl font-bold text-white mt-0.5 truncate" title={String(s.value)}>{loading ? '—' : s.value}</p>
                     </div>
                   </div>
                 ))}

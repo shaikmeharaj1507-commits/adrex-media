@@ -399,13 +399,6 @@ export default function CampaignsPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-sm font-medium text-zinc-300">Campaign Name</label>
-                  {!editingCampaign && (
-                    <button type="button" onClick={handleAIGenerate} disabled={aiLoading}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/25 hover:bg-purple-500/25 transition-all disabled:opacity-50">
-                      {aiLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
-                      {aiLoading ? 'Generating...' : '✦ Spark with AI'}
-                    </button>
-                  )}
                 </div>
                 <input value={newCamp.name} onChange={e => setNewCamp(p => ({ ...p, name: e.target.value }))} type="text" placeholder="e.g. Summer Glow 2025" required
                   className="w-full bg-zinc-950 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
@@ -431,6 +424,8 @@ export default function CampaignsPage() {
                     <option value="DRAFT">DRAFT</option>
                     <option value="PLANNED">PLANNED</option>
                     <option value="ACTIVE">ACTIVE</option>
+                    <option value="PAUSED">PAUSED</option>
+                    <option value="COMPLETED">COMPLETED</option>
                   </select>
                 </div>
               </div>
@@ -494,16 +489,24 @@ export default function CampaignsPage() {
                 )}
               </div>
 
-              <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all mt-2 shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" size={18} />
-                    {editingCampaign ? 'Updating...' : 'Creating...'}
-                  </>
-                ) : (
-                  editingCampaign ? 'Update Campaign' : 'Create Campaign'
+              <div className="flex gap-3 pt-2">
+                {editingCampaign && (
+                  <button type="button" onClick={() => { handleDelete(editingCampaign.id); resetModal(); }}
+                    className="flex-1 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/25 rounded-xl font-semibold transition-all">
+                    Delete Campaign
+                  </button>
                 )}
-              </button>
+                <button type="submit" disabled={isSubmitting} className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      {editingCampaign ? 'Updating...' : 'Creating...'}
+                    </>
+                  ) : (
+                    editingCampaign ? 'Update Campaign' : 'Create Campaign'
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>

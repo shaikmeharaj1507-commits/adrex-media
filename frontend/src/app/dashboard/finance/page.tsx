@@ -168,9 +168,14 @@ export default function FinancePage() {
           { label: 'Net Profit', value: `₹${profit.toLocaleString('en-IN')}`, icon: TrendingUp, color: profit >= 0 ? 'text-emerald-400' : 'text-red-400', glow: 'shadow-purple-500/10' },
         ].map((k, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className={`p-5 rounded-2xl glassmorphism flex items-center gap-4 shadow-lg ${k.glow}`}>
-            <div className={`w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center ${k.color}`}><k.icon size={22} /></div>
-            <div><p className="text-xs text-zinc-400">{k.label}</p><p className="text-xl font-bold text-white">{k.value}</p></div>
+            className={`p-4 sm:p-5 rounded-2xl glassmorphism flex items-center gap-3 sm:gap-4 shadow-lg ${k.glow} min-w-0`}>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 ${k.color}`}>
+              <k.icon size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-zinc-400 truncate">{k.label}</p>
+              <p className="text-base sm:text-xl font-bold text-white truncate" title={k.value}>{k.value}</p>
+            </div>
           </motion.div>
         ))}
       </div>

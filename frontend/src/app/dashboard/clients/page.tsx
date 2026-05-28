@@ -177,13 +177,13 @@ export default function ClientsPage() {
         ].map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={i} className="p-4 rounded-xl glassmorphism flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-primary/10 text-primary">
+            <div key={i} className="p-4 rounded-xl glassmorphism flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
                 <Icon size={20} />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p className="text-2xl font-bold">{s.value}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground truncate">{s.label}</p>
+                <p className="text-lg sm:text-2xl font-bold truncate" title={s.value}>{s.value}</p>
               </div>
             </div>
           );

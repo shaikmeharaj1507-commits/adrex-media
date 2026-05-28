@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { API_URL } from '@/lib/api';
 
@@ -28,6 +28,7 @@ export default function TopNav() {
   const { theme, setTheme } = useTheme();
   const { socket } = useSocketStore();
   const router = useRouter();
+  const pathname = usePathname();
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
@@ -289,9 +290,10 @@ export default function TopNav() {
               </div>
               <div className="p-1.5">
                 {[
-                  { label: 'Profile Settings', icon: User, href: '/dashboard/settings' },
-                  { label: 'Agency Settings', icon: Settings, href: '/dashboard/settings?tab=agency' },
-                ].map(item => {
+                  { label: 'Profile Settings', icon: User, href: '/dashboard/settings', allowedRoles: ['SUPER_ADMIN', 'MANAGER'] },
+                  { label: 'Agency Settings', icon: Settings, href: '/dashboard/settings?tab=agency', allowedRoles: ['SUPER_ADMIN', 'MANAGER'] },
+                ].filter(item => item.allowedRoles.includes(user?.role || '') && !pathname.includes('/client-portal/'))
+                .map(item => {
                   const Icon = item.icon;
                   return (
                     <Link

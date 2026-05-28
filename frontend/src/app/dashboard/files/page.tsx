@@ -81,6 +81,24 @@ export default function FilesPage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleDownloadFile = async (file: FileRecord) => {
+    try {
+      const response = await fetch(`${API_URL}${file.url}`);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', file.name);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download file:', error);
+      window.open(`${API_URL}${file.url}`, '_blank');
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -536,17 +554,23 @@ export default function FilesPage() {
           <Loader2 className="animate-spin text-purple-500" size={32} />
         </div>
       ) : filteredFiles.length === 0 ? (
-        <div className="bg-white/50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-12 text-center backdrop-blur-sm">
-          <div className="w-16 h-16 bg-zinc-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <FileText className="text-zinc-400" size={32} />
+        (search || categoryFilter !== 'All') ? (
+          <div className="bg-white/50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-12 text-center backdrop-blur-sm">
+            <div className="w-16 h-16 bg-zinc-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <FileText className="text-zinc-400" size={32} />
+            </div>
+            <h3 className="text-lg font-medium text-zinc-800 dark:text-white mb-2">
+              No files match your filters
+            </h3>
+            <p className="text-zinc-500 dark:text-zinc-400 mb-6">
+              Try adjusting your search or filter criteria.
+            </p>
           </div>
-          <h3 className="text-lg font-medium text-zinc-800 dark:text-white mb-2">
-            {search || categoryFilter !== 'All' ? 'No files match your filters' : 'No files in this folder'}
-          </h3>
-          <p className="text-zinc-500 dark:text-zinc-400 mb-6">
-            {search || categoryFilter !== 'All' ? 'Try adjusting your search or filter criteria.' : 'Drag & drop a file here or select upload above.'}
-          </p>
-        </div>
+        ) : (
+          <div className="text-center p-8 border border-dashed border-zinc-200 dark:border-white/10 rounded-2xl">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Drag & drop a file here or select upload above to get started.</p>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredFiles.map((file) => {
@@ -592,15 +616,13 @@ export default function FilesPage() {
                         <Eye size={14} />
                       </button>
                     )}
-                    <a 
-                      href={`${API_URL}${file.url}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleDownloadFile(file)}
                       className="p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white"
                       title="Download"
                     >
                       <Download size={14} />
-                    </a>
+                    </button>
                     <button
                       onClick={() => { setMovingFile(file); setTargetFolderId(file.folderId || 'root'); }}
                       className="p-1.5 hover:bg-zinc-100 dark:hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white"

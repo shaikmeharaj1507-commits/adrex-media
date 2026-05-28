@@ -100,25 +100,16 @@ export default function Sidebar() {
 
       {/* User + Bottom */}
       <div className="p-3 border-t border-border/30 space-y-1">
-        {user && (
-          <div className="flex items-center gap-2.5 px-4 py-2.5 mb-1 rounded-xl bg-white/4 border border-white/8">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-              {user.firstName?.[0] ?? 'U'}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold truncate">{user.firstName} {user.lastName}</p>
-              <p className="text-[10px] text-muted-foreground capitalize">{user.role?.replace(/_/g, ' ').toLowerCase()}</p>
-            </div>
-          </div>
-        )}
 
-        <Link
-          href="/dashboard/settings"
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
-        >
-          <Settings size={17} />
-          <span className="font-medium text-sm">Settings</span>
-        </Link>
+        {((user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') && !pathname.includes('/client-portal/')) && (
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+          >
+            <Settings size={17} />
+            <span className="font-medium text-sm">Settings</span>
+          </Link>
+        )}
 
         <button
           id="sidebar-logout"

@@ -15,6 +15,7 @@ interface CalEvent {
   date: string; // YYYY-MM-DD
   type: string;
   color: string;
+  isReadOnly?: boolean;
 }
 
 function getDaysInMonth(year: number, month: number) {
@@ -40,13 +41,85 @@ export default function CalendarPage() {
   const fetchEvents = async () => {
     try {
       const token = localStorage.getItem('adrex_token');
-      const res = await fetch(`${API_URL}/api/calendar`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setEvents(data);
+      const headers = { 'Authorization': `Bearer ${token}` };
+      const [eventsRes, tasksRes, campaignsRes, invoicesRes, pipelineRes] = await Promise.all([
+        fetch(`${API_URL}/api/calendar`, { headers }),
+        fetch(`${API_URL}/api/tasks`, { headers }),
+        fetch(`${API_URL}/api/campaigns`, { headers }),
+        fetch(`${API_URL}/api/finance/invoices`, { headers }),
+        fetch(`${API_URL}/api/pipeline`, { headers })
+      ]);
+
+      let customEvents = [];
+      if (eventsRes.ok) customEvents = await eventsRes.json();
+
+      let taskEvents = [];
+      if (tasksRes.ok) {
+        const tasks = await tasksRes.json();
+        taskEvents = tasks
+          .filter((t: any) => t.dueDate)
+          .map((t: any) => ({
+            id: `task-${t.id}`,
+            title: `📝 [Task] ${t.title}`,
+            date: t.dueDate.split('T')[0],
+            type: 'task',
+            color: 'bg-indigo-500/80',
+            isReadOnly: true
+          }));
       }
+
+      let campaignEvents = [];
+      if (campaignsRes.ok) {
+        const campaigns = await campaignsRes.json();
+        campaignEvents = campaigns.flatMap((c: any) => [
+          c.startDate && {
+            id: `camp-start-${c.id}`,
+            title: `🚀 [Campaign Start] ${c.name}`,
+            date: c.startDate.split('T')[0],
+            type: 'campaign',
+            color: 'bg-emerald-500/80',
+            isReadOnly: true
+          },
+          c.endDate && {
+            id: `camp-end-${c.id}`,
+            title: `🏁 [Campaign End] ${c.name}`,
+            date: c.endDate.split('T')[0],
+            type: 'campaign',
+            color: 'bg-red-500/80',
+            isReadOnly: true
+          }
+        ].filter(Boolean));
+      }
+
+      let invoiceEvents = [];
+      if (invoicesRes.ok) {
+        const invoices = await invoicesRes.json();
+        invoiceEvents = invoices
+          .filter((i: any) => i.dueDate)
+          .map((i: any) => ({
+            id: `invoice-${i.id}`,
+            title: `💰 [Invoice Due] ${i.client?.companyName || 'Client'} (₹${i.amount})`,
+            date: i.dueDate.split('T')[0],
+            type: 'invoice',
+            color: 'bg-amber-500/80',
+            isReadOnly: true
+          }));
+      }
+
+      let pipelineEvents = [];
+      if (pipelineRes.ok) {
+        const leads = await pipelineRes.json();
+        pipelineEvents = leads.map((l: any) => ({
+          id: `lead-${l.id}`,
+          title: `💼 [New Lead] ${l.companyName}`,
+          date: l.createdAt.split('T')[0],
+          type: 'lead',
+          color: 'bg-sky-500/80',
+          isReadOnly: true
+        }));
+      }
+
+      setEvents([...customEvents, ...taskEvents, ...campaignEvents, ...invoiceEvents, ...pipelineEvents]);
     } catch (error) {
       console.error('Failed to fetch events', error);
     } finally {
@@ -134,6 +207,7 @@ export default function CalendarPage() {
   };
 
   const openEditModal = (event: CalEvent) => {
+    if (event.isReadOnly) return;
     setEditingEvent(event);
     setNewEvent({
       title: event.title,
@@ -161,14 +235,14 @@ export default function CalendarPage() {
   const upcomingEvents = events
     .filter(e => e.date >= today.toISOString().split('T')[0])
     .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 6);
+    .slice(0, 15);
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-          <p className="text-muted-foreground mt-1">View campaigns, deadlines, and meetings at a glance.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Calendar & Deadlines</h1>
+          <p className="text-muted-foreground mt-1">View campaigns, task deadlines, invoices, and meetings at a glance.</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -265,12 +339,16 @@ export default function CalendarPage() {
                       <div className={`w-2 h-2 rounded-full ${ev.color}`} />
                       <span className="text-sm font-medium flex-1">{ev.title}</span>
                       <span className="text-xs text-muted-foreground capitalize">{ev.type}</span>
-                      <button onClick={() => openEditModal(ev)} className="p-1 hover:bg-white/10 rounded text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                      </button>
-                      <button onClick={() => handleDelete(ev.id)} className="p-1 hover:bg-red-500/20 rounded text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                      </button>
+                      {!ev.isReadOnly && (
+                        <>
+                          <button onClick={() => openEditModal(ev)} className="p-1 hover:bg-white/10 rounded text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                          </button>
+                          <button onClick={() => handleDelete(ev.id)} className="p-1 hover:bg-red-500/20 rounded text-muted-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                          </button>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -282,41 +360,44 @@ export default function CalendarPage() {
         {/* Upcoming Sidebar */}
         <motion.div className="glassmorphism rounded-2xl p-6 flex flex-col"
           initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-          <h3 className="text-lg font-bold mb-1">Upcoming</h3>
-          <p className="text-sm text-muted-foreground mb-5">Next events across all campaigns</p>
+          <h3 className="text-lg font-bold mb-1">Deadlines & Schedule</h3>
+          <p className="text-sm text-muted-foreground mb-5">Next events across all workspaces</p>
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-2 mb-5">
+          <div className="flex flex-wrap gap-2.5 mb-5 border-b border-white/5 pb-4">
             {[
-              { label: 'Launch', color: 'bg-purple-500' },
-              { label: 'Campaign', color: 'bg-emerald-500' },
-              { label: 'Meeting', color: 'bg-blue-500' },
-              { label: 'Deadline', color: 'bg-red-500' },
+              { label: 'Meetings', color: 'bg-blue-500' },
+              { label: 'Tasks', color: 'bg-indigo-500' },
+              { label: 'Campaigns', color: 'bg-emerald-500' },
+              { label: 'Invoices', color: 'bg-amber-500' },
+              { label: 'Leads', color: 'bg-sky-500' }
             ].map(l => (
-              <div key={l.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <div className={`w-2 h-2 rounded-full ${l.color}`} />
+              <div key={l.label} className="flex items-center gap-1.5 text-xs text-zinc-400">
+                <div className={`w-2.5 h-2.5 rounded-full ${l.color}`} />
                 {l.label}
               </div>
             ))}
           </div>
 
-          <div className="space-y-3 flex-1">
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-[500px] scrollbar-thin">
             {loading ? (
               <div className="text-sm text-muted-foreground animate-pulse">Loading events...</div>
             ) : upcomingEvents.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No upcoming events.</div>
+              <div className="text-sm text-muted-foreground">No upcoming events or deadlines.</div>
             ) : upcomingEvents.map((ev, i) => (
-              <motion.div key={ev.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
+              <motion.div key={ev.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
                 className="flex items-start gap-3 p-3 rounded-xl bg-white/3 hover:bg-white/5 transition-all group">
-                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${ev.color}`} />
+                <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${ev.color}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{ev.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
+                  <p className="text-sm font-medium text-white truncate">{ev.title}</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">{ev.date}</p>
                 </div>
-                <span className="text-[10px] capitalize text-muted-foreground shrink-0">{ev.type}</span>
-                <button onClick={() => openEditModal(ev)} className="p-1 hover:bg-white/10 rounded text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-all">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
+                <span className="text-[10px] uppercase font-bold text-zinc-500 shrink-0 px-1.5 py-0.5 rounded bg-white/5 capitalize">{ev.type}</span>
+                {!ev.isReadOnly && (
+                  <button onClick={() => openEditModal(ev)} className="p-1 hover:bg-white/10 rounded text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                  </button>
+                )}
               </motion.div>
             ))}
           </div>

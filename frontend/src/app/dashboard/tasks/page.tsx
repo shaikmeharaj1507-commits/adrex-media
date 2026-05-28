@@ -292,11 +292,11 @@ export default function TasksPage() {
           const count = tasks.filter(t => t.status === col.id).length;
           return (
             <motion.div key={col.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-              className="p-4 rounded-xl glassmorphism flex items-center gap-3">
-              <Icon size={20} className={col.color} />
-              <div>
-                <p className="text-xs text-muted-foreground">{col.label}</p>
-                <p className="text-2xl font-bold">{loading ? '-' : count}</p>
+              className="p-4 rounded-xl glassmorphism flex items-center gap-3 min-w-0">
+              <Icon size={20} className={`${col.color} shrink-0`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-muted-foreground truncate">{col.label}</p>
+                <p className="text-lg sm:text-2xl font-bold truncate">{loading ? '-' : count}</p>
               </div>
             </motion.div>
           );

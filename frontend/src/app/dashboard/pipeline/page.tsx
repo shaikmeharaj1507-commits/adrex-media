@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, DollarSign, TrendingUp, Trophy, XCircle, Phone, Mail, FileText, Loader2, Download } from 'lucide-react';
 
-type Stage = 'LEAD' | 'CONTACTED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST';
+type Stage = 'LEAD' | 'CONTACTED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST' | 'PAUSED';
 
 interface Lead {
   id: string;
@@ -26,16 +26,22 @@ const stages: { id: Stage; label: string; color: string; bg: string; border: str
   { id: 'NEGOTIATION',label: 'Negotiation',  color: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/30' },
   { id: 'WON',        label: 'Won',          color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' },
   { id: 'LOST',       label: 'Lost',         color: 'text-red-400',     bg: 'bg-red-500/10',     border: 'border-red-500/30' },
+  { id: 'PAUSED',     label: 'Paused',       color: 'text-orange-400',  bg: 'bg-orange-500/10',  border: 'border-orange-500/30' },
 ];
 
 export default function PipelinePage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [dragOverStage, setDragOverStage] = useState<Stage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
+    companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD' as Stage, notes: ''
+  });
+
+  const [editForm, setEditForm] = useState({
     companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD' as Stage, notes: ''
   });
 
@@ -44,9 +50,13 @@ export default function PipelinePage() {
     return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
   };
 
-  useEffect(() => {
+  const fetchLeads = () => {
     fetch(`${API_URL}/api/pipeline`, { headers: getHeaders() })
       .then(r => r.json()).then(setLeads).catch(console.error).finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchLeads();
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -56,6 +66,41 @@ export default function PipelinePage() {
     try {
       const res = await fetch(`${API_URL}/api/pipeline`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(form) });
       if (res.ok) { const d = await res.json(); setLeads(p => [d, ...p]); setShowModal(false); setForm({ companyName: '', contactName: '', email: '', phone: '', value: '', stage: 'LEAD', notes: '' }); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditModal = (lead: Lead) => {
+    setSelectedLead(lead);
+    setEditForm({
+      companyName: lead.companyName,
+      contactName: lead.contactName,
+      email: lead.email,
+      phone: lead.phone || '',
+      value: String(lead.value),
+      stage: lead.stage,
+      notes: lead.notes || ''
+    });
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLead || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/pipeline/${selectedLead.id}`, {
+        method: 'PUT',
+        headers: getHeaders(),
+        body: JSON.stringify(editForm)
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setLeads(prev => prev.map(l => l.id === updated.id ? updated : l));
+        setSelectedLead(null);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -97,7 +142,7 @@ export default function PipelinePage() {
     document.body.removeChild(link);
   };
 
-  const totalPipelineValue = leads.filter(l => l.stage !== 'LOST').reduce((s, l) => s + l.value, 0);
+  const totalPipelineValue = leads.filter(l => l.stage !== 'LOST' && l.stage !== 'PAUSED').reduce((s, l) => s + l.value, 0);
   const wonValue = leads.filter(l => l.stage === 'WON').reduce((s, l) => s + l.value, 0);
   const winRate = leads.length > 0 ? Math.round((leads.filter(l => l.stage === 'WON').length / leads.length) * 100) : 0;
 
@@ -157,8 +202,9 @@ export default function PipelinePage() {
                 {stageLeads.map((lead) => (
                   <motion.div key={lead.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                     draggable onDragStart={(e: any) => e.dataTransfer.setData('leadId', lead.id)}
-                    className="bg-zinc-900 border border-white/10 rounded-xl p-3 cursor-grab active:cursor-grabbing hover:border-white/20 group relative">
-                    <button onClick={() => deleteLead(lead.id)} className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-red-400 transition-all">
+                    onClick={() => openEditModal(lead)}
+                    className="bg-zinc-900 border border-white/10 rounded-xl p-3 cursor-pointer hover:border-white/20 group relative">
+                    <button onClick={(e) => { e.stopPropagation(); deleteLead(lead.id); }} className="absolute top-2 right-2 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-500/20 text-red-400 transition-all">
                       <X size={12} />
                     </button>
                     <p className="text-sm font-semibold text-white pr-6 truncate">{lead.companyName}</p>
@@ -226,6 +272,48 @@ export default function PipelinePage() {
                     ) : (
                       'Add Lead'
                     )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Lead Modal */}
+      <AnimatePresence>
+        {selectedLead && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedLead(null)} />
+            <motion.div className="relative z-10 w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl p-6 shadow-2xl"
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Edit Lead Details</h2>
+                <button onClick={() => setSelectedLead(null)} className="p-2 hover:bg-white/5 rounded-lg text-zinc-400"><X size={18} /></button>
+              </div>
+              <form onSubmit={handleUpdate} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Company Name*</label><input required value={editForm.companyName} onChange={e => setEditForm(p => ({...p, companyName: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Contact Name*</label><input required value={editForm.contactName} onChange={e => setEditForm(p => ({...p, contactName: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Email*</label><input type="email" required value={editForm.email} onChange={e => setEditForm(p => ({...p, email: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Phone</label><input value={editForm.phone} onChange={e => setEditForm(p => ({...p, phone: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Deal Value (₹)</label><input type="number" value={editForm.value} onChange={e => setEditForm(p => ({...p, value: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50" /></div>
+                  <div><label className="block text-xs text-zinc-400 mb-1.5">Stage</label>
+                    <select value={editForm.stage} onChange={e => setEditForm(p => ({...p, stage: e.target.value as Stage}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50">
+                      {stages.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div><label className="block text-xs text-zinc-400 mb-1.5">Notes</label><textarea rows={2} value={editForm.notes} onChange={e => setEditForm(p => ({...p, notes: e.target.value}))} className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500/50 resize-none" /></div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                  <button type="button" onClick={() => { deleteLead(selectedLead.id); setSelectedLead(null); }} className="px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl border border-red-500/20 mr-auto transition-all">Delete Lead</button>
+                  <button type="button" disabled={isSubmitting} onClick={() => setSelectedLead(null)} className="px-5 py-2.5 text-sm text-zinc-400 hover:text-white disabled:opacity-50">Cancel</button>
+                  <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center gap-2">
+                    {isSubmitting ? <Loader2 className="animate-spin" size={16} /> : 'Save Changes'}
                   </button>
                 </div>
               </form>
