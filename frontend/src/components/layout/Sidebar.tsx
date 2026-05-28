@@ -75,19 +75,24 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={`relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${
-                active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                active ? 'text-white' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
               }`}
             >
               {active && (
                 <motion.div
                   layoutId="sidebar-active"
-                  className="absolute inset-0 bg-primary/15 rounded-xl border border-primary/25"
+                  className="absolute inset-0 bg-gradient-to-r from-violet-500/15 to-cyan-500/10 rounded-xl border border-violet-500/20"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
-              <Icon size={17} className={`relative z-10 transition-colors ${active ? 'text-primary' : 'group-hover:text-foreground'}`} />
+              {active && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-gradient-to-b from-violet-400 to-cyan-400" />
+              )}
+              <Icon size={17} className={`relative z-10 transition-colors ${
+                active ? 'text-violet-300' : 'group-hover:text-foreground'
+              }`} />
               <span className="relative z-10 font-medium text-sm">{item.label}</span>
-              {active && <div className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+              {active && <div className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-400 to-cyan-400" />}
             </Link>
           );
         })}
@@ -96,8 +101,8 @@ export default function Sidebar() {
       {/* User + Bottom */}
       <div className="p-3 border-t border-border/30 space-y-1">
         {user && (
-          <div className="flex items-center gap-2.5 px-4 py-2.5 mb-1 rounded-xl bg-white/3">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 mb-1 rounded-xl bg-white/4 border border-white/8">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {user.firstName?.[0] ?? 'U'}
             </div>
             <div className="min-w-0">

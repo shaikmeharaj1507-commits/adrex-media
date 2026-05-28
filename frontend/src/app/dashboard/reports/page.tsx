@@ -13,13 +13,13 @@ import {
   LineChart, Line, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, Legend
 } from 'recharts';
 
-const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', '#F43F5E', '#E2B857', '#94A3B8'];
 const CAMPAIGN_COLORS = {
-  ACTIVE: '#10b981',
-  DRAFT: '#64748b',
-  PLANNED: '#3b82f6',
-  COMPLETED: '#8b5cf6',
-  PAUSED: '#f59e0b'
+  ACTIVE: '#06B6D4',      // Hyper Cyan
+  DRAFT: '#94A3B8',       // Subtext Gray
+  PLANNED: '#6D28D9',     // Electric Violet
+  COMPLETED: '#E2B857',   // Enterprise Gold
+  PAUSED: '#F43F5E'       // Creator Pink
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -208,7 +208,7 @@ export default function ReportsPage() {
               id="timeline-filter-btn"
               className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium hover:bg-white/10 transition-all text-sm"
             >
-              <Calendar size={15} className="text-purple-400" />
+              <Calendar size={15} className="text-primary" />
               {selectedTimelineLabel}
               <ChevronDown size={15} className={`transition-transform ${showTimelineDropdown ? 'rotate-180' : ''}`} />
             </button>
@@ -219,7 +219,7 @@ export default function ReportsPage() {
                     key={opt.value}
                     id={`timeline-${opt.value}`}
                     onClick={() => handleTimelineSelect(opt.value)}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5 ${selectedTimeline === opt.value ? 'text-purple-400 bg-purple-500/10' : 'text-zinc-300'}`}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5 ${selectedTimeline === opt.value ? 'text-primary bg-primary/10' : 'text-zinc-300'}`}
                   >
                     {opt.label}
                   </button>
@@ -308,7 +308,7 @@ export default function ReportsPage() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-all border-b-2 relative ${
                 isSelected 
-                  ? 'border-purple-500 text-purple-400 bg-purple-500/5' 
+                  ? 'border-primary text-primary bg-primary/5' 
                   : 'border-transparent text-zinc-400 hover:text-zinc-200'
               }`}
             >
@@ -317,7 +317,7 @@ export default function ReportsPage() {
               {isSelected && (
                 <motion.div 
                   layoutId="activeTabIndicator" 
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" 
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" 
                 />
               )}
             </button>
@@ -341,9 +341,9 @@ export default function ReportsPage() {
               {/* KPI Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-purple-400' },
-                  { label: 'Total Clients', value: stats.clients, icon: Users, color: 'text-blue-400' },
-                  { label: 'Influencers', value: stats.influencers, icon: Activity, color: 'text-emerald-400' },
+                  { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-rose-400' },
+                  { label: 'Total Clients', value: stats.clients, icon: Users, color: 'text-cyan-400' },
+                  { label: 'Influencers', value: stats.influencers, icon: Activity, color: 'text-rose-400' },
                   { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, icon: FileText, color: 'text-amber-400' },
                 ].map((s, i) => (
                   <div key={i} className="p-5 rounded-2xl glassmorphism flex items-center gap-4 border border-white/5 shadow-sm">
@@ -361,7 +361,7 @@ export default function ReportsPage() {
                 {/* Revenue vs Expenses */}
                 <div className="glassmorphism rounded-2xl p-6 border border-white/5">
                   <div className="flex items-center gap-2 mb-6">
-                    <BarChart2 size={18} className="text-purple-400" />
+                    <BarChart2 size={18} className="text-primary" />
                     <h3 className="font-semibold text-white">Revenue vs Expenses Trend</h3>
                   </div>
                   {hasRevenueData || hasExpenseData ? (
@@ -371,8 +371,8 @@ export default function ReportsPage() {
                         <XAxis dataKey="month" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => v > 0 ? `₹${(v/1000).toFixed(0)}k` : '₹0'} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="revenue" name="Revenue" fill="#8b5cf6" radius={[4,4,0,0]} />
-                        <Bar dataKey="expenses" name="Expenses" fill="#3b82f6" radius={[4,4,0,0]} />
+                        <Bar dataKey="revenue" name="Revenue" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                        <Bar dataKey="expenses" name="Expenses" fill="hsl(var(--secondary))" radius={[4,4,0,0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -392,16 +392,16 @@ export default function ReportsPage() {
                     <ResponsiveContainer width="100%" height={250}>
                       <AreaChart data={stats.taskCompletionTrend}>
                         <defs>
-                          <linearGradient id="colorCompleted" cx="50%" cy="50%" r="50%">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
                         <XAxis dataKey="week" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                         <Tooltip formatter={(value) => [`${value} Tasks`, 'Completed Tasks']} contentStyle={{ background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} />
-                        <Area type="monotone" dataKey="completed" name="Completed Tasks" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorCompleted)" />
+                        <Area type="monotone" dataKey="completed" name="Completed Tasks" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorCompleted)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
@@ -490,7 +490,7 @@ export default function ReportsPage() {
               {/* Campaign Status Breakdown */}
               <div className="glassmorphism rounded-2xl p-6 border border-white/5 lg:col-span-2">
                 <div className="flex items-center gap-2 mb-6">
-                  <Megaphone size={18} className="text-purple-400" />
+                  <Megaphone size={18} className="text-rose-400" />
                   <h3 className="font-semibold text-white">Campaign Status Breakdown</h3>
                 </div>
                 {stats.campaignStatusBreakdown?.length > 0 ? (
@@ -502,7 +502,7 @@ export default function ReportsPage() {
                       <Tooltip formatter={(value) => [`${value} Campaigns`, 'Count']} contentStyle={{ background: '#18181b', border: '1px solid rgba(255,255,255,0.1)' }} />
                       <Bar dataKey="count" name="Campaigns" radius={[0, 4, 4, 0]}>
                         {stats.campaignStatusBreakdown.map((entry, index) => {
-                          const fill = CAMPAIGN_COLORS[entry.status as keyof typeof CAMPAIGN_COLORS] || '#8b5cf6';
+                          const fill = CAMPAIGN_COLORS[entry.status as keyof typeof CAMPAIGN_COLORS] || 'hsl(var(--primary))';
                           return <Cell key={`cell-${index}`} fill={fill} />;
                         })}
                       </Bar>
@@ -520,7 +520,7 @@ export default function ReportsPage() {
                 <h3 className="font-semibold text-white text-sm">Status Details</h3>
                 <div className="space-y-3">
                   {stats.campaignStatusBreakdown?.map((item, idx) => {
-                    const color = CAMPAIGN_COLORS[item.status as keyof typeof CAMPAIGN_COLORS] || '#8b5cf6';
+                    const color = CAMPAIGN_COLORS[item.status as keyof typeof CAMPAIGN_COLORS] || 'hsl(var(--primary))';
                     return (
                       <div key={idx} className="flex justify-between items-center p-3 bg-white/3 border border-white/5 rounded-xl">
                         <div className="flex items-center gap-2">
@@ -543,10 +543,10 @@ export default function ReportsPage() {
               <div className="glassmorphism rounded-2xl p-6 border border-white/5 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Award size={18} className="text-purple-400 animate-pulse" />
+                    <Award size={18} className="text-rose-400 animate-pulse" />
                     <h3 className="font-semibold text-white">Top Creator Partners</h3>
                   </div>
-                  <span className="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded border border-purple-500/20 uppercase tracking-widest font-bold">
+                  <span className="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 uppercase tracking-widest font-bold">
                     By rating
                   </span>
                 </div>
@@ -558,7 +558,7 @@ export default function ReportsPage() {
                     stats.topInfluencersByRating.map((inf, idx) => (
                       <div key={inf.id} className="flex items-center justify-between p-4 bg-white/3 border border-white/5 rounded-xl hover:bg-white/5 transition-all">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-purple-600/10 flex items-center justify-center font-bold text-purple-400">
+                          <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center font-bold text-rose-400">
                             #{idx + 1}
                           </div>
                           <div>
@@ -572,7 +572,7 @@ export default function ReportsPage() {
                             <span className="text-amber-400 text-xs">★</span>
                           </div>
                           <div className="flex gap-1.5">
-                            {inf.instagram && <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded">IG</span>}
+                            {inf.instagram && <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded">IG</span>}
                             {inf.tiktok && <span className="text-[9px] bg-slate-500/20 text-slate-300 px-1.5 py-0.5 rounded">TT</span>}
                           </div>
                         </div>
@@ -705,7 +705,7 @@ export default function ReportsPage() {
               {/* Finance list tables */}
               <div className="glassmorphism rounded-2xl p-6 border border-white/5">
                 <div className="flex items-center gap-2 mb-6">
-                  <TrendingUp size={18} className="text-purple-400" />
+                  <TrendingUp size={18} className="text-primary" />
                   <h3 className="font-semibold text-white">Monthly Transaction Summary</h3>
                 </div>
                 

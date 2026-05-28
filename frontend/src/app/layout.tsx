@@ -20,10 +20,21 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-foreground min-h-screen antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="aurora-glass"
+          defaultTheme="space-deep-black"
           enableSystem={false}
           disableTransitionOnChange
-          themes={['aurora-glass', 'cotton-candy', 'midnight-enterprise', 'neon-ai', 'minimal-white', 'luxury-gold', 'creator-studio', 'apple-frost', 'space-gradient', 'soft-clay']}
+          themes={[
+            'space-deep-black',
+            'cyber-surface',
+            'premium-light',
+            'executive-stark',
+            'electric-violet',
+            'hyper-cyan',
+            'creator-pink',
+            'muted-border',
+            'subtext-gray',
+            'enterprise-gold',
+          ]}
         >
           {children}
         </ThemeProvider>

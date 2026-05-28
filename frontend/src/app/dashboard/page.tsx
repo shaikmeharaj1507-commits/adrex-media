@@ -67,7 +67,7 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
               <h3 className="font-semibold text-white">Revenue Overview</h3>
               <p className="text-xs text-zinc-500 mt-0.5">Monthly invoiced revenue</p>
             </div>
-            <Link href="/dashboard/reports" className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors">
+            <Link href="/dashboard/reports" className="text-xs text-primary hover:opacity-80 flex items-center gap-1 transition-colors">
               Full Report <ArrowUpRight size={12} />
             </Link>
           </div>
@@ -76,15 +76,15 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
               <AreaChart data={monthlyRevenue}>
                 <defs>
                   <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff06" />
                 <XAxis dataKey="month" tick={{ fill: '#71717a', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#71717a', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => v > 0 ? `₹${(v / 1000).toFixed(0)}k` : '₹0'} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={2.5} fill="url(#revenueGrad)" dot={false} activeDot={{ r: 5, fill: '#8b5cf6' }} />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#revenueGrad)" dot={false} activeDot={{ r: 5, fill: 'hsl(var(--primary))' }} />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -155,7 +155,7 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
           className="glassmorphism rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-white">Recent Campaigns</h3>
-            <Link href="/dashboard/campaigns" className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors">
+            <Link href="/dashboard/campaigns" className="text-xs text-primary hover:opacity-80 flex items-center gap-1 transition-colors">
               View All <ArrowUpRight size={12} />
             </Link>
           </div>
@@ -165,11 +165,11 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
             <div className="space-y-3">
               {recentCampaigns.slice(0, 5).map((c: any, i: number) => {
                 const statusColors: Record<string, string> = {
-                  ACTIVE: 'text-emerald-400 bg-emerald-400/10',
-                  DRAFT: 'text-zinc-400 bg-zinc-400/10',
-                  PLANNED: 'text-blue-400 bg-blue-400/10',
-                  COMPLETED: 'text-purple-400 bg-purple-400/10',
-                  PAUSED: 'text-amber-400 bg-amber-400/10',
+                  ACTIVE: 'text-cyan-400 bg-cyan-400/10',      // Hyper Cyan
+                  DRAFT: 'text-zinc-400 bg-zinc-400/10',       // Subtext Gray
+                  PLANNED: 'text-primary bg-primary/10',       // Electric Violet
+                  COMPLETED: 'text-amber-400 bg-amber-400/10', // Enterprise Gold
+                  PAUSED: 'text-rose-400 bg-rose-400/10',       // Creator Pink
                 };
                 return (
                   <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/3 hover:bg-white/5 transition-all">
@@ -208,8 +208,8 @@ function TeamMemberDashboardContent({ user, stats, loading, recentActivity }: an
           <p className="text-3xl font-bold text-white mt-3">{loading ? '-' : (stats.tasks || 0)}</p>
           <p className="text-sm text-zinc-400 mt-1">My Open Tasks</p>
         </motion.div>
-        <motion.div variants={fadeIn} className="p-5 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-white/10">
-          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-purple-400"><Megaphone size={20} /></div>
+        <motion.div variants={fadeIn} className="p-5 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-white/10">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-primary"><Megaphone size={20} /></div>
           <p className="text-3xl font-bold text-white mt-3">{loading ? '-' : (stats.activeCampaigns || 0)}</p>
           <p className="text-sm text-zinc-400 mt-1">Active Campaigns</p>
         </motion.div>
@@ -282,17 +282,17 @@ function DashboardContent() {
   }, [router]);
 
   const kpiCards = useMemo(() => [
-    { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-purple-400', bg: 'from-purple-500/20 to-purple-500/5' },
-    { label: 'Total Clients', value: stats.clients, icon: Briefcase, color: 'text-blue-400', bg: 'from-blue-500/20 to-blue-500/5' },
-    { label: 'Influencers', value: stats.influencers, icon: Users, color: 'text-emerald-400', bg: 'from-emerald-500/20 to-emerald-500/5' },
+    { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-rose-400', bg: 'from-rose-500/20 to-rose-500/5' },
+    { label: 'Total Clients', value: stats.clients, icon: Briefcase, color: 'text-cyan-400', bg: 'from-cyan-500/20 to-cyan-500/5' },
+    { label: 'Influencers', value: stats.influencers, icon: Users, color: 'text-rose-400', bg: 'from-rose-500/20 to-rose-500/5' },
     { label: 'Open Tasks', value: stats.tasks, icon: Activity, color: 'text-amber-400', bg: 'from-amber-500/20 to-amber-500/5' },
   ], [stats]);
 
   const quickLinks = useMemo(() => [
-    { href: '/dashboard/campaigns', label: 'Create Campaign', icon: Megaphone, color: 'bg-purple-500' },
-    { href: '/dashboard/influencers', label: 'Add Influencer', icon: Users, color: 'bg-blue-500' },
-    { href: '/dashboard/pipeline', label: 'View Pipeline', icon: ArrowUpRight, color: 'bg-emerald-500' },
-    { href: '/dashboard/ai', label: 'AI Tools', icon: Sparkles, color: 'bg-gradient-to-r from-purple-500 to-blue-500' },
+    { href: '/dashboard/campaigns', label: 'Create Campaign', icon: Megaphone, color: 'bg-rose-500' },
+    { href: '/dashboard/influencers', label: 'Add Influencer', icon: Users, color: 'bg-rose-500' },
+    { href: '/dashboard/pipeline', label: 'View Pipeline', icon: ArrowUpRight, color: 'bg-primary' },
+    { href: '/dashboard/ai', label: 'AI Tools', icon: Sparkles, color: 'bg-gradient-to-r from-primary to-secondary' },
   ], []);
 
   const hasRevenueData = monthlyRevenue.some(m => m.revenue > 0);

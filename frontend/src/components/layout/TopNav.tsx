@@ -33,16 +33,16 @@ export default function TopNav() {
   const themeRef = useRef<HTMLDivElement>(null);
 
   const THEMES = [
-    { id: 'aurora-glass', name: 'Aurora Glass', color: '#f472b6' },
-    { id: 'cotton-candy', name: 'Cotton Candy', color: '#fbcfe8' },
-    { id: 'midnight-enterprise', name: 'Midnight Enterprise', color: '#1e3a8a' },
-    { id: 'neon-ai', name: 'Neon AI Command', color: '#06b6d4' },
-    { id: 'minimal-white', name: 'Minimal White Workspace', color: '#6366f1' },
-    { id: 'luxury-gold', name: 'Luxury Black Gold', color: '#fbbf24' },
-    { id: 'creator-studio', name: 'Creator Studio', color: '#ec4899' },
-    { id: 'apple-frost', name: 'Apple Frost', color: '#94a3b8' },
-    { id: 'space-gradient', name: 'Space Gradient', color: '#8b5cf6' },
-    { id: 'soft-clay', name: 'Soft Claymorphism', color: '#f87171' },
+    { id: 'space-deep-black', name: 'Space Deep Black', color: '#08070B', description: 'Core dark — Default' },
+    { id: 'cyber-surface', name: 'Cyber Surface', color: '#12111A', description: 'Dark cards & sidebar' },
+    { id: 'premium-light', name: 'Premium Light', color: '#F8FAFC', description: 'Clean slate enterprise' },
+    { id: 'executive-stark', name: 'Executive Stark', color: '#FFFFFF', description: 'Pure white workspaces' },
+    { id: 'electric-violet', name: 'Electric Violet', color: '#6D28D9', description: 'Brand accent UI' },
+    { id: 'hyper-cyan', name: 'Hyper Cyan', color: '#06B6D4', description: 'AI & analytics accent' },
+    { id: 'creator-pink', name: 'Creator Pink', color: '#F43F5E', description: 'Influencer management' },
+    { id: 'muted-border', name: 'Muted Border', color: '#262435', description: 'Linear-style minimal' },
+    { id: 'subtext-gray', name: 'Subtext Gray', color: '#94A3B8', description: 'Secondary typography' },
+    { id: 'enterprise-gold', name: 'Enterprise Gold', color: '#E2B857', description: 'VIP & financial tier' },
   ];
 
   const fetchNotifications = useCallback(async () => {
@@ -164,28 +164,42 @@ export default function TopNav() {
           </button>
           
           {showThemeMenu && (
-            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-white/15 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 dark:bg-zinc-900/95 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-zinc-200 dark:border-white/10">
-                <span className="text-sm font-semibold text-zinc-800 dark:text-white">Select Theme</span>
+            <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-white/10 shadow-2xl overflow-hidden backdrop-blur-2xl bg-zinc-950/95 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                <span className="text-sm font-semibold text-white">Adrex OS Palette</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">10 themes</span>
               </div>
-              <div className="p-1.5 max-h-[300px] overflow-y-auto">
-                {THEMES.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition-all ${
-                      theme === t.id 
-                        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium' 
-                        : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/8'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded-full border border-black/10 dark:border-white/20 shadow-inner" style={{ backgroundColor: t.color }} />
-                      {t.name}
-                    </div>
-                    {theme === t.id && <Check size={16} />}
-                  </button>
-                ))}
+              <div className="p-1.5 max-h-[360px] overflow-y-auto space-y-0.5">
+                {THEMES.map(t => {
+                  const isLight = ['premium-light', 'executive-stark'].includes(t.id);
+                  const isActive = theme === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
+                        isActive
+                          ? 'bg-white/10 ring-1 ring-white/20'
+                          : 'hover:bg-white/5'
+                      }`}
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg shrink-0 shadow-md border border-white/10"
+                        style={{ backgroundColor: t.color }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium truncate ${isActive ? 'text-white' : 'text-zinc-300'}`}>
+                          {t.name}
+                        </p>
+                        <p className="text-[11px] text-zinc-500 truncate">{t.description}</p>
+                      </div>
+                      {isActive && <Check size={14} className="text-violet-400 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="px-4 py-2.5 border-t border-white/10">
+                <p className="text-[10px] text-zinc-600 text-center">Theme resets to Space Deep Black on next login</p>
               </div>
             </div>
           )}
