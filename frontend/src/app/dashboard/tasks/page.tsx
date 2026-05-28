@@ -60,6 +60,7 @@ export default function TasksPage() {
   const [showModal, setShowModal] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', campaignId: '', dueDate: '', status: 'TODO' as TaskStatus });
   const [loading, setLoading] = useState(true);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Idempotency and submit state guards
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -355,9 +356,10 @@ export default function TasksPage() {
                         transition={{ delay: ti * 0.04 }}
                         draggable={canDrag}
                         onDragStart={(e: any) => handleDragStart(e, task.id)}
-                        className={`glassmorphism rounded-xl p-4 border transition-all group shadow-sm hover:shadow-md ${
+                        onClick={() => setSelectedTask(task)}
+                        className={`glassmorphism rounded-xl p-4 border transition-all group shadow-sm hover:shadow-md cursor-pointer ${
                           canDrag
-                            ? 'border-border/30 hover:border-primary/50 cursor-grab active:cursor-grabbing'
+                            ? 'border-border/30 hover:border-primary/50'
                             : 'border-border/20 opacity-90'
                         }`}
                       >
@@ -518,6 +520,93 @@ export default function TasksPage() {
               <AlertCircle size={16} />
             )}
             <span className="text-xs font-semibold">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Task Details Modal */}
+      <AnimatePresence>
+        {selectedTask && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedTask(null)} />
+            <motion.div className="relative z-10 w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-2"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}>
+              
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                <h3 className="text-lg font-bold text-white">Task Details</h3>
+                <button onClick={() => setSelectedTask(null)} className="p-1.5 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-white transition-colors"><X size={18} /></button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Title</p>
+                  <p className="text-sm font-semibold text-white mt-0.5">{selectedTask.title}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Status</p>
+                    <span className="inline-block text-xs px-2.5 py-1 rounded-full font-semibold mt-1 bg-white/5 text-zinc-300 border border-white/10">
+                      {selectedTask.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Priority</p>
+                    <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-semibold mt-1 ${priorityConfig[selectedTask.priority]?.color} ${priorityConfig[selectedTask.priority]?.bg}`}>
+                      {priorityConfig[selectedTask.priority]?.label}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Campaign</p>
+                  <p className="text-sm text-zinc-300 mt-0.5">
+                    📁 {selectedTask.campaignObj?.name || selectedTask.campaign || 'General / Agency Task'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Assignee</p>
+                    <p className="text-sm text-zinc-300 mt-0.5 flex items-center gap-1.5">
+                      {selectedTask.assigneeUser ? (
+                        <>
+                          <span className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold">
+                            {selectedTask.assigneeUser.firstName[0].toUpperCase()}
+                          </span>
+                          {selectedTask.assigneeUser.firstName} {selectedTask.assigneeUser.lastName}
+                        </>
+                      ) : selectedTask.assignee ? (
+                        selectedTask.assignee
+                      ) : (
+                        'Unassigned'
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">Due Date</p>
+                    <p className="text-sm text-zinc-300 mt-0.5">
+                      📅 {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : 'No due date'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-5 mt-6 border-t border-white/10 flex justify-end gap-3">
+                {isAdmin && (
+                  <button
+                    onClick={() => { handleDelete(selectedTask.id); setSelectedTask(null); }}
+                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-all border border-red-500/20"
+                  >
+                    Delete Task
+                  </button>
+                )}
+                <button onClick={() => setSelectedTask(null)} className="px-5 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl transition-all">
+                  Close
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

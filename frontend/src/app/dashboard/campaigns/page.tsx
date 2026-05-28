@@ -256,13 +256,13 @@ export default function CampaignsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-2 ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
         {[
           { label: 'Total Campaigns', value: loading ? '-' : campaigns.length, sub: 'All time' },
           { label: 'Active Now', value: loading ? '-' : campaigns.filter(c => c.status === 'ACTIVE').length, sub: 'Running' },
-          { label: 'Total Budget', value: loading ? '-' : `₹${campaigns.reduce((a,c) => a + c.budget, 0).toLocaleString('en-IN')}`, sub: 'Allocated' },
+          isAdmin ? { label: 'Total Budget', value: loading ? '-' : `₹${campaigns.reduce((a,c) => a + c.budget, 0).toLocaleString('en-IN')}`, sub: 'Allocated' } : null,
           { label: 'Completed', value: loading ? '-' : campaigns.filter(c => c.status === 'COMPLETED').length, sub: 'Finished' },
-        ].map((s, i) => (
+        ].filter((s): s is { label: string; value: string | number; sub: string } => s !== null).map((s, i) => (
           <div key={i} className="p-4 rounded-xl glassmorphism">
             <p className="text-xs text-muted-foreground">{s.label}</p>
             <p className="text-2xl font-bold mt-1">{s.value}</p>

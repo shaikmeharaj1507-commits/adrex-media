@@ -49,26 +49,26 @@
     --radius: 1.25rem;
   }
 
-  .premium-light {
-    --background: 210 40% 98%;
-    --foreground: 255 22% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 255 22% 4%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 255 22% 4%;
-    --primary: 263 70% 50%;
+  .ivory-luxe {
+    --background: 210 17% 98%;
+    --foreground: 240 5% 12%;
+    --card: 0 0% 99%;
+    --card-foreground: 240 5% 12%;
+    --popover: 0 0% 99%;
+    --popover-foreground: 240 5% 12%;
+    --primary: 252 100% 68%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 20% 65%;
-    --secondary-foreground: 255 22% 4%;
-    --muted: 210 40% 93%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 263 70% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 350 90% 60%;
+    --secondary: 211 100% 65%;
+    --secondary-foreground: 240 5% 12%;
+    --muted: 220 22% 93%;
+    --muted-foreground: 224 8% 47%;
+    --accent: 191 100% 91%;
+    --accent-foreground: 240 5% 12%;
+    --destructive: 0 100% 71%;
     --destructive-foreground: 0 0% 98%;
-    --border: 215 20% 88%;
-    --input: 210 40% 93%;
-    --ring: 263 70% 50%;
+    --border: 220 22% 93%;
+    --input: 220 22% 93%;
+    --ring: 252 100% 68%;
     --radius: 1.25rem;
   }
 

@@ -81,18 +81,18 @@ export default function Sidebar() {
               {active && (
                 <motion.div
                   layoutId="sidebar-active"
-                  className="absolute inset-0 bg-gradient-to-r from-violet-500/15 to-cyan-500/10 rounded-xl border border-violet-500/20"
+                  className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-xl shadow-[0_8px_20px_rgba(124,92,255,0.25)]"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
               {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-gradient-to-b from-violet-400 to-cyan-400" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-white" />
               )}
               <Icon size={17} className={`relative z-10 transition-colors ${
-                active ? 'text-violet-300' : 'group-hover:text-foreground'
+                active ? 'text-white' : 'group-hover:text-foreground'
               }`} />
               <span className="relative z-10 font-medium text-sm">{item.label}</span>
-              {active && <div className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-gradient-to-br from-violet-400 to-cyan-400" />}
+              {active && <div className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-white" />}
             </Link>
           );
         })}

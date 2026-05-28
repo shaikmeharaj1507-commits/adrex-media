@@ -26,7 +26,7 @@ export default function RootLayout({
           themes={[
             'space-deep-black',
             'cyber-surface',
-            'premium-light',
+            'ivory-luxe',
             'executive-stark',
             'electric-violet',
             'hyper-cyan',

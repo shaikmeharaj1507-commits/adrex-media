@@ -35,7 +35,7 @@ export default function TopNav() {
   const THEMES = [
     { id: 'space-deep-black', name: 'Space Deep Black', color: '#08070B', description: 'Core dark — Default' },
     { id: 'cyber-surface', name: 'Cyber Surface', color: '#12111A', description: 'Dark cards & sidebar' },
-    { id: 'premium-light', name: 'Premium Light', color: '#F8FAFC', description: 'Clean slate enterprise' },
+    { id: 'ivory-luxe', name: 'Ivory Luxe', color: '#FAFBFC', description: 'Apple-style luxury white' },
     { id: 'executive-stark', name: 'Executive Stark', color: '#FFFFFF', description: 'Pure white workspaces' },
     { id: 'electric-violet', name: 'Electric Violet', color: '#6D28D9', description: 'Brand accent UI' },
     { id: 'hyper-cyan', name: 'Hyper Cyan', color: '#06B6D4', description: 'AI & analytics accent' },
@@ -171,7 +171,7 @@ export default function TopNav() {
               </div>
               <div className="p-1.5 max-h-[360px] overflow-y-auto space-y-0.5">
                 {THEMES.map(t => {
-                  const isLight = ['premium-light', 'executive-stark'].includes(t.id);
+                  const isLight = ['ivory-luxe', 'executive-stark'].includes(t.id);
                   const isActive = theme === t.id;
                   return (
                     <button
