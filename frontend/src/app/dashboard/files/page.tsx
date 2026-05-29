@@ -8,6 +8,7 @@ import {
   Search, Folder, Plus, Hash, X, ChevronRight, Pencil, FolderSymlink, Check,
   Square, CheckSquare, Eye, ShieldAlert, BarChart2
 } from 'lucide-react';
+import FilePreviewModal from '@/components/FilePreviewModal';
 
 interface FileRecord {
   id: string;
@@ -703,37 +704,32 @@ export default function FilesPage() {
         </div>
       )}
 
-      {/* Lightbox Preview Modal */}
-      <AnimatePresence>
-        {previewFile && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/90 backdrop-blur-md">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative max-w-4xl w-full h-[80vh] flex flex-col items-center justify-center"
-            >
-              <button 
-                onClick={() => setPreviewFile(null)} 
-                className="absolute top-0 right-0 p-2.5 bg-white/5 hover:bg-white/10 rounded-full text-white z-10"
-              >
-                <X size={20} />
-              </button>
-              
-              <img 
-                src={`${API_URL}${previewFile.url}`} 
-                alt={previewFile.name}
-                className="max-h-full max-w-full object-contain rounded-xl shadow-2xl border border-white/10"
-              />
-              
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/70 backdrop-blur-sm text-center rounded-b-xl border-t border-white/5">
-                <p className="text-white font-semibold text-sm truncate">{previewFile.name}</p>
-                <p className="text-xs text-zinc-400 mt-1">Uploaded by {previewFile.uploader.firstName} on {new Date(previewFile.createdAt).toLocaleDateString()}</p>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Universal File Preview Modal */}
+      <FilePreviewModal
+        file={previewFile ? {
+          id: previewFile.id,
+          name: previewFile.name,
+          url: previewFile.url.startsWith('http') ? previewFile.url : `${API_URL}${previewFile.url}`,
+          size: previewFile.size,
+          mimeType: previewFile.type,
+          createdAt: previewFile.createdAt,
+          user: previewFile.uploader,
+        } : null}
+        files={filteredFiles.map(f => ({
+          id: f.id,
+          name: f.name,
+          url: f.url.startsWith('http') ? f.url : `${API_URL}${f.url}`,
+          size: f.size,
+          mimeType: f.type,
+          createdAt: f.createdAt,
+          user: f.uploader,
+        }))}
+        onClose={() => setPreviewFile(null)}
+        onNavigate={(fileData) => {
+          const found = filteredFiles.find(f => f.id === fileData.id);
+          if (found) setPreviewFile(found);
+        }}
+      />
 
       {/* Move File Modal */}
       <AnimatePresence>

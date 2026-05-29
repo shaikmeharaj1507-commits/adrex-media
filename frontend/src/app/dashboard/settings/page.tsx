@@ -4,18 +4,20 @@ import { useState, useEffect, Suspense, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Building2, CreditCard, Bell, Shield,
-  Save, Camera, Check, ChevronRight, Settings, Upload, Loader2
+  Save, Camera, Check, ChevronRight, Settings, Upload, Loader2, Palette, Sun, Moon
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useSearchParams } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
 const tabs = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'agency', label: 'Agency', icon: Building2 },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'billing', label: 'Billing', icon: CreditCard },
+  { id: 'profile',      label: 'Profile',      icon: User },
+  { id: 'agency',       label: 'Agency',       icon: Building2 },
+  { id: 'appearance',   label: 'Appearance',   icon: Palette },
+  { id: 'notifications',label: 'Notifications',icon: Bell },
+  { id: 'security',     label: 'Security',     icon: Shield },
+  { id: 'billing',      label: 'Billing',      icon: CreditCard },
 ];
 
 function SaveButton({ onClick, saved }: { onClick: () => void; saved: boolean }) {
@@ -64,6 +66,102 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
         <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-card rounded-full transition-all border border-border/20 shadow-sm ${value ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
     </div>
+  );
+}
+
+function AppearanceTab() {
+  const { theme, setTheme } = useTheme();
+  const { currencyFormat, setCurrencyFormat } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  if (!mounted) return <div className="h-40 animate-pulse bg-muted rounded-2xl" />;
+
+  const isDark = theme !== 'ivory-luxe';
+
+  return (
+    <>
+      <div>
+        <h2 className="text-xl font-bold mb-1 text-foreground">Appearance</h2>
+        <p className="text-sm text-muted-foreground">Customize how Adrex OS looks and feels.</p>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-3">Theme</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Dark Theme Card */}
+            <button
+              onClick={() => setTheme('space-deep-black')}
+              className={`text-left p-1 rounded-2xl border-2 transition-all ${
+                isDark ? 'border-primary' : 'border-transparent hover:border-border'
+              }`}
+            >
+              <div className="bg-[#050510] rounded-xl p-4 border border-white/10 space-y-3 shadow-sm h-32 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-900/20 via-[#050510]/0 to-[#050510]/0" />
+                <div className="flex items-center gap-2 relative z-10">
+                  <div className="w-8 h-8 rounded-full bg-violet-600/20 border border-violet-500/30 flex items-center justify-center">
+                    <Moon size={14} className="text-violet-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-2 w-16 bg-white/10 rounded" />
+                    <div className="h-2 w-10 bg-white/5 rounded" />
+                  </div>
+                </div>
+                <div className="h-12 rounded-lg bg-white/5 border border-white/5 relative z-10 p-2 space-y-1.5">
+                  <div className="h-1.5 w-3/4 bg-white/10 rounded" />
+                  <div className="h-1.5 w-1/2 bg-white/5 rounded" />
+                </div>
+              </div>
+              <div className="p-3 text-center">
+                <p className="text-sm font-semibold text-foreground">Violet Dark</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Sleek & Professional</p>
+              </div>
+            </button>
+
+            {/* Light Theme Card */}
+            <button
+              onClick={() => setTheme('ivory-luxe')}
+              className={`text-left p-1 rounded-2xl border-2 transition-all ${
+                !isDark ? 'border-primary' : 'border-transparent hover:border-border'
+              }`}
+            >
+              <div className="bg-[#f8f9fc] rounded-xl p-4 border border-slate-200 space-y-3 shadow-sm h-32 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-100 via-[#f8f9fc]/0 to-[#f8f9fc]/0" />
+                <div className="flex items-center gap-2 relative z-10">
+                  <div className="w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center">
+                    <Sun size={14} className="text-amber-500" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-2 w-16 bg-slate-200 rounded" />
+                    <div className="h-2 w-10 bg-slate-100 rounded" />
+                  </div>
+                </div>
+                <div className="h-12 rounded-lg bg-white border border-slate-100 shadow-sm relative z-10 p-2 space-y-1.5">
+                  <div className="h-1.5 w-3/4 bg-slate-200 rounded" />
+                  <div className="h-1.5 w-1/2 bg-slate-100 rounded" />
+                </div>
+              </div>
+              <div className="p-3 text-center">
+                <p className="text-sm font-semibold text-foreground">Ivory Luxe</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Clean & Modern</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="border-t border-border/60 pt-6">
+          <label className="block text-sm font-medium text-foreground mb-3">Regional Settings</label>
+          <ToggleRow
+            label="Use Indian Currency Format"
+            desc="Format large numbers as Lakhs (L) and Crores (Cr) instead of Millions (M) and Billions (B)."
+            value={currencyFormat === 'IN'}
+            onChange={(v) => setCurrencyFormat(v ? 'IN' : 'INTL')}
+          />
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -377,6 +475,11 @@ function SettingsContent() {
             </div>
             <div className="flex justify-end"><SaveButton onClick={handleSave} saved={saved} /></div>
           </>
+        )}
+
+        {/* APPEARANCE */}
+        {activeTab === 'appearance' && (
+          <AppearanceTab />
         )}
 
         {/* AGENCY */}
