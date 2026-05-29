@@ -23,8 +23,8 @@ function SaveButton({ onClick, saved }: { onClick: () => void; saved: boolean })
     <button
       onClick={onClick}
       className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all ${saved
-          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-          : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+          : 'bg-primary text-white hover:opacity-95 shadow-sm'
         }`}
     >
       {saved ? <Check size={16} /> : <Save size={16} />}
@@ -38,13 +38,13 @@ function InputField({ label, value, onChange, type = 'text', disabled = false }:
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-zinc-300 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-muted-foreground mb-1.5">{label}</label>
       <input
         type={type}
         value={value}
         onChange={e => onChange?.(e.target.value)}
         disabled={disabled}
-        className="w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       />
     </div>
   );
@@ -54,14 +54,14 @@ function ToggleRow({ label, desc, value, onChange }: { label: string; desc: stri
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
-        <p className="text-sm font-medium text-white">{label}</p>
-        <p className="text-xs text-zinc-500 mt-0.5">{desc}</p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
       </div>
       <button
         onClick={() => onChange(!value)}
-        className={`shrink-0 w-11 h-6 rounded-full transition-all relative ${value ? 'bg-purple-500' : 'bg-zinc-700'}`}
+        className={`shrink-0 w-11 h-6 rounded-full transition-all relative ${value ? 'bg-primary' : 'bg-muted'}`}
       >
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all ${value ? 'translate-x-5' : 'translate-x-0'}`} />
+        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-card rounded-full transition-all border border-border/20 shadow-sm ${value ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
     </div>
   );
@@ -303,7 +303,7 @@ function SettingsContent() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Sidebar Nav */}
-      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glassmorphism rounded-2xl p-3 h-fit">
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="bg-card border border-border rounded-2xl p-3 h-fit shadow-sm">
         <nav className="space-y-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -312,53 +312,53 @@ function SettingsContent() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${active ? 'bg-primary/15 text-purple-300 border border-purple-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon size={16} className={active ? 'text-purple-400' : 'text-zinc-500'} />
+                  <Icon size={16} className={active ? 'text-primary' : 'text-muted-foreground'} />
                   {tab.label}
                 </div>
-                <ChevronRight size={14} className={active ? 'text-purple-400' : 'text-zinc-700'} />
+                <ChevronRight size={14} className={active ? 'text-primary' : 'text-muted-foreground/60'} />
               </button>
             );
           })}
         </nav>
       </motion.div>
-
+ 
       {/* Content Panel */}
       <motion.div
         key={activeTab}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
-        className="lg:col-span-3 glassmorphism rounded-2xl p-8 space-y-8"
+        className="lg:col-span-3 bg-card border border-border rounded-2xl p-8 space-y-8 shadow-sm"
       >
         {/* PROFILE */}
         {activeTab === 'profile' && (
           <>
             <div>
-              <h2 className="text-xl font-bold mb-1">Profile Information</h2>
-              <p className="text-sm text-zinc-500">Update your personal details.</p>
+              <h2 className="text-xl font-bold mb-1 text-foreground">Profile Information</h2>
+              <p className="text-sm text-muted-foreground">Update your personal details.</p>
             </div>
             <div className="flex items-center gap-5">
               <div className="relative">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl object-cover" />
                 ) : (
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-3xl font-bold">
                     {profile.firstName[0]?.toUpperCase() ?? 'D'}
                   </div>
                 )}
                 <input type="file" ref={avatarInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
-                <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading} className="absolute -bottom-1 -right-1 w-7 h-7 bg-zinc-800 border border-white/15 rounded-lg flex items-center justify-center hover:bg-zinc-700 transition-all disabled:opacity-50">
-                  {avatarUploading ? <Loader2 size={13} className="text-zinc-300 animate-spin" /> : <Camera size={13} className="text-zinc-300" />}
+                <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading} className="absolute -bottom-1 -right-1 w-7 h-7 bg-muted border border-border rounded-lg flex items-center justify-center hover:bg-muted/80 transition-all disabled:opacity-50 text-foreground">
+                  {avatarUploading ? <Loader2 size={13} className="text-foreground animate-spin" /> : <Camera size={13} className="text-foreground" />}
                 </button>
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">{profile.firstName} {profile.lastName}</p>
-                <p className="text-xs text-zinc-500">{profile.email}</p>
-                <span className="text-xs mt-1.5 inline-block px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/20">
+                <p className="text-sm font-semibold text-foreground">{profile.firstName} {profile.lastName}</p>
+                <p className="text-xs text-muted-foreground">{profile.email}</p>
+                <span className="text-xs mt-1.5 inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
                   {profile.role || 'Super Admin'}
                 </span>
               </div>
@@ -370,10 +370,10 @@ function SettingsContent() {
               <InputField label="Phone Number" value={profile.phone} onChange={v => setProfile(p => ({ ...p, phone: v }))} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Bio</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1.5">Bio</label>
               <textarea value={profile.bio} onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))} rows={3}
                 placeholder="Tell us a little about yourself..."
-                className="w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition-all resize-none" />
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary transition-all resize-none" />
             </div>
             <div className="flex justify-end"><SaveButton onClick={handleSave} saved={saved} /></div>
           </>
@@ -383,26 +383,26 @@ function SettingsContent() {
         {activeTab === 'agency' && (
           <>
             <div>
-              <h2 className="text-xl font-bold mb-1">Agency Settings</h2>
-              <p className="text-sm text-zinc-500">Configure your agency-level preferences.</p>
+              <h2 className="text-xl font-bold mb-1 text-foreground">Agency Settings</h2>
+              <p className="text-sm text-muted-foreground">Configure your agency-level preferences.</p>
             </div>
             <div className="flex items-center gap-5">
               <div className="relative">
                 {agencyLogoUrl ? (
-                  <img src={agencyLogoUrl} alt="Agency Logo" className="w-20 h-20 rounded-2xl object-cover border border-white/10" />
+                  <img src={agencyLogoUrl} alt="Agency Logo" className="w-20 h-20 rounded-2xl object-cover border border-border" />
                 ) : (
-                  <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                    <Building2 size={32} className="text-zinc-500" />
+                  <div className="w-20 h-20 rounded-2xl bg-muted border border-border flex items-center justify-center">
+                    <Building2 size={32} className="text-muted-foreground" />
                   </div>
                 )}
                 <input type="file" ref={logoInputRef} onChange={handleLogoUpload} className="hidden" accept="image/*" />
-                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading} className="absolute -bottom-1 -right-1 w-7 h-7 bg-zinc-800 border border-white/15 rounded-lg flex items-center justify-center hover:bg-zinc-700 transition-all disabled:opacity-50">
-                  {logoUploading ? <Loader2 size={13} className="text-zinc-300 animate-spin" /> : <Upload size={13} className="text-zinc-300" />}
+                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading} className="absolute -bottom-1 -right-1 w-7 h-7 bg-muted border border-border rounded-lg flex items-center justify-center hover:bg-muted/80 transition-all disabled:opacity-50 text-foreground">
+                  {logoUploading ? <Loader2 size={13} className="text-foreground animate-spin" /> : <Upload size={13} className="text-foreground" />}
                 </button>
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">Agency Logo</p>
-                <p className="text-xs text-zinc-500">PNG or JPG, max 2MB</p>
+                <p className="text-sm font-semibold text-foreground">Agency Logo</p>
+                <p className="text-xs text-muted-foreground">PNG or JPG, max 2MB</p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -410,9 +410,9 @@ function SettingsContent() {
               <InputField label="Website" value={agency.website} onChange={v => setAgency(p => ({ ...p, website: v }))} />
               <InputField label="Industry" value={agency.industry} onChange={v => setAgency(p => ({ ...p, industry: v }))} />
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Team Size</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-1.5">Team Size</label>
                 <select value={agency.teamSize} onChange={e => setAgency(p => ({ ...p, teamSize: e.target.value }))}
-                  className="w-full bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition-all">
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary transition-all">
                   {['1-10', '10-50', '50-100', '100-500', '500+'].map(s => <option key={s} value={s}>{s} employees</option>)}
                 </select>
               </div>
@@ -426,12 +426,12 @@ function SettingsContent() {
         {activeTab === 'notifications' && (
           <>
             <div>
-              <h2 className="text-xl font-bold mb-1">Notifications</h2>
-              <p className="text-sm text-zinc-500">Choose what you hear about.</p>
+              <h2 className="text-xl font-bold mb-1 text-foreground">Notifications</h2>
+              <p className="text-sm text-muted-foreground">Choose what you hear about.</p>
             </div>
             <div className="space-y-5">
-              <div className="pb-3 border-b border-white/10">
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-3">Email Notifications</p>
+              <div className="pb-3 border-b border-border">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Email Notifications</p>
                 <div className="space-y-4">
                   <ToggleRow label="Campaign Updates" desc="Get notified when campaign status changes." value={notifs.emailCampaigns} onChange={v => setNotifs(p => ({ ...p, emailCampaigns: v }))} />
                   <ToggleRow label="Task Reminders" desc="Receive email reminders for overdue tasks." value={notifs.emailTasks} onChange={v => setNotifs(p => ({ ...p, emailTasks: v }))} />
@@ -440,7 +440,7 @@ function SettingsContent() {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-3">Browser Notifications</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Browser Notifications</p>
                 <ToggleRow label="Real-time Alerts" desc="Get instant browser notifications for critical events." value={notifs.browserAlerts} onChange={v => setNotifs(p => ({ ...p, browserAlerts: v }))} />
               </div>
             </div>
@@ -449,8 +449,8 @@ function SettingsContent() {
                 onClick={handleSave}
                 disabled={loadingNotifs}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition-all ${saved
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50'
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                  : 'bg-primary text-white hover:opacity-95 shadow-sm disabled:opacity-50'
                 }`}
               >
                 {loadingNotifs ? <Loader2 size={16} className="animate-spin" /> : saved ? <Check size={16} /> : <Save size={16} />}
@@ -464,51 +464,49 @@ function SettingsContent() {
         {activeTab === 'security' && (
           <>
             <div>
-              <h2 className="text-xl font-bold mb-1">Security</h2>
-              <p className="text-sm text-zinc-500">Manage your password and account access.</p>
+              <h2 className="text-xl font-bold mb-1 text-foreground">Security</h2>
+              <p className="text-sm text-muted-foreground">Manage your password and account access.</p>
             </div>
-            <div className="p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
-              <p className="text-sm text-emerald-400 font-medium">✓ Account Secured</p>
-              <p className="text-xs text-zinc-500 mt-0.5">Your account is protected with JWT authentication.</p>
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+              <p className="text-sm text-emerald-600 font-semibold">✓ Account Secured</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Your account is protected with JWT authentication.</p>
             </div>
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-zinc-300">Change Password</h3>
+              <h3 className="text-sm font-semibold text-foreground">Change Password</h3>
               <InputField label="Current Password" value={passwords.current} onChange={v => setPasswords(p => ({ ...p, current: v }))} type="password" />
               <InputField label="New Password" value={passwords.newPass} onChange={v => setPasswords(p => ({ ...p, newPass: v }))} type="password" />
               <InputField label="Confirm New Password" value={passwords.confirm} onChange={v => setPasswords(p => ({ ...p, confirm: v }))} type="password" />
             </div>
             <div className="flex justify-end"><SaveButton onClick={handleSave} saved={saved} /></div>
           </>
-        )}
-
-        {/* BILLING */}
+        )}        {/* BILLING */}
         {activeTab === 'billing' && (
           <>
             <div>
-              <h2 className="text-xl font-bold mb-1">Billing & Subscription</h2>
-              <p className="text-sm text-zinc-500">Manage your plan and payment methods.</p>
+              <h2 className="text-xl font-bold mb-1 text-foreground">Billing & Subscription</h2>
+              <p className="text-sm text-muted-foreground">Manage your plan and payment methods.</p>
             </div>
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/15 to-blue-500/10 border border-purple-500/20">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/5 border border-border">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-xs font-semibold text-purple-300 uppercase tracking-widest">Current Plan</span>
-                  <h3 className="text-2xl font-bold text-white mt-1">Pro Agency</h3>
-                  <p className="text-sm text-zinc-400 mt-1">₹12,375 / month · Billed annually</p>
+                  <span className="text-xs font-semibold text-primary uppercase tracking-widest">Current Plan</span>
+                  <h3 className="text-2xl font-bold text-foreground mt-1">Pro Agency</h3>
+                  <p className="text-sm text-muted-foreground mt-1">₹12,375 / month · Billed annually</p>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">Active</span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-25">Active</span>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                 {[{ label: 'Campaigns', value: 'Unlimited' }, { label: 'Influencers', value: 'Unlimited' }, { label: 'Team Members', value: '25' }].map(f => (
-                  <div key={f.label} className="p-3 rounded-xl bg-white/5">
-                    <p className="text-sm font-bold text-white">{f.value}</p>
-                    <p className="text-xs text-zinc-500">{f.label}</p>
+                  <div key={f.label} className="p-3 rounded-xl bg-muted/65 border border-border/50">
+                    <p className="text-sm font-bold text-foreground">{f.value}</p>
+                    <p className="text-xs text-muted-foreground">{f.label}</p>
                   </div>
                 ))}
               </div>
             </div>
             <div className="flex gap-3">
-              <button className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-primary text-white hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">Upgrade Plan</button>
-              <button className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-white/5 border border-white/10 text-zinc-300 hover:bg-white/8 transition-all">Manage Billing</button>
+              <button className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-primary text-white hover:opacity-90 transition-all shadow-sm">Upgrade Plan</button>
+              <button className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-card border border-border text-foreground hover:bg-muted transition-all">Manage Billing</button>
             </div>
           </>
         )}
@@ -516,13 +514,13 @@ function SettingsContent() {
     </div>
   );
 }
-
+ 
 // Main export wraps the inner component in Suspense (required for useSearchParams in Next.js 15)
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-1">Manage your account, agency, and preferences.</p>
       </div>
       <Suspense fallback={

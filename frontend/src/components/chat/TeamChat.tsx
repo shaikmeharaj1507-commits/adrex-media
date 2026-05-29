@@ -295,37 +295,37 @@ export default function TeamChat() {
 
     if (isMe) {
       if (isInfluencer) {
-        return 'bg-purple-600/90 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)] text-white rounded-br-none';
+        return 'bg-secondary text-white rounded-br-none';
       }
       if (isAdmin) {
-        return 'bg-blue-600/90 border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.15)] text-white rounded-br-none';
+        return 'bg-primary text-white rounded-br-none';
       }
-      return 'bg-zinc-700/90 border border-zinc-600 text-white rounded-br-none';
+      return 'bg-muted text-foreground rounded-br-none';
     } else {
       if (isInfluencer) {
-        return 'bg-zinc-900 border border-purple-500/30 text-zinc-100 shadow-[0_0_10px_rgba(168,85,247,0.05)] rounded-bl-none';
+        return 'bg-card border border-secondary/25 text-foreground rounded-bl-none';
       }
       if (isAdmin) {
-        return 'bg-zinc-900 border border-blue-500/30 text-zinc-100 shadow-[0_0_10px_rgba(59,130,246,0.05)] rounded-bl-none';
+        return 'bg-card border border-primary/25 text-foreground rounded-bl-none';
       }
-      return 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-bl-none';
+      return 'bg-card border border-border text-foreground rounded-bl-none';
     }
   };
 
   const getRoleTextClasses = (role: string) => {
     const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
     const isInfluencer = role === 'INFLUENCER';
-    if (isInfluencer) return 'text-purple-400';
-    if (isAdmin) return 'text-blue-400';
-    return 'text-zinc-400';
+    if (isInfluencer) return 'text-secondary';
+    if (isAdmin) return 'text-primary';
+    return 'text-muted-foreground';
   };
 
   const getRoleBadgeClasses = (role: string) => {
     const isAdmin = role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ADMIN';
     const isInfluencer = role === 'INFLUENCER';
-    if (isInfluencer) return 'text-purple-400 border-purple-500/30 bg-purple-500/10';
-    if (isAdmin) return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
-    return 'text-zinc-500 border-zinc-800 bg-zinc-900/50';
+    if (isInfluencer) return 'text-secondary border-secondary/20 bg-secondary/10';
+    if (isAdmin) return 'text-primary border-primary/20 bg-primary/10';
+    return 'text-muted-foreground border-border bg-muted';
   };
 
   const getRoleBadgeLabel = (role: string) => {
@@ -361,7 +361,7 @@ export default function TeamChat() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={openChat}
-        className={`fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center justify-center shadow-2xl z-40 ${isOpen ? 'hidden' : 'block'}`}
+        className={`fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg z-40 ${isOpen ? 'hidden' : 'block'}`}
       >
         <MessageSquare size={24} />
       </motion.button>
@@ -373,37 +373,37 @@ export default function TeamChat() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-screen w-full sm:w-[420px] bg-zinc-950/90 backdrop-blur-2xl border-l border-white/10 shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-screen w-full sm:w-[420px] bg-card border-l border-border shadow-2xl z-50 flex flex-col"
           >
-            <div className="p-4 border-b border-white/10 bg-zinc-900/50 flex items-center justify-between">
+            <div className="p-4 border-b border-border bg-muted/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {mode === 'private' && selectedUser && (
-                  <button onClick={() => { setSelectedUser(null); setMessages([]); fetchTeamMembers(); }} className="p-1.5 hover:bg-white/10 rounded-lg text-zinc-400">
+                  <button onClick={() => { setSelectedUser(null); setMessages([]); fetchTeamMembers(); }} className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground">
                     <ArrowLeft size={18} />
                   </button>
                 )}
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
-                  {mode === 'team' ? <MessageSquare className="text-purple-400" size={20} /> :
-                   mode === 'private' ? <User className="text-blue-400" size={20} /> :
-                   <Sparkles className="text-amber-400" size={20} />}
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                  {mode === 'team' ? <MessageSquare className="text-primary" size={20} /> :
+                   mode === 'private' ? <User className="text-secondary" size={20} /> :
+                   <Sparkles className="text-yellow-600" size={20} />}
                 </div>
                 <div>
-                  <h2 className="text-white font-bold">
+                  <h2 className="text-foreground font-bold">
                     {mode === 'team' ? 'Team Chat' : mode === 'private' ? (selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : 'Private Chat') : 'AI Assistant'}
                   </h2>
                   <div className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                    <span className="text-xs text-zinc-400">{isConnected ? 'Connected' : 'Disconnected'}</span>
+                    <span className="text-xs text-muted-foreground">{isConnected ? 'Connected' : 'Disconnected'}</span>
                   </div>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-xl text-zinc-400 transition-colors">
+              <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-muted rounded-xl text-muted-foreground transition-colors">
                 <Minimize2 size={20} />
               </button>
             </div>
 
             {/* Mode Selector */}
-            <div className="flex border-b border-white/10">
+            <div className="flex border-b border-border">
               {[
                 { id: 'team' as ChatMode, icon: Users, label: 'Team' },
                 { id: 'private' as ChatMode, icon: User, label: '1:1' },
@@ -413,7 +413,7 @@ export default function TeamChat() {
                   key={m.id}
                   onClick={() => switchMode(m.id)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
-                    mode === m.id ? 'text-purple-400 border-b-2 border-purple-400 bg-purple-500/5' : 'text-zinc-500 hover:text-zinc-300'
+                    mode === m.id ? 'text-primary border-b-2 border-primary bg-primary/5' : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground'
                   }`}
                 >
                   <m.icon size={14} /> {m.label}
@@ -424,25 +424,25 @@ export default function TeamChat() {
             {/* Private Chat Member List */}
             {mode === 'private' && !selectedUser && (
               <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                <p className="text-sm text-zinc-400 mb-3">Select a team member to chat with:</p>
+                <p className="text-sm text-muted-foreground mb-3">Select a team member to chat with:</p>
                 {teamMembers.length === 0 ? (
-                  <p className="text-sm text-zinc-500 text-center py-8">No team members found.</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">No team members found.</p>
                 ) : (
                   teamMembers.map(member => (
                     <button
                       key={member.id}
                       onClick={() => selectPrivateChat(member)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all text-left"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-all text-left"
                     >
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center text-purple-300 font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary font-bold">
                           {member.firstName[0]}
                         </div>
-                        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-zinc-950 ${member.isActive ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card ${member.isActive ? 'bg-emerald-500' : 'bg-muted-foreground/60'}`} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white">{member.firstName} {member.lastName}</p>
-                        <p className="text-xs text-zinc-500 capitalize">{member.role.replace(/_/g, ' ').toLowerCase()}</p>
+                        <p className="text-sm font-medium text-foreground">{member.firstName} {member.lastName}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{member.role.replace(/_/g, ' ').toLowerCase()}</p>
                       </div>
                     </button>
                   ))
@@ -456,10 +456,10 @@ export default function TeamChat() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {loading ? (
                     <div className="flex items-center justify-center h-32">
-                      <Loader2 size={24} className="animate-spin text-purple-500" />
+                      <Loader2 size={24} className="animate-spin text-primary" />
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-zinc-500 space-y-3">
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-3">
                       {mode === 'team' ? <MessageSquare size={48} className="opacity-20" /> :
                        mode === 'ai' ? <Sparkles size={48} className="opacity-20" /> :
                        <User size={48} className="opacity-20" />}
@@ -477,7 +477,7 @@ export default function TeamChat() {
                         <div key={msg.id} className={`flex items-end gap-2.5 ${me ? 'justify-end' : 'justify-start'}`}>
                           {/* Avatar for incoming */}
                           {!me && (
-                            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10 shadow-md">
+                            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-primary relative overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10 border border-border shadow-sm">
                               {sender.avatar ? (
                                 <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
                               ) : (
@@ -489,11 +489,11 @@ export default function TeamChat() {
                           <div className="flex flex-col gap-1 max-w-[75%]">
                             {/* Message Header (Sender Name, Role Badge, Time) */}
                             <div className={`flex items-center gap-1.5 px-1 ${me ? 'justify-end' : 'justify-start'}`}>
-                              <span className="text-xs font-semibold text-zinc-200">{me ? 'You' : sender.name}</span>
+                              <span className="text-xs font-semibold text-foreground">{me ? 'You' : sender.name}</span>
                               <span className={`text-[9px] px-1 py-0.2 rounded border font-medium ${getRoleBadgeClasses(sender.role)}`}>
                                 {getRoleBadgeLabel(sender.role)}
                               </span>
-                              <span className="text-[9px] text-zinc-500">{getMessageTime(msg)}</span>
+                              <span className="text-[9px] text-muted-foreground">{getMessageTime(msg)}</span>
                             </div>
 
                             {/* Message Bubble */}
@@ -504,7 +504,7 @@ export default function TeamChat() {
 
                           {/* Avatar for outgoing */}
                           {me && (
-                            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-gradient-to-br from-purple-600/30 to-purple-800/30 border border-purple-500/30 shadow-md">
+                            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white relative overflow-hidden bg-primary border border-primary/20 shadow-sm">
                               {sender.avatar ? (
                                 <img src={sender.avatar} alt={sender.name} className="w-full h-full object-cover" />
                               ) : (
@@ -519,20 +519,20 @@ export default function TeamChat() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div className="p-4 border-t border-white/10 bg-zinc-900/50">
+                 <div className="p-4 border-t border-border bg-muted/40">
                   <form onSubmit={sendMessage} className="flex gap-2">
                     <input
                       type="text"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       placeholder={mode === 'ai' ? 'Ask AI assistant...' : 'Type a message...'}
-                      className="flex-1 bg-zinc-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      className="flex-1 bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-primary"
                       disabled={!isConnected && mode !== 'ai'}
                     />
                     <button
                       type="submit"
                       disabled={!input.trim() || (!isConnected && mode !== 'ai')}
-                      className="bg-purple-600 hover:bg-purple-500 text-white w-12 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50"
+                      className="bg-primary hover:opacity-95 text-white w-12 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50"
                     >
                       <Send size={18} />
                     </button>

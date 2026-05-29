@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-foreground min-h-screen antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="space-deep-black"
+          defaultTheme="ivory-luxe"
           enableSystem={false}
           disableTransitionOnChange
           themes={[

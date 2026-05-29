@@ -53,7 +53,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 h-screen bg-card/80 border-r border-border/50 flex flex-col fixed left-0 top-0 backdrop-blur-xl z-40">
+    <aside className="w-64 h-[calc(100vh-2rem)] m-4 rounded-3xl bg-white/75 backdrop-blur-[18px] border border-border/80 shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex flex-col fixed left-0 top-0 z-40">
       {/* Logo */}
       <div className="p-6 border-b border-border/30">
         <div className="flex items-center gap-2.5">
@@ -75,7 +75,7 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={`relative flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${
-                active ? 'text-white' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                active ? 'text-white' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
             >
               {active && (
@@ -104,7 +104,7 @@ export default function Sidebar() {
         {((user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') && !pathname.includes('/client-portal/')) && (
           <Link
             href="/dashboard/settings"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
           >
             <Settings size={17} />
             <span className="font-medium text-sm">Settings</span>

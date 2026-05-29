@@ -142,15 +142,15 @@ export default function TopNav() {
   };
 
   return (
-    <header className="h-16 border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-30">
+    <header className="h-16 border-b border-border/60 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-30">
       {/* Search */}
       <div className="relative w-72">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <input
           id="global-search"
           type="text"
           placeholder="Search campaigns, clients..."
-          className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40 transition-all placeholder:text-zinc-600 text-white"
+          className="w-full pl-9 pr-4 py-2 bg-muted/50 border border-border/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground text-foreground"
         />
       </div>
 
@@ -159,20 +159,19 @@ export default function TopNav() {
         <div className="relative" ref={themeRef}>
           <button
             onClick={() => { setShowThemeMenu(p => !p); setShowNotifs(false); setShowProfile(false); }}
-            className="p-2 rounded-xl hover:bg-white/8 dark:hover:bg-white/8 text-zinc-600 dark:text-zinc-400 hover:text-purple-600 dark:hover:text-white transition-all flex items-center gap-2"
+            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all flex items-center gap-2"
           >
             <Palette size={19} />
           </button>
           
           {showThemeMenu && (
-            <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-white/10 shadow-2xl overflow-hidden backdrop-blur-2xl bg-zinc-950/95 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-                <span className="text-sm font-semibold text-white">Adrex OS Palette</span>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">10 themes</span>
+            <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">Adrex OS Palette</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">10 themes</span>
               </div>
               <div className="p-1.5 max-h-[360px] overflow-y-auto space-y-0.5">
                 {THEMES.map(t => {
-                  const isLight = ['ivory-luxe', 'executive-stark'].includes(t.id);
                   const isActive = theme === t.id;
                   return (
                     <button
@@ -180,27 +179,27 @@ export default function TopNav() {
                       onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
                         isActive
-                          ? 'bg-white/10 ring-1 ring-white/20'
-                          : 'hover:bg-white/5'
+                          ? 'bg-muted/80 ring-1 ring-border'
+                          : 'hover:bg-muted/40'
                       }`}
                     >
                       <div
-                        className="w-7 h-7 rounded-lg shrink-0 shadow-md border border-white/10"
+                        className="w-7 h-7 rounded-lg shrink-0 shadow-md border border-border/60"
                         style={{ backgroundColor: t.color }}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${isActive ? 'text-white' : 'text-zinc-300'}`}>
+                        <p className={`text-sm font-medium truncate ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                           {t.name}
                         </p>
-                        <p className="text-[11px] text-zinc-500 truncate">{t.description}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{t.description}</p>
                       </div>
-                      {isActive && <Check size={14} className="text-violet-400 shrink-0" />}
+                      {isActive && <Check size={14} className="text-primary shrink-0" />}
                     </button>
                   );
                 })}
               </div>
-              <div className="px-4 py-2.5 border-t border-white/10">
-                <p className="text-[10px] text-zinc-600 text-center">Theme resets to Space Deep Black on next login</p>
+              <div className="px-4 py-2.5 border-t border-border/50">
+                <p className="text-[10px] text-muted-foreground text-center">Theme resets to Ivory Luxe on next login</p>
               </div>
             </div>
           )}
@@ -211,35 +210,35 @@ export default function TopNav() {
           <button
             id="notif-btn"
             onClick={() => { setShowNotifs(p => !p); setShowProfile(false); setShowThemeMenu(false); if (!showNotifs) fetchNotifications(); }}
-            className="relative p-2 rounded-xl hover:bg-white/8 text-zinc-400 hover:text-white transition-all"
+            className="relative p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
           >
             <Bell size={19} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-purple-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-primary rounded-full text-[10px] font-bold text-white flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
           {showNotifs && (
-            <div className="absolute right-0 top-12 z-50 w-96 max-h-[480px] flex flex-col rounded-2xl border border-white/15 shadow-2xl overflow-hidden backdrop-blur-2xl bg-zinc-900/95 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between shrink-0">
-                <span className="text-sm font-semibold text-white">Notifications</span>
-                <span className="text-xs text-purple-400 font-medium">{unreadCount} unread</span>
+            <div className="absolute right-0 top-12 z-50 w-96 max-h-[480px] flex flex-col rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
+                <span className="text-sm font-semibold text-foreground">Notifications</span>
+                <span className="text-xs text-primary font-medium">{unreadCount} unread</span>
               </div>
               <div className="overflow-y-auto flex-1">
                 {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-sm text-zinc-500">No notifications</div>
+                  <div className="p-6 text-center text-sm text-muted-foreground">No notifications</div>
                 ) : (
                   notifications.map((n) => (
-                    <div key={n.id} onClick={() => markAsRead(n.id)} className={`px-4 py-3 border-b border-white/8 last:border-0 hover:bg-white/5 transition-all cursor-pointer ${!n.isRead ? 'bg-purple-500/8' : ''}`}>
+                    <div key={n.id} onClick={() => markAsRead(n.id)} className={`px-4 py-3 border-b border-border/40 last:border-0 hover:bg-muted/30 transition-all cursor-pointer ${!n.isRead ? 'bg-primary/5' : ''}`}>
                       <div className="flex items-start gap-2.5">
-                        {!n.isRead && <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-1.5 shrink-0" />}
+                        {!n.isRead && <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 shrink-0" />}
                         {n.isRead && <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" />}
                         <div>
-                          {n.title && <p className="text-xs font-medium text-purple-300">{n.title}</p>}
-                          <p className="text-sm text-white leading-snug">{n.message}</p>
-                          <p className="text-xs text-zinc-500 mt-0.5">{timeAgo(n.createdAt)}</p>
+                          {n.title && <p className="text-xs font-semibold text-primary">{n.title}</p>}
+                          <p className="text-sm text-foreground leading-snug">{n.message}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(n.createdAt)}</p>
                         </div>
                       </div>
                     </div>
@@ -247,8 +246,8 @@ export default function TopNav() {
                 )}
               </div>
               {unreadCount > 0 && (
-                <div className="px-4 py-2.5 border-t border-white/10 shrink-0">
-                  <button onClick={markAllAsRead} className="text-xs text-purple-400 hover:text-purple-300 transition-colors w-full text-center">Mark all as read</button>
+                <div className="px-4 py-2.5 border-t border-border/50 shrink-0">
+                  <button onClick={markAllAsRead} className="text-xs text-primary hover:opacity-80 transition-colors w-full text-center">Mark all as read</button>
                 </div>
               )}
             </div>
@@ -256,35 +255,35 @@ export default function TopNav() {
         </div>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-white/10" />
+        <div className="w-px h-6 bg-border/80" />
 
         {/* Profile */}
         <div className="relative" ref={profileRef}>
           <button
             id="profile-btn"
             onClick={() => { setShowProfile(p => !p); setShowNotifs(false); setShowThemeMenu(false); }}
-            className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-white/8 transition-all"
+            className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-muted transition-all"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
               {displayInitial}
             </div>
             <div className="text-left hidden sm:block">
-              <p className="text-xs font-semibold leading-none text-white">{displayName}</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">{user?.role ?? 'Super Admin'}</p>
+              <p className="text-xs font-semibold leading-none text-foreground">{displayName}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{user?.role ?? 'Super Admin'}</p>
             </div>
-            <ChevronDown size={14} className="text-zinc-500" />
+            <ChevronDown size={14} className="text-muted-foreground" />
           </button>
 
           {showProfile && (
-            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-white/15 shadow-2xl overflow-hidden backdrop-blur-2xl bg-zinc-900/95 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-white/10">
+            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-border/50">
                 <div className="flex items-center gap-2.5 mb-1">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
                     {displayInitial}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{displayName}</p>
-                    <p className="text-xs text-zinc-500">{displayEmail}</p>
+                    <p className="text-sm font-semibold text-foreground">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{displayEmail}</p>
                   </div>
                 </div>
               </div>
@@ -300,18 +299,18 @@ export default function TopNav() {
                       key={item.label}
                       href={item.href}
                       onClick={() => setShowProfile(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-white/8 transition-all text-zinc-300 hover:text-white"
+                      className="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-all text-muted-foreground hover:text-foreground"
                     >
-                      <Icon size={14} className="text-zinc-500" />
+                      <Icon size={14} className="text-muted-foreground" />
                       {item.label}
                     </Link>
                   );
                 })}
               </div>
-              <div className="border-t border-white/10 p-1.5">
+              <div className="border-t border-border/50 p-1.5">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-red-500/10 transition-all text-red-400 hover:text-red-300"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-red-50 transition-all text-red-500 hover:text-red-600"
                 >
                   <LogOut size={14} />
                   Sign out

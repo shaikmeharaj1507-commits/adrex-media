@@ -25,10 +25,10 @@ const CAMPAIGN_COLORS = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-zinc-900 border border-white/10 rounded-xl p-3 text-sm shadow-xl">
-        <p className="text-zinc-400 mb-1">{label}</p>
+      <div className="bg-card border border-border rounded-xl p-3 text-sm shadow-xl">
+        <p className="text-muted-foreground mb-1">{label}</p>
         {payload.map((p: any, i: number) => (
-          <p key={i} style={{ color: p.color }} className="font-semibold">
+          <p key={i} style={{ color: p.color }} className="font-semibold text-foreground">
             {p.name}: {typeof p.value === 'number' && p.name !== 'Completed Tasks' && p.name !== 'Campaigns' 
               ? `₹${p.value.toLocaleString('en-IN')}` 
               : p.value}
@@ -197,7 +197,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
           <p className="text-muted-foreground mt-1">Performance overview and business insights.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -206,20 +206,20 @@ export default function ReportsPage() {
             <button
               onClick={() => setShowTimelineDropdown(!showTimelineDropdown)}
               id="timeline-filter-btn"
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium hover:bg-white/10 transition-all text-sm"
+              className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border text-foreground rounded-xl font-medium hover:bg-muted transition-all text-sm"
             >
               <Calendar size={15} className="text-primary" />
               {selectedTimelineLabel}
               <ChevronDown size={15} className={`transition-transform ${showTimelineDropdown ? 'rotate-180' : ''}`} />
             </button>
             {showTimelineDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-30 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl z-30 overflow-hidden">
                 {TIMELINE_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     id={`timeline-${opt.value}`}
                     onClick={() => handleTimelineSelect(opt.value)}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-white/5 ${selectedTimeline === opt.value ? 'text-primary bg-primary/10' : 'text-zinc-300'}`}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-all hover:bg-muted ${selectedTimeline === opt.value ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                   >
                     {opt.label}
                   </button>
@@ -227,16 +227,16 @@ export default function ReportsPage() {
               </div>
             )}
           </div>
-
+ 
           {/* CSV Export */}
           <button
             onClick={handleExportCSV}
             id="export-csv-btn"
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl font-medium hover:bg-emerald-500/20 transition-all text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-xl font-medium hover:bg-emerald-100 transition-all text-sm"
           >
             <Download size={15} /> Export CSV
           </button>
-
+ 
           {/* PDF Export */}
           <button
             onClick={() => {
@@ -244,7 +244,7 @@ export default function ReportsPage() {
               window.open(`${API_URL}/api/pdf/report?token=${t}`, '_blank');
             }}
             id="export-pdf-btn"
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-medium hover:bg-white/10 transition-all text-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border text-foreground rounded-xl font-medium hover:bg-muted transition-all text-sm"
           >
             <FileText size={15} /> Export PDF
           </button>
@@ -257,34 +257,34 @@ export default function ReportsPage() {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="glassmorphism rounded-2xl p-5"
+          className="bg-card border border-border rounded-2xl p-5 shadow-sm"
         >
           <div className="flex flex-wrap items-end gap-4">
             <div>
-              <label className="block text-xs text-zinc-400 mb-1.5">Start Date</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">Start Date</label>
               <input
                 type="date"
                 id="custom-start-date"
                 value={customStart}
                 onChange={e => setCustomStart(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                className="bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-400 mb-1.5">End Date</label>
+              <label className="block text-xs text-muted-foreground mb-1.5">End Date</label>
               <input
                 type="date"
                 id="custom-end-date"
                 value={customEnd}
                 onChange={e => setCustomEnd(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                className="bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <button
               id="apply-custom-range-btn"
               onClick={applyCustomRange}
               disabled={!customStart || !customEnd}
-              className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               Apply Range
             </button>
@@ -293,7 +293,7 @@ export default function ReportsPage() {
       )}
 
       {/* Tab Switcher */}
-      <div className="flex border-b border-white/10">
+      <div className="flex border-b border-border">
         {[
           { id: 'overview', label: 'Overview', icon: BarChart2 },
           { id: 'campaigns', label: 'Campaigns', icon: Megaphone },
@@ -309,14 +309,14 @@ export default function ReportsPage() {
               className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-all border-b-2 relative ${
                 isSelected 
                   ? 'border-primary text-primary bg-primary/5' 
-                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               <Icon size={16} />
               {tab.label}
               {isSelected && (
                 <motion.div 
-                  layoutId="activeTabIndicator" 
+                   layoutId="activeTabIndicator" 
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" 
                 />
               )}
@@ -341,16 +341,16 @@ export default function ReportsPage() {
               {/* KPI Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-rose-400' },
-                  { label: 'Total Clients', value: stats.clients, icon: Users, color: 'text-cyan-400' },
-                  { label: 'Influencers', value: stats.influencers, icon: Activity, color: 'text-rose-400' },
-                  { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, icon: FileText, color: 'text-amber-400' },
+                  { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-rose-500' },
+                  { label: 'Total Clients', value: stats.clients, icon: Users, color: 'text-cyan-500' },
+                  { label: 'Influencers', value: stats.influencers, icon: Activity, color: 'text-rose-500' },
+                  { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString('en-IN')}`, icon: FileText, color: 'text-amber-500' },
                 ].map((s, i) => (
-                  <div key={i} className="p-4 sm:p-5 rounded-2xl glassmorphism flex items-center gap-3 sm:gap-4 border border-white/5 shadow-sm min-w-0">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0 ${s.color}`}><s.icon size={20} /></div>
+                  <div key={i} className="p-4 sm:p-5 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-muted flex items-center justify-center shrink-0 ${s.color}`}><s.icon size={20} /></div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-zinc-400 truncate">{s.label}</p>
-                      <p className="text-base sm:text-2xl font-bold text-white mt-0.5 truncate" title={String(s.value)}>{loading ? '—' : s.value}</p>
+                      <p className="text-xs text-muted-foreground truncate">{s.label}</p>
+                      <p className="text-base sm:text-2xl font-bold text-foreground mt-0.5 truncate" title={String(s.value)}>{loading ? '—' : s.value}</p>
                     </div>
                   </div>
                 ))}
@@ -359,34 +359,34 @@ export default function ReportsPage() {
               {/* Charts grid */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Revenue vs Expenses */}
-                <div className="glassmorphism rounded-2xl p-6 border border-white/5">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart2 size={18} className="text-primary" />
-                    <h3 className="font-semibold text-white">Revenue vs Expenses Trend</h3>
+                    <h3 className="font-semibold text-foreground">Revenue vs Expenses Trend</h3>
                   </div>
                   {hasRevenueData || hasExpenseData ? (
                     <ResponsiveContainer width="100%" height={250}>
                       <BarChart data={monthlyData} barGap={4}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
-                        <XAxis dataKey="month" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => v > 0 ? `₹${(v/1000).toFixed(0)}k` : '₹0'} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E9ECF2" />
+                        <XAxis dataKey="month" tick={{ fill: '#6E7381', fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#6E7381', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => v > 0 ? `₹${(v/1000).toFixed(0)}k` : '₹0'} />
                         <Tooltip content={<CustomTooltip />} />
                         <Bar dataKey="revenue" name="Revenue" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
                         <Bar dataKey="expenses" name="Expenses" fill="hsl(var(--secondary))" radius={[4,4,0,0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-[250px] flex items-center justify-center text-zinc-500 text-sm">
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
                       No financial data for this period.
                     </div>
                   )}
                 </div>
 
                 {/* Task Completion Line Area */}
-                <div className="glassmorphism rounded-2xl p-6 border border-white/5">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-6">
-                    <CheckSquare size={18} className="text-emerald-400" />
-                    <h3 className="font-semibold text-white">Weekly Deliverables Completed</h3>
+                    <CheckSquare size={18} className="text-emerald-500" />
+                    <h3 className="font-semibold text-foreground">Weekly Deliverables Completed</h3>
                   </div>
                   {stats.taskCompletionTrend?.length > 0 ? (
                     <ResponsiveContainer width="100%" height={250}>
@@ -397,15 +397,15 @@ export default function ReportsPage() {
                             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" />
-                        <XAxis dataKey="week" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <Tooltip formatter={(value) => [`${value} Tasks`, 'Completed Tasks']} contentStyle={{ background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E9ECF2" />
+                        <XAxis dataKey="week" tick={{ fill: '#6E7381', fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#6E7381', fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <Tooltip formatter={(value) => [`${value} Tasks`, 'Completed Tasks']} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12 }} />
                         <Area type="monotone" dataKey="completed" name="Completed Tasks" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorCompleted)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-[250px] flex items-center justify-center text-zinc-500 text-sm">
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
                       No deliverables progress recorded.
                     </div>
                   )}
@@ -415,11 +415,11 @@ export default function ReportsPage() {
               {/* Bottom Row stats */}
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 {/* Expense Pie */}
-                <div className="glassmorphism rounded-2xl p-6 border border-white/5 xl:col-span-2">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm xl:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <PieChart size={18} className="text-blue-400" />
-                      <h3 className="font-semibold text-white">Operational Expenses Breakdown</h3>
+                      <PieChart size={18} className="text-primary" />
+                      <h3 className="font-semibold text-foreground">Operational Expenses Breakdown</h3>
                     </div>
                   </div>
                   {channelData.length > 0 ? (
@@ -430,7 +430,7 @@ export default function ReportsPage() {
                             <Pie data={channelData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="value">
                               {channelData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                             </Pie>
-                            <Tooltip formatter={(v: any) => [`₹${v.toLocaleString('en-IN')}`, 'Amount']} contentStyle={{ background: '#18181b', border: '1px solid rgba(255,255,255,0.1)' }} />
+                            <Tooltip formatter={(v: any) => [`₹${v.toLocaleString('en-IN')}`, 'Amount']} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12 }} />
                           </RechartsPie>
                         </ResponsiveContainer>
                       </div>
@@ -438,24 +438,24 @@ export default function ReportsPage() {
                         {channelData.map((d, i) => (
                           <div key={i} className="flex items-center gap-2.5">
                             <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                            <span className="text-zinc-400 font-medium">{d.name}:</span>
-                            <span className="text-white font-bold">₹{d.value.toLocaleString('en-IN')}</span>
+                            <span className="text-muted-foreground font-medium">{d.name}:</span>
+                            <span className="text-foreground font-bold">₹{d.value.toLocaleString('en-IN')}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    <div className="h-[250px] flex items-center justify-center text-zinc-500 text-sm">
+                    <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
                       No expense records logged.
                     </div>
                   )}
                 </div>
-
+ 
                 {/* Quick Agency Metrics */}
-                <div className="glassmorphism rounded-2xl p-6 border border-white/5">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-6">
-                    <Activity size={18} className="text-amber-400" />
-                    <h3 className="font-semibold text-white">Agency Operations</h3>
+                    <Activity size={18} className="text-amber-500" />
+                    <h3 className="font-semibold text-foreground">Agency Operations</h3>
                   </div>
                   <div className="space-y-4">
                     {[
@@ -467,39 +467,38 @@ export default function ReportsPage() {
                     ].map((m, i) => {
                       const Icon = m.icon;
                       return (
-                        <div key={i} className="flex items-center justify-between p-3.5 bg-white/3 hover:bg-white/5 rounded-xl transition-all border border-white/3">
+                        <div key={i} className="flex items-center justify-between p-3.5 bg-muted hover:bg-muted/80 rounded-xl transition-all border border-border/40">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-zinc-400">
+                            <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center text-muted-foreground">
                               <Icon size={14} />
                             </div>
-                            <span className="text-sm text-zinc-300">{m.label}</span>
+                            <span className="text-sm text-foreground/90">{m.label}</span>
                           </div>
-                          <span className="text-base font-bold text-white">{loading ? '—' : m.value}</span>
+                          <span className="text-base font-bold text-foreground">{loading ? '—' : m.value}</span>
                         </div>
                       );
                     })}
                   </div>
-                </div>
               </div>
-            </>
-          )}
-
-          {/* CAMPAIGNS TAB */}
+            </div>
+          </>
+        )}
+        {/* CAMPAIGNS TAB */}
           {activeTab === 'campaigns' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Campaign Status Breakdown */}
-              <div className="glassmorphism rounded-2xl p-6 border border-white/5 lg:col-span-2">
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm lg:col-span-2">
                 <div className="flex items-center gap-2 mb-6">
-                  <Megaphone size={18} className="text-rose-400" />
-                  <h3 className="font-semibold text-white">Campaign Status Breakdown</h3>
+                  <Megaphone size={18} className="text-rose-500" />
+                  <h3 className="font-semibold text-foreground">Campaign Status Breakdown</h3>
                 </div>
                 {stats.campaignStatusBreakdown?.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={stats.campaignStatusBreakdown} layout="vertical" margin={{ left: 10, right: 30 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis dataKey="status" type="category" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <Tooltip formatter={(value) => [`${value} Campaigns`, 'Count']} contentStyle={{ background: '#18181b', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E9ECF2" horizontal={false} />
+                      <XAxis type="number" tick={{ fill: '#6E7381', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis dataKey="status" type="category" tick={{ fill: '#6E7381', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <Tooltip formatter={(value) => [`${value} Campaigns`, 'Count']} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12 }} />
                       <Bar dataKey="count" name="Campaigns" radius={[0, 4, 4, 0]}>
                         {stats.campaignStatusBreakdown.map((entry, index) => {
                           const fill = CAMPAIGN_COLORS[entry.status as keyof typeof CAMPAIGN_COLORS] || 'hsl(var(--primary))';
@@ -509,71 +508,69 @@ export default function ReportsPage() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-zinc-500 text-sm">
+                  <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
                     No campaigns logged.
                   </div>
                 )}
               </div>
-
+ 
               {/* Status Breakdown Legend & Summary */}
-              <div className="glassmorphism rounded-2xl p-6 border border-white/5 space-y-4">
-                <h3 className="font-semibold text-white text-sm">Status Details</h3>
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+                <h3 className="font-semibold text-foreground text-sm">Status Details</h3>
                 <div className="space-y-3">
                   {stats.campaignStatusBreakdown?.map((item, idx) => {
                     const color = CAMPAIGN_COLORS[item.status as keyof typeof CAMPAIGN_COLORS] || 'hsl(var(--primary))';
                     return (
-                      <div key={idx} className="flex justify-between items-center p-3 bg-white/3 border border-white/5 rounded-xl">
+                      <div key={idx} className="flex justify-between items-center p-3 bg-muted/50 border border-border rounded-xl">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
-                          <span className="text-xs text-zinc-300 font-semibold uppercase">{item.status}</span>
+                          <span className="text-xs text-foreground font-semibold uppercase">{item.status}</span>
                         </div>
-                        <span className="text-sm font-bold text-white">{item.count} campaigns</span>
+                        <span className="text-sm font-bold text-muted-foreground">{item.count} campaigns</span>
                       </div>
                     );
                   })}
                 </div>
               </div>
             </div>
-          )}
-
-          {/* INFLUENCERS TAB */}
+          )}            {/* INFLUENCERS TAB */}
           {activeTab === 'influencers' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Scoreboard Card */}
-              <div className="glassmorphism rounded-2xl p-6 border border-white/5 space-y-6">
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Award size={18} className="text-rose-400 animate-pulse" />
-                    <h3 className="font-semibold text-white">Top Creator Partners</h3>
+                    <Award size={18} className="text-rose-500 animate-pulse" />
+                    <h3 className="font-semibold text-foreground">Top Creator Partners</h3>
                   </div>
-                  <span className="text-[10px] bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded border border-rose-500/20 uppercase tracking-widest font-bold">
+                  <span className="text-[10px] bg-rose-500/10 text-rose-600 px-2 py-0.5 rounded border border-rose-500/20 uppercase tracking-widest font-bold">
                     By rating
                   </span>
                 </div>
-
+ 
                 <div className="space-y-3.5">
                   {stats.topInfluencersByRating?.length === 0 ? (
-                    <p className="text-sm text-zinc-500 italic py-12 text-center">No content creators recorded yet.</p>
+                    <p className="text-sm text-muted-foreground italic py-12 text-center">No content creators recorded yet.</p>
                   ) : (
                     stats.topInfluencersByRating.map((inf, idx) => (
-                      <div key={inf.id} className="flex items-center justify-between p-4 bg-white/3 border border-white/5 rounded-xl hover:bg-white/5 transition-all">
+                      <div key={inf.id} className="flex items-center justify-between p-4 bg-muted/50 border border-border rounded-xl hover:bg-muted transition-all">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center font-bold text-rose-400">
+                          <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center font-bold text-rose-500">
                             #{idx + 1}
                           </div>
                           <div>
-                            <h4 className="text-sm font-bold text-white">{inf.name}</h4>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{inf.niche || 'Digital Creator'}</p>
+                            <h4 className="text-sm font-bold text-foreground">{inf.name}</h4>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{inf.niche || 'Digital Creator'}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
-                            <span className="text-xs font-bold text-white">{inf.rating}</span>
-                            <span className="text-amber-400 text-xs">★</span>
+                            <span className="text-xs font-bold text-foreground">{inf.rating}</span>
+                            <span className="text-amber-500 text-xs">★</span>
                           </div>
                           <div className="flex gap-1.5">
-                            {inf.instagram && <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded">IG</span>}
-                            {inf.tiktok && <span className="text-[9px] bg-slate-500/20 text-slate-300 px-1.5 py-0.5 rounded">TT</span>}
+                            {inf.instagram && <span className="text-[9px] bg-rose-500/20 text-rose-600 px-1.5 py-0.5 rounded">IG</span>}
+                            {inf.tiktok && <span className="text-[9px] bg-slate-500/20 text-slate-600 px-1.5 py-0.5 rounded">TT</span>}
                           </div>
                         </div>
                       </div>
@@ -581,138 +578,137 @@ export default function ReportsPage() {
                   )}
                 </div>
               </div>
-
+ 
               {/* ROI Calculator Estimator */}
-              <div className="glassmorphism rounded-2xl p-6 border border-white/5 space-y-6">
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
                 <div className="flex items-center gap-2">
-                  <Calculator size={18} className="text-emerald-400" />
-                  <h3 className="font-semibold text-white">Campaign ROI Simulator</h3>
+                  <Calculator size={18} className="text-emerald-500" />
+                  <h3 className="font-semibold text-foreground">Campaign ROI Simulator</h3>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="block text-xs text-zinc-400">Campaign Budget (₹)</label>
+                    <label className="block text-xs text-muted-foreground">Campaign Budget (₹)</label>
                     <input 
                       type="number" 
                       value={roiBudget}
                       onChange={e => setRoiBudget(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs text-zinc-400">Reach Ratio (Views/₹)</label>
+                    <label className="block text-xs text-muted-foreground">Reach Ratio (Views/₹)</label>
                     <input 
                       type="number" 
                       value={roiReachMultiplier}
                       onChange={e => setRoiReachMultiplier(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs text-zinc-400">Conversion Rate (%)</label>
+                    <label className="block text-xs text-muted-foreground">Conversion Rate (%)</label>
                     <input 
                       type="number" 
                       step="0.1"
                       value={roiConvRate}
                       onChange={e => setRoiConvRate(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs text-zinc-400">Avg. Order Value (₹)</label>
+                    <label className="block text-xs text-muted-foreground">Avg. Order Value (₹)</label>
                     <input 
                       type="number" 
                       value={roiAov}
                       onChange={e => setRoiAov(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                      className="w-full bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
                     />
                   </div>
                 </div>
-
-                <div className="border-t border-white/10 pt-4 space-y-3.5">
-                  <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Projected Output</h4>
+ 
+                <div className="border-t border-border pt-4 space-y-3.5">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Projected Output</h4>
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-white/3 rounded-xl border border-white/5">
-                      <p className="text-[10px] text-zinc-500">Estimated Reach</p>
-                      <p className="text-base font-bold text-white mt-0.5">{estimatedReach.toLocaleString()} Views</p>
+                    <div className="p-3 bg-muted/50 rounded-xl border border-border">
+                      <p className="text-[10px] text-muted-foreground">Estimated Reach</p>
+                      <p className="text-base font-bold text-foreground mt-0.5">{estimatedReach.toLocaleString()} Views</p>
                     </div>
-                    <div className="p-3 bg-white/3 rounded-xl border border-white/5">
-                      <p className="text-[10px] text-zinc-500">Projected Orders</p>
-                      <p className="text-base font-bold text-white mt-0.5">{estimatedConversions.toLocaleString()} Sales</p>
+                    <div className="p-3 bg-muted/50 rounded-xl border border-border">
+                      <p className="text-[10px] text-muted-foreground">Projected Orders</p>
+                      <p className="text-base font-bold text-foreground mt-0.5">{estimatedConversions.toLocaleString()} Sales</p>
                     </div>
-                    <div className="p-3 bg-white/3 rounded-xl border border-white/5">
-                      <p className="text-[10px] text-zinc-500">Simulated Revenue</p>
-                      <p className="text-base font-bold text-white mt-0.5">₹{estimatedRevenue.toLocaleString('en-IN')}</p>
+                    <div className="p-3 bg-muted/50 rounded-xl border border-border">
+                      <p className="text-[10px] text-muted-foreground">Simulated Revenue</p>
+                      <p className="text-base font-bold text-foreground mt-0.5">₹{estimatedRevenue.toLocaleString('en-IN')}</p>
                     </div>
-                    <div className={`p-3 rounded-xl border ${estimatedROI >= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-                      <p className="text-[10px] text-zinc-500">Projected ROI %</p>
-                      <p className={`text-base font-extrabold mt-0.5 ${estimatedROI >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className={`p-3 rounded-xl border ${estimatedROI >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+                      <p className="text-[10px] text-muted-foreground">Projected ROI %</p>
+                      <p className={`text-base font-extrabold mt-0.5 ${estimatedROI >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                         {estimatedROI.toFixed(1)}%
                       </p>
                     </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          )}
-
-          {/* FINANCE TAB */}
-          {activeTab === 'finance' && (
+          </div>
+        </div>
+      </div>
+    )}
+      {/* FINANCE TAB */}
+      {activeTab === 'finance' && (
             <>
               {/* Financial KPI bar with Growth rates */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-5 rounded-2xl glassmorphism border border-white/5 relative overflow-hidden flex flex-col justify-between h-[130px]">
+                <div className="p-5 rounded-2xl bg-card border border-border shadow-sm relative overflow-hidden flex flex-col justify-between h-[130px]">
                   <div>
-                    <p className="text-xs text-zinc-400">Total Operational Billing Revenue</p>
-                    <p className="text-2xl font-black text-white mt-1">₹{stats.totalRevenue.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-muted-foreground">Total Operational Billing Revenue</p>
+                    <p className="text-2xl font-black text-foreground mt-1">₹{stats.totalRevenue.toLocaleString('en-IN')}</p>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] mt-2">
                     {stats.revenueGrowthRate >= 0 ? (
-                      <span className="flex items-center gap-0.5 text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full font-bold">
+                      <span className="flex items-center gap-0.5 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
                         <ArrowUpRight size={10} /> +{stats.revenueGrowthRate.toFixed(1)}% MoM
                       </span>
                     ) : (
-                      <span className="flex items-center gap-0.5 text-red-400 bg-red-500/15 px-2 py-0.5 rounded-full font-bold">
+                      <span className="flex items-center gap-0.5 text-red-600 bg-red-550/10 px-2 py-0.5 rounded-full font-bold">
                         <ArrowDownRight size={10} /> {stats.revenueGrowthRate.toFixed(1)}% MoM
                       </span>
                     )}
-                    <span className="text-zinc-500">compared to last month</span>
+                    <span className="text-muted-foreground">compared to last month</span>
                   </div>
                 </div>
-
-                <div className="p-5 rounded-2xl glassmorphism border border-white/5 flex flex-col justify-between h-[130px]">
+ 
+                <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col justify-between h-[130px]">
                   <div>
-                    <p className="text-xs text-zinc-400">Total Agency Expenses</p>
-                    <p className="text-2xl font-black text-white mt-1">₹{stats.totalExpenses.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-muted-foreground">Total Agency Expenses</p>
+                    <p className="text-2xl font-black text-foreground mt-1">₹{stats.totalExpenses.toLocaleString('en-IN')}</p>
                   </div>
-                  <p className="text-[10px] text-zinc-500 mt-2">Aggregated across all operations & software tools.</p>
+                  <p className="text-[10px] text-muted-foreground mt-2">Aggregated across all operations & software tools.</p>
                 </div>
-
-                <div className="p-5 rounded-2xl glassmorphism border border-white/5 flex flex-col justify-between h-[130px]">
+ 
+                <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col justify-between h-[130px]">
                   <div>
-                    <p className="text-xs text-zinc-400">Estimated Project Profit Margin</p>
-                    <p className="text-2xl font-black text-white mt-1">
+                    <p className="text-xs text-muted-foreground">Estimated Project Profit Margin</p>
+                    <p className="text-2xl font-black text-foreground mt-1">
                       ₹{(stats.totalRevenue - stats.totalExpenses).toLocaleString('en-IN')}
                     </p>
                   </div>
-                  <p className="text-[10px] text-zinc-500 mt-2">
+                  <p className="text-[10px] text-muted-foreground mt-2">
                     Net margin: {stats.totalRevenue > 0 ? (((stats.totalRevenue - stats.totalExpenses) / stats.totalRevenue) * 100).toFixed(1) : 0}%
                   </p>
                 </div>
               </div>
 
               {/* Finance list tables */}
-              <div className="glassmorphism rounded-2xl p-6 border border-white/5">
+              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
                   <TrendingUp size={18} className="text-primary" />
-                  <h3 className="font-semibold text-white">Monthly Transaction Summary</h3>
+                  <h3 className="font-semibold text-foreground">Monthly Transaction Summary</h3>
                 </div>
                 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 text-zinc-400 font-semibold uppercase">
+                      <tr className="border-b border-border text-muted-foreground font-semibold uppercase">
                         <th className="pb-3 pr-2">Calendar Month</th>
                         <th className="pb-3 pr-2">Total Monthly Invoice Revenue</th>
                         <th className="pb-3 pr-2">Total Monthly Expenses</th>
@@ -723,11 +719,11 @@ export default function ReportsPage() {
                       {monthlyData.map((m, idx) => {
                         const net = m.revenue - m.expenses;
                         return (
-                          <tr key={idx} className="border-b border-white/5 last:border-0 hover:bg-white/3 transition-colors">
-                            <td className="py-3.5 pr-2 font-semibold text-zinc-300">{m.month}</td>
-                            <td className="py-3.5 pr-2 text-zinc-400">₹{m.revenue.toLocaleString('en-IN')}</td>
-                            <td className="py-3.5 pr-2 text-zinc-400">₹{m.expenses.toLocaleString('en-IN')}</td>
-                            <td className={`py-3.5 text-right font-extrabold ${net >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <tr key={idx} className="border-b border-border/40 last:border-0 hover:bg-muted/50 transition-colors">
+                            <td className="py-3.5 pr-2 font-semibold text-foreground/90">{m.month}</td>
+                            <td className="py-3.5 pr-2 text-muted-foreground">₹{m.revenue.toLocaleString('en-IN')}</td>
+                            <td className="py-3.5 pr-2 text-muted-foreground">₹{m.expenses.toLocaleString('en-IN')}</td>
+                            <td className={`py-3.5 text-right font-extrabold ${net >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                               ₹{net.toLocaleString('en-IN')}
                             </td>
                           </tr>

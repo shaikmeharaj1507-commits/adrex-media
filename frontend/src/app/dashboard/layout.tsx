@@ -28,7 +28,7 @@ export default function DashboardLayout({
     <AuthGuard>
       <div className="min-h-screen bg-adrex-aurora flex">
         <Sidebar />
-        <div className="flex-1 ml-64 flex flex-col min-h-screen">
+        <div className="flex-1 ml-72 flex flex-col min-h-screen">
           <TopNav />
           <main className="flex-1 p-8 pt-6">
             {children}

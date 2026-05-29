@@ -161,7 +161,7 @@ export default function ClientsPage() {
         <button
           id="new-client-btn"
           onClick={() => { setEditingClient(null); setNewClient({ companyName: '', contactName: '', email: '', phone: '', monthlyBudget: '' }); setShowModal(true); }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:opacity-95 transition-all shadow-sm"
         >
           <Plus size={18} /> Add Client
         </button>
@@ -177,8 +177,8 @@ export default function ClientsPage() {
         ].map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={i} className="p-4 rounded-xl glassmorphism flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="p-3 rounded-lg bg-primary/10 text-primary shrink-0">
+            <div key={i} className="p-4 rounded-xl bg-card border border-border flex items-center gap-3 sm:gap-4 min-w-0 shadow-sm">
+              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary shrink-0">
                 <Icon size={20} />
               </div>
               <div className="min-w-0 flex-1">
@@ -198,7 +198,7 @@ export default function ClientsPage() {
           placeholder="Search clients..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+          className="w-full pl-9 pr-4 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:border-primary transition-all"
         />
       </div>
 
@@ -211,11 +211,11 @@ export default function ClientsPage() {
         ) : filtered.map((c) => (
           <div
             key={c.id}
-            className="glassmorphism rounded-2xl p-6 group hover:border-primary/30 border border-transparent transition-all"
+            className="bg-card border border-border rounded-2xl p-6 group hover:border-primary/50 transition-all shadow-sm hover:shadow-md"
           >
             <div className="flex items-start justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/30 to-blue-500/30 flex items-center justify-center font-bold text-lg">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-lg">
                   {c.companyName[0].toUpperCase()}
                 </div>
                 <div>
@@ -223,8 +223,8 @@ export default function ClientsPage() {
                   <p className="text-xs text-muted-foreground">{c.campaigns?.length || 0} campaigns</p>
                 </div>
               </div>
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                c.status === 'ACTIVE' ? 'text-emerald-400 bg-emerald-400/10' : 'text-slate-400 bg-slate-400/10'
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                c.status === 'ACTIVE' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-slate-600 bg-slate-50 border-slate-200'
               }`}>
                 {c.status}
               </span>
@@ -247,18 +247,18 @@ export default function ClientsPage() {
               </div>
             </div>
 
-            <div className="mt-5 pt-4 border-t border-border/50 flex items-center justify-between">
+            <div className="mt-5 pt-4 border-t border-border flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{c.contactName}</span>
               <div className="relative">
-                <button onClick={() => setOpenMenuId(openMenuId === c.id ? null : c.id)} className="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground transition-all">
+                <button onClick={() => setOpenMenuId(openMenuId === c.id ? null : c.id)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-all">
                   <MoreHorizontal size={16} />
                 </button>
                 {openMenuId === c.id && (
-                  <div ref={menuRef} className="absolute right-0 bottom-full mb-1 w-36 bg-zinc-900 border border-white/10 rounded-xl shadow-xl z-10">
-                    <button onClick={() => openEditModal(c)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 rounded-t-xl transition-all">
-                      <Pencil size={13} /> Edit
+                  <div ref={menuRef} className="absolute right-0 bottom-full mb-1 w-36 bg-card border border-border rounded-xl shadow-xl z-10">
+                    <button onClick={() => openEditModal(c)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted rounded-t-xl transition-all">
+                      <Pencil size={13} className="text-muted-foreground" /> Edit
                     </button>
-                    <button onClick={() => handleDelete(c.id)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-b-xl transition-all">
+                    <button onClick={() => handleDelete(c.id)} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-xl transition-all">
                       <Trash2 size={13} /> Delete
                     </button>
                   </div>
@@ -273,37 +273,37 @@ export default function ClientsPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowModal(false); setEditingClient(null); }} />
-          <div className="relative z-10 w-full max-w-lg glassmorphism rounded-2xl p-8 animate-in slide-in-from-bottom-2">
+          <div className="relative z-10 w-full max-w-lg bg-card border border-border rounded-2xl p-8 animate-in slide-in-from-bottom-2 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">{editingClient ? 'Edit Client' : 'Add Client'}</h2>
-              <button onClick={() => { setShowModal(false); setEditingClient(null); }} className="p-2 hover:bg-white/5 rounded-lg">
+              <h2 className="text-2xl font-bold text-foreground">{editingClient ? 'Edit Client' : 'Add Client'}</h2>
+              <button onClick={() => { setShowModal(false); setEditingClient(null); }} className="p-2 hover:bg-muted rounded-lg text-muted-foreground">
                 <X size={20} />
               </button>
             </div>
             <form className="space-y-4" onSubmit={editingClient ? handleUpdate : handleCreate}>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Company Name</label>
-                <input value={newClient.companyName} onChange={e => setNewClient(p => ({ ...p, companyName: e.target.value }))} type="text" placeholder="Acme Corp" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                <input value={newClient.companyName} onChange={e => setNewClient(p => ({ ...p, companyName: e.target.value }))} type="text" placeholder="Acme Corp" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Contact Name</label>
-                  <input value={newClient.contactName} onChange={e => setNewClient(p => ({ ...p, contactName: e.target.value }))} type="text" placeholder="John Doe" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                  <input value={newClient.contactName} onChange={e => setNewClient(p => ({ ...p, contactName: e.target.value }))} type="text" placeholder="John Doe" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Phone</label>
-                  <input value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))} type="tel" placeholder="+1 555-0000" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                  <input value={newClient.phone} onChange={e => setNewClient(p => ({ ...p, phone: e.target.value }))} type="tel" placeholder="+1 555-0000" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Work Email</label>
-                <input value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))} type="email" placeholder="contact@company.com" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                <input value={newClient.email} onChange={e => setNewClient(p => ({ ...p, email: e.target.value }))} type="email" placeholder="contact@company.com" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Monthly Budget ($)</label>
-                <input value={newClient.monthlyBudget} onChange={e => setNewClient(p => ({ ...p, monthlyBudget: e.target.value }))} type="number" placeholder="50000" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                <input value={newClient.monthlyBudget} onChange={e => setNewClient(p => ({ ...p, monthlyBudget: e.target.value }))} type="number" placeholder="50000" className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all" />
               </div>
-              <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
+              <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:opacity-95 transition-all shadow-sm disabled:opacity-70 flex items-center justify-center gap-2">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="animate-spin" size={18} />

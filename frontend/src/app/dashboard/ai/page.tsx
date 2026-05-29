@@ -172,21 +172,21 @@ export default function AIToolsPage() {
     return lines.map((line, idx) => {
       // Headers
       if (line.startsWith('### ')) {
-        return <h4 key={idx} className="text-white font-bold text-sm mt-4 mb-2 first:mt-0">{line.replace('### ', '')}</h4>;
+        return <h4 key={idx} className="text-foreground font-bold text-sm mt-4 mb-2 first:mt-0">{line.replace('### ', '')}</h4>;
       }
       if (line.startsWith('## ')) {
-        return <h3 key={idx} className="text-purple-400 font-extrabold text-base mt-5 mb-2.5 first:mt-0">{line.replace('## ', '')}</h3>;
+        return <h3 key={idx} className="text-primary font-extrabold text-base mt-5 mb-2.5 first:mt-0">{line.replace('## ', '')}</h3>;
       }
       if (line.startsWith('# ')) {
-        return <h2 key={idx} className="text-white font-black text-lg mt-6 mb-3 first:mt-0">{line.replace('# ', '')}</h2>;
+        return <h2 key={idx} className="text-foreground font-black text-lg mt-6 mb-3 first:mt-0">{line.replace('# ', '')}</h2>;
       }
       // Bullets
       if (line.startsWith('- ') || line.startsWith('* ')) {
         const content = line.substring(2);
-        return <li key={idx} className="text-zinc-300 text-sm ml-4 list-disc mb-1.5 leading-relaxed">{compileInlineStyles(content)}</li>;
+        return <li key={idx} className="text-muted-foreground text-sm ml-4 list-disc mb-1.5 leading-relaxed">{compileInlineStyles(content)}</li>;
       }
       // Standard line
-      return <p key={idx} className="text-zinc-300 text-sm mb-2 leading-relaxed min-h-[1rem]">{compileInlineStyles(line)}</p>;
+      return <p key={idx} className="text-muted-foreground text-sm mb-2 leading-relaxed min-h-[1rem]">{compileInlineStyles(line)}</p>;
     });
   };
 
@@ -195,7 +195,7 @@ export default function AIToolsPage() {
     const parts = text.split('**');
     return parts.map((part, index) => {
       if (index % 2 === 1) {
-        return <strong key={index} className="text-white font-semibold">{part}</strong>;
+        return <strong key={index} className="text-foreground font-semibold">{part}</strong>;
       }
       return part;
     });
@@ -247,7 +247,7 @@ export default function AIToolsPage() {
           </h1>
           <p className="text-muted-foreground mt-1 ml-12">Powered by Groq AI — generate briefs, content calendars, workflow lists, and strategies.</p>
         </div>
-        <button onClick={() => setShowHistory(p => !p)} className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/10 transition-all">
+        <button onClick={() => setShowHistory(p => !p)} className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium hover:bg-muted text-foreground transition-all shadow-sm">
           <Clock size={16} /> History ({history.length})
         </button>
       </div>
@@ -261,14 +261,14 @@ export default function AIToolsPage() {
             <button
               key={tool.id}
               onClick={() => { setActiveTool(tool.id); setResult(''); setPrompt(''); setSelectedCampaignId(''); }}
-              className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between min-h-[140px] ${isActive ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/5'}`}
+              className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between min-h-[140px] ${isActive ? 'border-primary bg-primary/10 shadow-sm' : 'border-border/60 bg-card hover:border-border hover:bg-muted/30'}`}
             >
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-3`}>
                 <Icon size={18} className="text-white" />
               </div>
               <div>
-                <p className={`font-semibold text-xs ${isActive ? 'text-white' : 'text-zinc-300'}`}>{tool.label}</p>
-                <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed line-clamp-2">{tool.desc}</p>
+                <p className={`font-semibold text-xs ${isActive ? 'text-foreground' : 'text-foreground/90'}`}>{tool.label}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{tool.desc}</p>
               </div>
             </button>
           );
@@ -277,44 +277,44 @@ export default function AIToolsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Input */}
-        <div className="glassmorphism rounded-2xl p-6 flex flex-col justify-between">
+        <div className="bg-card border border-border rounded-2xl p-6 flex flex-col justify-between shadow-sm">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${currentTool.color} flex items-center justify-center`}>
                   <currentTool.icon size={15} className="text-white" />
                 </div>
-                <h3 className="font-semibold text-white">{currentTool.label} Inputs</h3>
+                <h3 className="font-semibold text-foreground">{currentTool.label} Inputs</h3>
               </div>
             </div>
 
             {/* Smart Context Dropdown selector */}
             {campaigns.length > 0 && (
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-zinc-400 mb-1.5 flex items-center gap-1">
-                  <Sparkles size={11} className="text-purple-400" /> Autofill Campaign Context
+                <label className="block text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                  <Sparkles size={11} className="text-primary" /> Autofill Campaign Context
                 </label>
                 <select
                   value={selectedCampaignId}
                   onChange={e => handleCampaignContextChange(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-2 text-xs text-foreground focus:outline-none focus:border-primary"
                 >
-                  <option value="">-- Choose active campaign --</option>
+                  <option value="" className="bg-card text-foreground">-- Choose active campaign --</option>
                   {campaigns.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} className="bg-card text-foreground" value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
             )}
 
             <div>
-              <label className="block text-[10px] uppercase font-bold tracking-wider text-zinc-400 mb-1.5">Describe requirements</label>
+              <label className="block text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Describe requirements</label>
               <textarea
                 rows={8}
                 value={prompt}
                 onChange={e => setPrompt(e.target.value)}
                 placeholder={currentTool.placeholder}
-                className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 transition-all resize-none"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground/60 focus:outline-none focus:border-primary transition-all resize-none"
               />
             </div>
           </div>
@@ -322,50 +322,50 @@ export default function AIToolsPage() {
           <button
             onClick={handleGenerate}
             disabled={loading || !prompt.trim()}
-            className="w-full mt-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full mt-6 py-3 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? <><Loader2 size={16} className="animate-spin" /> Querying Engine...</> : <><Zap size={16} /> Generate suggestions</>}
           </button>
         </div>
 
         {/* Output */}
-        <div className="glassmorphism rounded-2xl p-6 relative flex flex-col justify-between min-h-[380px]">
+        <div className="bg-card border border-border rounded-2xl p-6 relative flex flex-col justify-between min-h-[380px] shadow-sm">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <FileText size={16} className="text-zinc-400" />
-                <h3 className="font-semibold text-white">Generated Strategy Output</h3>
+                <FileText size={16} className="text-muted-foreground" />
+                <h3 className="font-semibold text-foreground">Generated Strategy Output</h3>
               </div>
               {result && (
                 <div className="flex gap-2">
-                  <button onClick={handleExportPDF} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-zinc-400 hover:text-white transition-all">
+                  <button onClick={handleExportPDF} className="flex items-center gap-1.5 px-3 py-1.5 bg-card hover:bg-muted rounded-lg text-xs text-muted-foreground border border-border hover:text-foreground transition-all shadow-sm">
                     <Download size={12} /> PDF
                   </button>
-                  <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-zinc-400 hover:text-white transition-all">
-                    {copied ? <><Check size={12} className="text-emerald-400" /> Copied!</> : <><Copy size={12} /> Copy</>}
+                  <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-1.5 bg-card hover:bg-muted rounded-lg text-xs text-muted-foreground border border-border hover:text-foreground transition-all shadow-sm">
+                    {copied ? <><Check size={12} className="text-emerald-600" /> Copied!</> : <><Copy size={12} /> Copy</>}
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="bg-black/30 border border-white/10 rounded-xl p-5 overflow-y-auto max-h-[480px] min-h-[290px]">
+            <div className="bg-background border border-border rounded-xl p-5 overflow-y-auto max-h-[480px] min-h-[290px]">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-48 gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center animate-pulse">
-                    <Sparkles size={22} className="text-purple-400 animate-spin" />
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/10 to-blue-500/10 flex items-center justify-center animate-pulse">
+                    <Sparkles size={22} className="text-primary animate-spin" />
                   </div>
-                  <p className="text-sm text-zinc-500 animate-pulse">AI strategist building suggestions...</p>
+                  <p className="text-sm text-muted-foreground animate-pulse">AI strategist building suggestions...</p>
                 </div>
               ) : calendarParsedData ? (
                 /* Beautiful structured content calendar weekly grid */
                 <div className="space-y-4">
-                  <p className="text-xs text-zinc-400 mb-2 flex items-center gap-1">
-                    <Sparkles size={12} className="text-purple-400" /> Structured Schedule Grid
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                    <Sparkles size={12} className="text-primary" /> Structured Schedule Grid
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="border-b border-white/10 text-zinc-400 font-semibold uppercase">
+                        <tr className="border-b border-border text-muted-foreground font-semibold uppercase">
                           <th className="pb-2">Day</th>
                           <th className="pb-2">Platform</th>
                           <th className="pb-2">Format</th>
@@ -374,11 +374,11 @@ export default function AIToolsPage() {
                       </thead>
                       <tbody>
                         {calendarParsedData.map((item, idx) => (
-                          <tr key={idx} className="border-b border-white/5 last:border-0 hover:bg-white/3">
-                            <td className="py-2.5 font-bold text-white">{item.day}</td>
-                            <td className="py-2.5 text-purple-400 font-medium">{item.platform}</td>
-                            <td className="py-2.5 text-zinc-300 font-semibold">{item.format}</td>
-                            <td className="py-2.5 text-zinc-300" title={item.description}>{item.topic}</td>
+                          <tr key={idx} className="border-b border-border last:border-0 hover:bg-muted/30">
+                            <td className="py-2.5 font-bold text-foreground">{item.day}</td>
+                            <td className="py-2.5 text-primary font-semibold">{item.platform}</td>
+                            <td className="py-2.5 text-foreground/80 font-semibold">{item.format}</td>
+                            <td className="py-2.5 text-foreground/75" title={item.description}>{item.topic}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -386,13 +386,13 @@ export default function AIToolsPage() {
                   </div>
                 </div>
               ) : result ? (
-                <div className="prose prose-invert max-w-none">
+                <div className="prose max-w-none">
                   {renderMarkdown(result)}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-48 gap-3 text-center opacity-50">
-                  <Sparkles size={32} className="text-zinc-700 animate-bounce" />
-                  <p className="text-sm text-zinc-600">Your AI-generated deliverables recommendations show here.</p>
+                  <Sparkles size={32} className="text-muted-foreground/60 animate-bounce" />
+                  <p className="text-sm text-muted-foreground">Your AI-generated deliverables recommendations show here.</p>
                 </div>
               )}
             </div>
@@ -403,38 +403,38 @@ export default function AIToolsPage() {
       {/* History Sidebar */}
       {showHistory && (
         <div className="fixed inset-0 z-50 flex justify-end animate-in fade-in">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowHistory(false)} />
-          <div className="relative z-10 w-full max-w-md bg-zinc-950 border-l border-white/10 h-full overflow-y-auto animate-in slide-in-from-right">
-            <div className="sticky top-0 bg-zinc-950/95 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white">AI Query Archive</h2>
-              <button onClick={() => setShowHistory(false)} className="p-2 hover:bg-white/5 rounded-lg"><X size={18} /></button>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
+          <div className="relative z-10 w-full max-w-md bg-card border-l border-border h-full overflow-y-auto animate-in slide-in-from-right shadow-2xl">
+            <div className="sticky top-0 bg-card/95 backdrop-blur-xl border-b border-border px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-foreground">AI Query Archive</h2>
+              <button onClick={() => setShowHistory(false)} className="p-2 hover:bg-muted rounded-lg text-muted-foreground"><X size={18} /></button>
             </div>
             <div className="p-4 space-y-3">
               {history.length === 0 ? (
-                <p className="text-sm text-zinc-500 text-center py-8">No queries recorded.</p>
+                <p className="text-sm text-muted-foreground text-center py-8">No queries recorded.</p>
               ) : (
                 history.map((chat) => {
                   const Icon = toolIcon[chat.tool] || Sparkles;
                   return (
-                    <div key={chat.id} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
+                    <div key={chat.id} className="p-4 rounded-xl bg-background border border-border/80 hover:border-border transition-all group shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${toolColors[chat.tool] || 'bg-zinc-500/20 text-zinc-400'}`}>
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-muted text-foreground`}>
                             <Icon size={13} />
                           </div>
-                          <span className="text-xs font-medium text-zinc-300 capitalize">{chat.tool}</span>
+                          <span className="text-xs font-medium text-foreground capitalize">{chat.tool}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-zinc-600">{new Date(chat.createdAt).toLocaleDateString()}</span>
-                          <button onClick={() => handleDeleteHistory(chat.id)} className="p-1 hover:bg-red-500/20 rounded text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                          <span className="text-[10px] text-muted-foreground">{new Date(chat.createdAt).toLocaleDateString()}</span>
+                          <button onClick={() => handleDeleteHistory(chat.id)} className="p-1 hover:bg-red-50 rounded text-red-600 opacity-0 group-hover:opacity-100 transition-all">
                             <Trash2 size={12} />
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-zinc-500 truncate mb-2">{chat.prompt}</p>
-                      <details className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto">
-                        <summary className="cursor-pointer text-zinc-500 hover:text-zinc-300 transition-colors">Show output</summary>
-                        <pre className="mt-2 whitespace-pre-wrap font-sans bg-black/30 p-2.5 rounded-lg border border-white/5 text-[11px]">{chat.result}</pre>
+                      <p className="text-xs text-muted-foreground truncate mb-2">{chat.prompt}</p>
+                      <details className="text-xs text-foreground whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto">
+                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">Show output</summary>
+                        <pre className="mt-2 whitespace-pre-wrap font-sans bg-muted/50 p-2.5 rounded-lg border border-border/60 text-[11px] text-foreground/90">{chat.result}</pre>
                       </details>
                     </div>
                   );
