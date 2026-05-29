@@ -25,6 +25,7 @@ export default function ClientsPage() {
   const [newClient, setNewClient] = useState({ companyName: '', contactName: '', email: '', phone: '', monthlyBudget: '' });
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const fetchClients = async () => {
@@ -63,6 +64,7 @@ export default function ClientsPage() {
     if (!newClient.companyName || isSubmitting) return;
 
     setIsSubmitting(true);
+    setError(null);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/clients`, {
@@ -79,9 +81,13 @@ export default function ClientsPage() {
         setClients(prev => [created, ...prev]);
         setNewClient({ companyName: '', contactName: '', email: '', phone: '', monthlyBudget: '' });
         setShowModal(false);
+      } else {
+        const errData = await res.json();
+        setError(errData.error || 'Failed to create client');
       }
     } catch (error) {
       console.error('Failed to create client', error);
+      setError('A network error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -92,6 +98,7 @@ export default function ClientsPage() {
     if (!editingClient || isSubmitting) return;
 
     setIsSubmitting(true);
+    setError(null);
     try {
       const token = localStorage.getItem('adrex_token');
       const res = await fetch(`${API_URL}/api/clients/${editingClient.id}`, {
@@ -108,9 +115,13 @@ export default function ClientsPage() {
         setClients(prev => prev.map(c => c.id === updated.id ? updated : c));
         setEditingClient(null);
         setShowModal(false);
+      } else {
+        const errData = await res.json();
+        setError(errData.error || 'Failed to update client');
       }
     } catch (error) {
       console.error('Failed to update client', error);
+      setError('A network error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -142,6 +153,7 @@ export default function ClientsPage() {
       phone: client.phone || '',
       monthlyBudget: client.monthlyBudget ? String(client.monthlyBudget) : '',
     });
+    setError(null);
     setShowModal(true);
     setOpenMenuId(null);
   };
@@ -160,7 +172,7 @@ export default function ClientsPage() {
         </div>
         <button
           id="new-client-btn"
-          onClick={() => { setEditingClient(null); setNewClient({ companyName: '', contactName: '', email: '', phone: '', monthlyBudget: '' }); setShowModal(true); }}
+          onClick={() => { setEditingClient(null); setNewClient({ companyName: '', contactName: '', email: '', phone: '', monthlyBudget: '' }); setError(null); setShowModal(true); }}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:opacity-95 transition-all shadow-sm"
         >
           <Plus size={18} /> Add Client
@@ -281,6 +293,11 @@ export default function ClientsPage() {
               </button>
             </div>
             <form className="space-y-4" onSubmit={editingClient ? handleUpdate : handleCreate}>
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Company Name</label>
                 <input value={newClient.companyName} onChange={e => setNewClient(p => ({ ...p, companyName: e.target.value }))} type="text" placeholder="Acme Corp" required className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all" />

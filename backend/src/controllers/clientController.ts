@@ -51,7 +51,7 @@ export const createClient = async (req: Request, res: Response) => {
         contactName,
         email,
         phone,
-        monthlyBudget: monthlyBudget ? parseFloat(String(monthlyBudget)) : 0,
+        monthlyBudget: (monthlyBudget && String(monthlyBudget).trim() !== '') ? parseFloat(String(monthlyBudget)) : 0,
         status: status || 'ACTIVE'
       }
     });
@@ -83,7 +83,9 @@ export const updateClient = async (req: Request, res: Response) => {
         ...(contactName && { contactName }),
         ...(email && { email }),
         ...(phone !== undefined && { phone }),
-        ...(monthlyBudget !== undefined && { monthlyBudget: parseFloat(String(monthlyBudget)) }),
+        ...(monthlyBudget !== undefined && { 
+          monthlyBudget: (monthlyBudget && String(monthlyBudget).trim() !== '') ? parseFloat(String(monthlyBudget)) : 0 
+        }),
         ...(status && { status })
       }
     });

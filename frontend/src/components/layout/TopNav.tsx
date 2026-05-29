@@ -1,8 +1,7 @@
 'use client';
 
-import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon, Palette, Check } from 'lucide-react';
+import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTheme } from 'next-themes';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
 import { useRouter, usePathname } from 'next/navigation';
@@ -21,30 +20,15 @@ interface BackendNotification {
 export default function TopNav() {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [notifications, setNotifications] = useState<BackendNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, logout } = useAuthStore();
-  const { theme, setTheme } = useTheme();
   const { socket } = useSocketStore();
   const router = useRouter();
   const pathname = usePathname();
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const themeRef = useRef<HTMLDivElement>(null);
 
-  const THEMES = [
-    { id: 'space-deep-black', name: 'Space Deep Black', color: '#08070B', description: 'Core dark — Default' },
-    { id: 'cyber-surface', name: 'Cyber Surface', color: '#12111A', description: 'Dark cards & sidebar' },
-    { id: 'ivory-luxe', name: 'Ivory Luxe', color: '#FAFBFC', description: 'Apple-style luxury white' },
-    { id: 'executive-stark', name: 'Executive Stark', color: '#FFFFFF', description: 'Pure white workspaces' },
-    { id: 'electric-violet', name: 'Electric Violet', color: '#6D28D9', description: 'Brand accent UI' },
-    { id: 'hyper-cyan', name: 'Hyper Cyan', color: '#06B6D4', description: 'AI & analytics accent' },
-    { id: 'creator-pink', name: 'Creator Pink', color: '#F43F5E', description: 'Influencer management' },
-    { id: 'muted-border', name: 'Muted Border', color: '#262435', description: 'Linear-style minimal' },
-    { id: 'subtext-gray', name: 'Subtext Gray', color: '#94A3B8', description: 'Secondary typography' },
-    { id: 'enterprise-gold', name: 'Enterprise Gold', color: '#E2B857', description: 'VIP & financial tier' },
-  ];
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -79,12 +63,10 @@ export default function TopNav() {
     };
   }, [socket, fetchNotifications]);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) setShowNotifs(false);
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setShowProfile(false);
-      if (themeRef.current && !themeRef.current.contains(e.target as Node)) setShowThemeMenu(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -155,61 +137,13 @@ export default function TopNav() {
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Theme Dropdown */}
-        <div className="relative" ref={themeRef}>
-          <button
-            onClick={() => { setShowThemeMenu(p => !p); setShowNotifs(false); setShowProfile(false); }}
-            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all flex items-center gap-2"
-          >
-            <Palette size={19} />
-          </button>
-          
-          {showThemeMenu && (
-            <div className="absolute right-0 top-12 z-50 w-64 rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between">
-                <span className="text-sm font-semibold text-foreground">Adrex OS Palette</span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">10 themes</span>
-              </div>
-              <div className="p-1.5 max-h-[360px] overflow-y-auto space-y-0.5">
-                {THEMES.map(t => {
-                  const isActive = theme === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
-                        isActive
-                          ? 'bg-muted/80 ring-1 ring-border'
-                          : 'hover:bg-muted/40'
-                      }`}
-                    >
-                      <div
-                        className="w-7 h-7 rounded-lg shrink-0 shadow-md border border-border/60"
-                        style={{ backgroundColor: t.color }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-                          {t.name}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground truncate">{t.description}</p>
-                      </div>
-                      {isActive && <Check size={14} className="text-primary shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="px-4 py-2.5 border-t border-border/50">
-                <p className="text-[10px] text-muted-foreground text-center">Theme resets to Ivory Luxe on next login</p>
-              </div>
-            </div>
-          )}
-        </div>
+
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button
             id="notif-btn"
-            onClick={() => { setShowNotifs(p => !p); setShowProfile(false); setShowThemeMenu(false); if (!showNotifs) fetchNotifications(); }}
+            onClick={() => { setShowNotifs(p => !p); setShowProfile(false); if (!showNotifs) fetchNotifications(); }}
             className="relative p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
           >
             <Bell size={19} />
@@ -261,7 +195,7 @@ export default function TopNav() {
         <div className="relative" ref={profileRef}>
           <button
             id="profile-btn"
-            onClick={() => { setShowProfile(p => !p); setShowNotifs(false); setShowThemeMenu(false); }}
+            onClick={() => { setShowProfile(p => !p); setShowNotifs(false); }}
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-muted transition-all"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
