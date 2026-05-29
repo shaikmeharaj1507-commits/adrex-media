@@ -291,3 +291,62 @@ export const sendInfluencerMessage = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to send message' });
   }
 };
+
+export const getInfluencerPortalDataMe = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const influencer = await prisma.influencer.findUnique({
+      where: { userId: user.userId }
+    });
+
+    if (!influencer) {
+      return res.status(404).json({ error: 'Influencer profile not found' });
+    }
+
+    req.params.influencerId = influencer.id;
+    return getInfluencerPortalData(req, res);
+  } catch (error) {
+    console.error('Get influencer portal data me error:', error);
+    res.status(500).json({ error: 'Failed to fetch influencer portal data' });
+  }
+};
+
+export const updateInfluencerPortalProfile = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const influencer = await prisma.influencer.findUnique({
+      where: { userId: user.userId }
+    });
+
+    if (!influencer) {
+      return res.status(404).json({ error: 'Influencer profile not found' });
+    }
+
+    const { whatsapp, instagram, tiktok, youtube, niche, location, pricing, audienceStats, notes } = req.body;
+
+    const updated = await prisma.influencer.update({
+      where: { id: influencer.id },
+      data: {
+        whatsapp,
+        instagram,
+        tiktok,
+        youtube,
+        niche,
+        location,
+        pricing,
+        audienceStats,
+        notes
+      }
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update influencer portal profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+};
+

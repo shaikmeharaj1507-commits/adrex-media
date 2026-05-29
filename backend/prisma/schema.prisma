@@ -44,6 +44,11 @@ enum Role {
   MANAGER
   TEAM_MEMBER
   INFLUENCER
+  INFLUENCER_MANAGER
+  SALES_TEAM
+  VIDEO_EDITOR
+  PERFORMANCE_MARKETER
+  SOCIAL_MEDIA_MANAGER
 }
 
 model User {
@@ -79,6 +84,8 @@ model User {
   aiChats             AIChat[]  @relation("AIChatUser")
   teamId              String?
   team                Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  
+  influencer          Influencer?
 }
 
 model Influencer {
@@ -103,7 +110,11 @@ model Influencer {
   updatedAt     DateTime @updatedAt
   
   campaignAssignments CampaignAssignment[]
+  
+  userId        String?  @unique
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
+
 
 model Client {
   id            String   @id @default(uuid())

@@ -1,9 +1,11 @@
 import express from 'express';
 import { getInvoices, createInvoice, updateInvoice, deleteInvoice, getExpenses, createExpense, updateExpense, deleteExpense } from '../controllers/financeController';
-import { requireAuth } from '../middlewares/auth';
+import { requireAuth, requireRole } from '../middlewares/auth';
 
 const router = express.Router();
 router.use(requireAuth);
+
+router.use(requireRole(['SUPER_ADMIN', 'MANAGER', 'PERFORMANCE_MARKETER']));
 
 router.get('/invoices', getInvoices);
 router.post('/invoices', createInvoice);

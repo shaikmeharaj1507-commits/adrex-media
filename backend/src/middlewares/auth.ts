@@ -29,6 +29,20 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
       agencyId: payload.agencyId,
       role: payload.role
     };
+
+    // Enforce influencer boundary: they can only access creator portal, logout, and profile
+    if (payload.role === 'INFLUENCER') {
+      const allowedPaths = [
+        '/api/influencer-portal',
+        '/api/auth/logout',
+        '/api/user'
+      ];
+      const isAllowed = allowedPaths.some(p => req.originalUrl.startsWith(p));
+      if (!isAllowed) {
+        return res.status(403).json({ error: 'Access denied: Creator account is restricted from agency administration resources.' });
+      }
+    }
+
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid or expired token' });

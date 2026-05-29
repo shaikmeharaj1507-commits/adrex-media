@@ -12,20 +12,20 @@ import {
 import { useAuthStore } from '@/store/authStore';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard',   href: '/dashboard',         roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
-  { icon: Megaphone,       label: 'Campaigns',   href: '/dashboard/campaigns',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
-  { icon: Users,           label: 'Influencers', href: '/dashboard/influencers',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
-  { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: Users,           label: 'Client Portal', href: '/dashboard/client-portal', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: Award,           label: 'Influencer Portal', href: '/dashboard/influencer-portal', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline', roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks',   roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: LayoutDashboard, label: 'Dashboard',   href: '/dashboard',         roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER', 'INFLUENCER_MANAGER', 'SALES_TEAM', 'VIDEO_EDITOR', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
+  { icon: Megaphone,       label: 'Campaigns',   href: '/dashboard/campaigns',roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER', 'INFLUENCER_MANAGER', 'VIDEO_EDITOR', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
+  { icon: Users,           label: 'Influencers', href: '/dashboard/influencers',roles: ['SUPER_ADMIN', 'MANAGER', 'INFLUENCER_MANAGER'] },
+  { icon: Briefcase,       label: 'Clients',     href: '/dashboard/clients', roles: ['SUPER_ADMIN', 'MANAGER', 'SALES_TEAM'] },
+  { icon: Users,           label: 'Client Portal', href: '/dashboard/client-portal', roles: ['SUPER_ADMIN', 'MANAGER', 'SALES_TEAM'] },
+  { icon: Award,           label: 'Influencer Portal', href: '/dashboard/influencer-portal', roles: ['SUPER_ADMIN', 'MANAGER', 'INFLUENCER_MANAGER'] },
+  { icon: GitBranch,       label: 'Pipeline',    href: '/dashboard/pipeline', roles: ['SUPER_ADMIN', 'MANAGER', 'SALES_TEAM'] },
+  { icon: CheckSquare,     label: 'Tasks',       href: '/dashboard/tasks',   roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER', 'INFLUENCER_MANAGER', 'SALES_TEAM', 'VIDEO_EDITOR', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
   { icon: UserCheck,       label: 'Team',        href: '/dashboard/team',    roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: Calendar,        label: 'Calendar',    href: '/dashboard/calendar', roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
-  { icon: DollarSign,      label: 'Finance',     href: '/dashboard/finance',  roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: BarChart,        label: 'Reports',     href: '/dashboard/reports',  roles: ['SUPER_ADMIN', 'MANAGER'] },
-  { icon: Folder,          label: 'Files',       href: '/dashboard/files',    roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
-  { icon: Sparkles,        label: 'AI Tools',    href: '/dashboard/ai',      roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER'] },
+  { icon: Calendar,        label: 'Calendar',    href: '/dashboard/calendar', roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER', 'INFLUENCER_MANAGER', 'SALES_TEAM', 'VIDEO_EDITOR', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
+  { icon: DollarSign,      label: 'Finance',     href: '/dashboard/finance',  roles: ['SUPER_ADMIN', 'MANAGER', 'PERFORMANCE_MARKETER'] },
+  { icon: BarChart,        label: 'Reports',     href: '/dashboard/reports',  roles: ['SUPER_ADMIN', 'MANAGER', 'SALES_TEAM', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
+  { icon: Folder,          label: 'Files',       href: '/dashboard/files',    roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER', 'INFLUENCER_MANAGER', 'SALES_TEAM', 'VIDEO_EDITOR', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
+  { icon: Sparkles,        label: 'AI Tools',    href: '/dashboard/ai',      roles: ['SUPER_ADMIN', 'MANAGER', 'TEAM_MEMBER', 'INFLUENCER_MANAGER', 'SALES_TEAM', 'VIDEO_EDITOR', 'PERFORMANCE_MARKETER', 'SOCIAL_MEDIA_MANAGER'] },
 ];
 
 export default function Sidebar() {

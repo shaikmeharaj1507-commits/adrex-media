@@ -130,6 +130,10 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (user.role === 'INFLUENCER') {
+      return res.status(401).json({ error: 'Influencers must log in via the dedicated creator portal.' });
+    }
+
     const isValidPassword = await bcrypt.compare(data.password, user.passwordHash);
 
     if (!isValidPassword) {
@@ -170,6 +174,70 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const influencerLogin = async (req: Request, res: Response) => {
+  try {
+    const data = LoginSchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({
+      where: { email: data.email }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.role !== 'INFLUENCER') {
+      return res.status(401).json({ error: 'Standard staff/admins must log in via the agency portal.' });
+    }
+
+    const isValidPassword = await bcrypt.compare(data.password, user.passwordHash);
+
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, agencyId: user.agencyId, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    // Look up the linked influencer record
+    const influencer = await prisma.influencer.findUnique({
+      where: { userId: user.id }
+    });
+
+    res.json({
+      message: 'Creator login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        agencyId: user.agencyId,
+        influencerId: influencer?.id || null
+      },
+      token
+    });
+
+  } catch (error) {
+     if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 export const logout = (req: Request, res: Response) => {
   res.clearCookie('token');

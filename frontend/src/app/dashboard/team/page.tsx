@@ -312,9 +312,15 @@ export default function TeamPage() {
                     <label className="block text-xs font-medium text-zinc-400 mb-1.5">Role</label>
                     <select value={newMember.role} onChange={e => setNewMember(p => ({...p, role: e.target.value}))}
                       className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors">
-                      <option value="TEAM_MEMBER">Team Member</option>
-                      <option value="MANAGER">Manager</option>
                       <option value="SUPER_ADMIN">Super Admin</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="INFLUENCER_MANAGER">Influencer Manager</option>
+                      <option value="SALES_TEAM">Sales Team</option>
+                      <option value="VIDEO_EDITOR">Video Editor</option>
+                      <option value="PERFORMANCE_MARKETER">Performance Marketer</option>
+                      <option value="SOCIAL_MEDIA_MANAGER">Social Media Manager</option>
+                      <option value="INFLUENCER">Influencer</option>
+                      <option value="TEAM_MEMBER">General Team Member</option>
                     </select>
                   </div>
                   <div>
@@ -376,9 +382,15 @@ export default function TeamPage() {
                     <label className="block text-xs font-medium text-zinc-400 mb-1.5">Role</label>
                     <select value={editingMember.role} onChange={e => setEditingMember(p => p ? {...p, role: e.target.value} : null)}
                       className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors">
-                      <option value="TEAM_MEMBER">Team Member</option>
-                      <option value="MANAGER">Manager</option>
                       <option value="SUPER_ADMIN">Super Admin</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="INFLUENCER_MANAGER">Influencer Manager</option>
+                      <option value="SALES_TEAM">Sales Team</option>
+                      <option value="VIDEO_EDITOR">Video Editor</option>
+                      <option value="PERFORMANCE_MARKETER">Performance Marketer</option>
+                      <option value="SOCIAL_MEDIA_MANAGER">Social Media Manager</option>
+                      <option value="INFLUENCER">Influencer</option>
+                      <option value="TEAM_MEMBER">General Team Member</option>
                     </select>
                   </div>
                   <div>

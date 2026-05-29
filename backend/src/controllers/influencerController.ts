@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import bcrypt from 'bcrypt';
+
 
 const prisma = new PrismaClient();
 
@@ -212,3 +214,72 @@ export const onboardInfluencer = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const createPortalUser = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const influencer = await prisma.influencer.findFirst({
+      where: { id, agencyId: user.agencyId }
+    });
+
+    if (!influencer) {
+      return res.status(404).json({ error: 'Influencer not found' });
+    }
+
+    if (!influencer.email) {
+      return res.status(400).json({ error: 'Influencer email is required to create portal credentials' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: influencer.email }
+    });
+
+    let portalUser;
+    if (existingUser) {
+      portalUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          role: 'INFLUENCER',
+          passwordHash,
+          firstName: influencer.name.split(' ')[0] || 'Creator',
+          lastName: influencer.name.split(' ').slice(1).join(' ') || 'Partner',
+        }
+      });
+    } else {
+      portalUser = await prisma.user.create({
+        data: {
+          agencyId: user.agencyId,
+          email: influencer.email,
+          passwordHash,
+          firstName: influencer.name.split(' ')[0] || 'Creator',
+          lastName: influencer.name.split(' ').slice(1).join(' ') || 'Partner',
+          role: 'INFLUENCER',
+          isEmailVerified: true
+        }
+      });
+    }
+
+    await prisma.influencer.update({
+      where: { id },
+      data: { userId: portalUser.id }
+    });
+
+    res.json({ message: 'Portal access created successfully', email: influencer.email });
+  } catch (error) {
+    console.error('Create portal user error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+

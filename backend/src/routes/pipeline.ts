@@ -1,10 +1,11 @@
 import express from 'express';
 import { getLeads, createLead, updateLead, deleteLead } from '../controllers/pipelineController';
-import { requireAuth } from '../middlewares/auth';
+import { requireAuth, requireRole } from '../middlewares/auth';
 
 const router = express.Router();
 
 router.use(requireAuth);
+router.use(requireRole(['SUPER_ADMIN', 'MANAGER', 'SALES_TEAM']));
 
 router.get('/', getLeads);
 router.post('/', createLead);

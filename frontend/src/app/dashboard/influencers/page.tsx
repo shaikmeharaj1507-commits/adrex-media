@@ -563,6 +563,61 @@ export default function InfluencersPage() {
                   </div>
                 </div>
 
+                {editingInfluencer && (
+                  <div className="space-y-4 border-t border-white/10 pt-4">
+                    <h3 className="text-lg font-semibold text-emerald-400 border-b border-white/10 pb-2">Portal Access Credentials</h3>
+                    <div className="bg-white/5 border border-white/10 p-4 rounded-xl space-y-3">
+                      <p className="text-xs text-zinc-400">
+                        Generate or update portal credentials for this creator. They will log in using their email <strong>{newInf.email || editingInfluencer.email}</strong>.
+                      </p>
+                      
+                      <div className="flex gap-3">
+                        <input 
+                          type="password" 
+                          placeholder="Enter portal password (min 6 chars)" 
+                          id="portal-pwd-input"
+                          className="flex-1 bg-background border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                        <button 
+                          type="button"
+                          onClick={async () => {
+                            const pwdInput = document.getElementById('portal-pwd-input') as HTMLInputElement;
+                            const password = pwdInput?.value;
+                            if (!password || password.length < 6) {
+                              alert('Please enter a password with at least 6 characters.');
+                              return;
+                            }
+                            try {
+                              const token = localStorage.getItem('adrex_token');
+                              const res = await fetch(`${API_URL}/api/influencers/${editingInfluencer.id}/portal-user`, {
+                                method: 'POST',
+                                headers: { 
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ password })
+                              });
+                              if (res.ok) {
+                                alert('Portal credentials set successfully!');
+                                pwdInput.value = '';
+                              } else {
+                                const err = await res.json();
+                                alert(err.error || 'Failed to set credentials.');
+                              }
+                            } catch (e) {
+                              console.error(e);
+                              alert('Error generating portal user.');
+                            }
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all"
+                        >
+                          Generate/Update Portal Login
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-4 mt-4 border-t border-white/10 sticky bottom-0 bg-zinc-900/90 backdrop-blur-md pb-4 z-20">
                   <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-bold hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-70 flex items-center justify-center gap-2">
                     {isSubmitting ? (
