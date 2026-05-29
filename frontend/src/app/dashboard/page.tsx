@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { formatCompactCurrency } from '@/lib/utils';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -19,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-card border border-border rounded-xl p-3 text-sm shadow-xl text-foreground">
         <p className="text-muted-foreground">{label}</p>
-        <p className="text-foreground font-semibold">₹{payload[0].value.toLocaleString('en-IN')}</p>
+        <p className="text-foreground font-semibold">{formatCompactCurrency(payload[0].value)}</p>
       </div>
     );
   }
@@ -29,7 +30,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 const staggerContainer = { animate: { transition: { staggerChildren: 0.06 } } };
 
-function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenueData, kpiCards, quickLinks, recentActivity, recentCampaigns }: any) {
+function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenueData, kpiCards, quickLinks, recentActivity, recentCampaigns, isIndian }: any) {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -115,12 +116,12 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
           </div>
 
           {/* Revenue Summary */}
-          <div className="mt-5 p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-blue-50/50 border border-emerald-200">
+          <div className="mt-5 p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border border-emerald-500/20">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign size={14} className="text-emerald-600" />
-              <span className="text-xs font-semibold text-emerald-600">Revenue Summary</span>
+              <DollarSign size={14} className="text-emerald-500" />
+              <span className="text-xs font-semibold text-emerald-500">Revenue Summary</span>
             </div>
-            <p className="text-lg font-bold text-foreground">₹{stats.totalRevenue.toLocaleString('en-IN')}</p>
+            <p className="text-lg font-bold text-foreground">{formatCompactCurrency(stats.totalRevenue, isIndian)}</p>
             <p className="text-xs text-muted-foreground mt-0.5">Total paid invoices</p>
           </div>
         </motion.div>
@@ -175,7 +176,7 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
                   <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-muted transition-all">
                     <div>
                       <p className="text-sm font-medium text-foreground">{c.name}</p>
-                      <p className="text-xs text-muted-foreground">₹{(c.budget || 0).toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-muted-foreground">{formatCompactCurrency(c.budget || 0, isIndian)}</p>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusColors[c.status] || statusColors.DRAFT}`}>
                       {c.status}
@@ -254,7 +255,8 @@ function TeamMemberDashboardContent({ user, stats, loading, recentActivity }: an
 
 function DashboardContent() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, currencyFormat } = useAuthStore();
+  const isIndian = currencyFormat !== 'INTL';
   const [stats, setStats] = useState({
     campaigns: 0, clients: 0, influencers: 0, tasks: 0,
     activeCampaigns: 0, totalRevenue: 0, totalExpenses: 0, totalMRR: 0,
@@ -311,7 +313,8 @@ function DashboardContent() {
       kpiCards={kpiCards} 
       quickLinks={quickLinks} 
       recentActivity={recentActivity} 
-      recentCampaigns={recentCampaigns} 
+      recentCampaigns={recentCampaigns}
+      isIndian={isIndian}
     />
   );
 }

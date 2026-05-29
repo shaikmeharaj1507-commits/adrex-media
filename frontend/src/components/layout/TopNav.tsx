@@ -1,12 +1,13 @@
 'use client';
 
-import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon } from 'lucide-react';
+import { Bell, Search, ChevronDown, Settings, LogOut, User, Sun, Moon, IndianRupee, Globe } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { API_URL } from '@/lib/api';
+import { useTheme } from 'next-themes';
 
 interface BackendNotification {
   id: string;
@@ -22,13 +23,15 @@ export default function TopNav() {
   const [showProfile, setShowProfile] = useState(false);
   const [notifications, setNotifications] = useState<BackendNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { user, logout } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  const { user, logout, currencyFormat, setCurrencyFormat } = useAuthStore();
   const { socket } = useSocketStore();
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
-  const pathname = usePathname();
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => { setMounted(true); }, []);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -52,15 +55,9 @@ export default function TopNav() {
 
   useEffect(() => {
     if (!socket) return;
-    
-    const handleNewNotification = async () => {
-      await fetchNotifications();
-    };
-
+    const handleNewNotification = async () => { await fetchNotifications(); };
     socket.on('receive_notification', handleNewNotification);
-    return () => {
-      socket.off('receive_notification', handleNewNotification);
-    };
+    return () => { socket.off('receive_notification', handleNewNotification); };
   }, [socket, fetchNotifications]);
 
   useEffect(() => {
@@ -101,13 +98,10 @@ export default function TopNav() {
   };
 
   const timeAgo = (dateStr: string) => {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const diffMs = now.getTime() - date.getTime();
+    const diffMs = Date.now() - new Date(dateStr).getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -123,8 +117,10 @@ export default function TopNav() {
     router.push('/login');
   };
 
+  const isDark = mounted ? theme !== 'ivory-luxe' : true;
+
   return (
-    <header className="h-16 border-b border-border/60 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-30">
+    <header className="h-16 border-b border-border/60 bg-background/80 backdrop-blur-xl flex items-center justify-between px-6 sticky top-0 z-30 transition-colors duration-300">
       {/* Search */}
       <div className="relative w-72">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -136,8 +132,38 @@ export default function TopNav() {
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
 
+        {/* Currency Format Toggle — only for authenticated users */}
+        {user && (
+          <button
+            id="currency-format-btn"
+            onClick={() => setCurrencyFormat(currencyFormat === 'IN' ? 'INTL' : 'IN')}
+            title={currencyFormat === 'IN' ? 'Switch to International (K/M/B)' : 'Switch to Indian (K/L/Cr)'}
+            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 text-xs font-semibold"
+          >
+            {currencyFormat === 'IN' ? (
+              <><IndianRupee size={16} /><span className="hidden sm:inline">IN</span></>
+            ) : (
+              <><Globe size={16} /><span className="hidden sm:inline">INTL</span></>
+            )}
+          </button>
+        )}
+
+        {/* Theme Toggle — only for authenticated users */}
+        {user && mounted && (
+          <button
+            id="theme-toggle-btn"
+            onClick={() => setTheme(isDark ? 'ivory-luxe' : 'space-deep-black')}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            className="p-2 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        )}
+
+        {/* Divider */}
+        <div className="w-px h-5 bg-border/80 mx-1" />
 
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
@@ -155,7 +181,7 @@ export default function TopNav() {
           </button>
 
           {showNotifs && (
-            <div className="absolute right-0 top-12 z-50 w-96 max-h-[480px] flex flex-col rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 top-12 z-50 w-96 max-h-[480px] flex flex-col rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-background/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between shrink-0">
                 <span className="text-sm font-semibold text-foreground">Notifications</span>
                 <span className="text-xs text-primary font-medium">{unreadCount} unread</span>
@@ -209,7 +235,7 @@ export default function TopNav() {
           </button>
 
           {showProfile && (
-            <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-white/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 top-12 z-50 w-60 rounded-2xl border border-border/80 shadow-2xl overflow-hidden backdrop-blur-2xl bg-background/95 text-foreground animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="px-4 py-3 border-b border-border/50">
                 <div className="flex items-center gap-2.5 mb-1">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
@@ -220,34 +246,26 @@ export default function TopNav() {
                     <p className="text-xs text-muted-foreground">{displayEmail}</p>
                   </div>
                 </div>
+                <span className="inline-block text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold mt-1">{user?.role}</span>
               </div>
-              <div className="p-1.5">
-                {[
-                  { label: 'Profile Settings', icon: User, href: '/dashboard/settings', allowedRoles: ['SUPER_ADMIN', 'MANAGER'] },
-                  { label: 'Agency Settings', icon: Settings, href: '/dashboard/settings?tab=agency', allowedRoles: ['SUPER_ADMIN', 'MANAGER'] },
-                ].filter(item => item.allowedRoles.includes(user?.role || '') && !pathname.includes('/client-portal/'))
-                .map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setShowProfile(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-all text-muted-foreground hover:text-foreground"
-                    >
-                      <Icon size={14} className="text-muted-foreground" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
+
+              <div className="py-1">
+                <Link href="/dashboard/settings" onClick={() => setShowProfile(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+                  <Settings size={15} /> Settings
+                </Link>
+                <Link href="/dashboard/profile" onClick={() => setShowProfile(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all">
+                  <User size={15} /> My Profile
+                </Link>
               </div>
-              <div className="border-t border-border/50 p-1.5">
+
+              <div className="border-t border-border/50 py-1">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg hover:bg-red-50 transition-all text-red-500 hover:text-red-600"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-all"
                 >
-                  <LogOut size={14} />
-                  Sign out
+                  <LogOut size={15} /> Log Out
                 </button>
               </div>
             </div>

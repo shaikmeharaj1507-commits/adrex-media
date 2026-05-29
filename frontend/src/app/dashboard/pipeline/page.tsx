@@ -4,6 +4,8 @@ import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, DollarSign, TrendingUp, Trophy, XCircle, Phone, Mail, FileText, Loader2, Download } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { formatCompactCurrency } from '@/lib/utils';
 
 type Stage = 'LEAD' | 'CONTACTED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST' | 'PAUSED';
 
@@ -30,6 +32,8 @@ const stages: { id: Stage; label: string; textClass: string; bgClass: string; bo
 ];
 
 export default function PipelinePage() {
+  const { currencyFormat } = useAuthStore();
+  const isIndian = currencyFormat !== 'INTL';
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -166,8 +170,8 @@ export default function PipelinePage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Pipeline Value', value: `₹${totalPipelineValue.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-blue-600 bg-blue-50 border-blue-200' },
-          { label: 'Closed Won', value: `₹${wonValue.toLocaleString('en-IN')}`, icon: Trophy, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+          { label: 'Pipeline Value', value: formatCompactCurrency(totalPipelineValue, isIndian), icon: DollarSign, color: 'text-blue-600 bg-blue-50 border-blue-200' },
+          { label: 'Closed Won', value: formatCompactCurrency(wonValue, isIndian), icon: Trophy, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
           { label: 'Win Rate', value: `${winRate}%`, icon: TrendingUp, color: 'text-purple-600 bg-purple-50 border-purple-200' },
         ].map((kpi, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
@@ -192,7 +196,7 @@ export default function PipelinePage() {
               <div className="flex items-center justify-between mb-1">
                 <div>
                   <p className={`text-xs font-semibold ${stage.textClass}`}>{stage.label}</p>
-                  <p className="text-[10px] text-muted-foreground">₹{stageValue.toLocaleString('en-IN')}</p>
+                  <p className="text-[10px] text-muted-foreground">{formatCompactCurrency(stageValue, isIndian)}</p>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${stage.bgClass}`}>{stageLeads.length}</span>
               </div>
@@ -211,7 +215,7 @@ export default function PipelinePage() {
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">{lead.contactName}</p>
                     <div className="flex items-center gap-1 mt-2">
                       <DollarSign size={10} className="text-emerald-600" />
-                      <span className="text-xs font-semibold text-emerald-600">₹{lead.value.toLocaleString('en-IN')}</span>
+                      <span className="text-xs font-semibold text-emerald-600">{formatCompactCurrency(lead.value, isIndian)}</span>
                     </div>
                     {lead.email && (
                       <div className="flex items-center gap-1 mt-1.5 text-muted-foreground/80">

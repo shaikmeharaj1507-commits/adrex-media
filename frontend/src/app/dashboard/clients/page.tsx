@@ -4,6 +4,8 @@ import { API_URL } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, MoreHorizontal, Briefcase, Mail, Phone, DollarSign, X, Building2, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Client {
   id: string;
@@ -17,6 +19,8 @@ interface Client {
 }
 
 export default function ClientsPage() {
+  const { currencyFormat } = useAuthStore();
+  const isIndian = currencyFormat !== 'INTL';
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -184,8 +188,8 @@ export default function ClientsPage() {
         {[
           { label: 'Total Clients', value: `${loading ? '-' : clients.length}`, icon: Building2 },
           { label: 'Active Clients', value: `${loading ? '-' : clients.filter(c => c.status === 'ACTIVE').length}`, icon: Briefcase },
-          { label: 'Total MRR', value: `₹${clients.reduce((acc, c) => acc + (c.monthlyBudget || 0), 0).toLocaleString('en-IN')}`, icon: DollarSign },
-          { label: 'Avg. Budget', value: `₹${clients.length ? Math.round(clients.reduce((acc, c) => acc + (c.monthlyBudget || 0), 0) / clients.length).toLocaleString('en-IN') : 0}`, icon: DollarSign },
+          { label: 'Total MRR', value: formatCompactCurrency(clients.reduce((acc, c) => acc + (c.monthlyBudget || 0), 0), isIndian), icon: DollarSign },
+          { label: 'Avg. Budget', value: formatCompactCurrency(clients.length ? Math.round(clients.reduce((acc, c) => acc + (c.monthlyBudget || 0), 0) / clients.length) : 0, isIndian), icon: DollarSign },
         ].map((s, i) => {
           const Icon = s.icon;
           return (
@@ -255,7 +259,7 @@ export default function ClientsPage() {
               )}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <DollarSign size={14} className="shrink-0" />
-                <span>₹{(c.monthlyBudget || 0).toLocaleString('en-IN')} / month</span>
+                <span>{formatCompactCurrency(c.monthlyBudget || 0, isIndian)} / month</span>
               </div>
             </div>
 

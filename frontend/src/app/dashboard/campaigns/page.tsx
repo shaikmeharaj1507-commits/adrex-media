@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
+import { formatCompactCurrency } from '@/lib/utils';
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   ACTIVE:    { color: 'text-emerald-400', bg: 'bg-emerald-400/10',  label: 'Active' },
@@ -41,9 +42,10 @@ interface TeamGroup {
 }
 
 export default function CampaignsPage() {
-  const { user } = useAuthStore();
+  const { user, currencyFormat } = useAuthStore();
   const { socket } = useSocketStore();
   const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER';
+  const isIndian = currencyFormat !== 'INTL';
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
@@ -260,7 +262,7 @@ export default function CampaignsPage() {
         {[
           { label: 'Total Campaigns', value: loading ? '-' : campaigns.length, sub: 'All time' },
           { label: 'Active Now', value: loading ? '-' : campaigns.filter(c => c.status === 'ACTIVE').length, sub: 'Running' },
-          isAdmin ? { label: 'Total Budget', value: loading ? '-' : `₹${campaigns.reduce((a,c) => a + c.budget, 0).toLocaleString('en-IN')}`, sub: 'Allocated' } : null,
+          isAdmin ? { label: 'Total Budget', value: loading ? '-' : formatCompactCurrency(campaigns.reduce((a,c) => a + c.budget, 0), isIndian), sub: 'Allocated' } : null,
           { label: 'Completed', value: loading ? '-' : campaigns.filter(c => c.status === 'COMPLETED').length, sub: 'Finished' },
         ].filter((s): s is { label: string; value: string | number; sub: string } => s !== null).map((s, i) => (
           <div key={i} className="p-4 rounded-xl glassmorphism">
@@ -326,7 +328,7 @@ export default function CampaignsPage() {
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${st.color} ${st.bg}`}>{st.label}</span>
                     </td>
-                    <td className="px-6 py-4 font-medium">₹{c.budget.toLocaleString('en-IN')}</td>
+                    <td className="px-6 py-4 font-medium">{formatCompactCurrency(c.budget, isIndian)}</td>
                     {isAdmin && (
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1.5 flex-wrap">

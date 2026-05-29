@@ -16,8 +16,10 @@ interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  currencyFormat: 'IN' | 'INTL';
   _hasHydrated: boolean;
   setUser: (user: User | null) => void;
+  setCurrencyFormat: (format: 'IN' | 'INTL') => void;
   logout: () => void;
   setHasHydrated: () => void;
 }
@@ -27,8 +29,10 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
+      currencyFormat: 'IN',
       _hasHydrated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setCurrencyFormat: (currencyFormat) => set({ currencyFormat }),
       logout: () => {
         localStorage.removeItem('adrex_token');
         set({ user: null, isAuthenticated: false });
@@ -37,7 +41,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'adrex-auth',
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated, currencyFormat: state.currencyFormat }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated();
       },

@@ -20,21 +20,9 @@ export default function RootLayout({
       <body className={`${inter.className} bg-background text-foreground min-h-screen antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="ivory-luxe"
+          defaultTheme="space-deep-black"
           enableSystem={false}
-          disableTransitionOnChange
-          themes={[
-            'space-deep-black',
-            'cyber-surface',
-            'ivory-luxe',
-            'executive-stark',
-            'electric-violet',
-            'hyper-cyan',
-            'creator-pink',
-            'muted-border',
-            'subtext-gray',
-            'enterprise-gold',
-          ]}
+          themes={['space-deep-black', 'ivory-luxe']}
         >
           {children}
         </ThemeProvider>

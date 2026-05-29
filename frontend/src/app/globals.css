@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root, .space-deep-black, .ivory-luxe, .cyber-surface, .executive-stark, .electric-violet, .hyper-cyan, .creator-pink, .muted-border, .subtext-gray, .enterprise-gold {
+  :root, .space-deep-black, .cyber-surface, .executive-stark, .electric-violet, .hyper-cyan, .creator-pink, .muted-border, .subtext-gray, .enterprise-gold {
     --background: 248 25% 4%;
     --foreground: 210 40% 98%;
     --card: 240 10% 6%;
@@ -24,6 +24,28 @@
     --input: 240 10% 12%;
     --ring: 258 90% 66%;
     --radius: 1.5rem;
+  }
+
+  .ivory-luxe {
+    --background: 210 17% 98%;
+    --foreground: 240 5% 12%;
+    --card: 0 0% 99%;
+    --card-foreground: 240 5% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 5% 12%;
+    --primary: 258 90% 66%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 100% 65%;
+    --secondary-foreground: 240 5% 12%;
+    --muted: 220 22% 93%;
+    --muted-foreground: 224 8% 47%;
+    --accent: 191 100% 91%;
+    --accent-foreground: 240 5% 12%;
+    --destructive: 0 100% 71%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 22% 93%;
+    --input: 220 22% 93%;
+    --ring: 258 90% 66%;
   }
 }
 

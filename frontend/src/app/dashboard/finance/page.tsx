@@ -4,6 +4,8 @@ import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, DollarSign, TrendingUp, TrendingDown, Receipt, CreditCard, Trash2, Download } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Invoice {
   id: string;
@@ -25,6 +27,8 @@ const statusColors: Record<string, string> = {
 };
 
 export default function FinancePage() {
+  const { currencyFormat } = useAuthStore();
+  const isIndian = currencyFormat !== 'INTL';
   const [tab, setTab] = useState<'invoices' | 'expenses'>('invoices');
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -162,10 +166,10 @@ export default function FinancePage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-emerald-600 bg-emerald-50 border-emerald-200', glow: 'shadow-sm' },
-          { label: 'Outstanding', value: `₹${outstanding.toLocaleString('en-IN')}`, icon: Receipt, color: 'text-amber-600 bg-amber-50 border-amber-200', glow: 'shadow-sm' },
-          { label: 'Total Expenses', value: `₹${totalExpenses.toLocaleString('en-IN')}`, icon: TrendingDown, color: 'text-red-600 bg-red-50 border-red-200', glow: 'shadow-sm' },
-          { label: 'Net Profit', value: `₹${profit.toLocaleString('en-IN')}`, icon: TrendingUp, color: profit >= 0 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-red-600 bg-red-50 border-red-200', glow: 'shadow-sm' },
+          { label: 'Total Revenue', value: formatCompactCurrency(totalRevenue, isIndian), icon: DollarSign, color: 'text-emerald-600 bg-emerald-50 border-emerald-200', glow: 'shadow-sm' },
+          { label: 'Outstanding', value: formatCompactCurrency(outstanding, isIndian), icon: Receipt, color: 'text-amber-600 bg-amber-50 border-amber-200', glow: 'shadow-sm' },
+          { label: 'Total Expenses', value: formatCompactCurrency(totalExpenses, isIndian), icon: TrendingDown, color: 'text-red-600 bg-red-50 border-red-200', glow: 'shadow-sm' },
+          { label: 'Net Profit', value: formatCompactCurrency(profit, isIndian), icon: TrendingUp, color: profit >= 0 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-red-600 bg-red-50 border-red-200', glow: 'shadow-sm' },
         ].map((k, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
             className={`p-4 sm:p-5 rounded-2xl bg-card border border-border flex items-center gap-3 sm:gap-4 ${k.glow} min-w-0`}>
@@ -206,7 +210,7 @@ export default function FinancePage() {
                : invoices.map(inv => (
                 <tr key={inv.id} className="border-b border-border hover:bg-muted/30 group transition-colors">
                   <td className="px-6 py-4 font-medium text-foreground">{inv.client?.companyName}</td>
-                  <td className="px-6 py-4 text-emerald-600 font-semibold">₹{inv.amount.toLocaleString('en-IN')}</td>
+                  <td className="px-6 py-4 text-emerald-600 font-semibold">{formatCompactCurrency(inv.amount, isIndian)}</td>
                   <td className="px-6 py-4">
                     <select value={inv.status} onChange={e => updateInvoiceStatus(inv.id, e.target.value)} className={`px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-pointer bg-card ${statusColors[inv.status]}`}>
                       {['DRAFT','SENT','PAID','OVERDUE'].map(s => <option key={s} className="bg-card text-foreground" value={s}>{s}</option>)}
@@ -241,7 +245,7 @@ export default function FinancePage() {
                : expenses.map(exp => (
                 <tr key={exp.id} className="border-b border-border hover:bg-muted/30 group transition-colors">
                   <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-full bg-purple-100 border border-purple-200 text-purple-600 text-xs font-semibold">{exp.category}</span></td>
-                  <td className="px-6 py-4 text-red-600 font-semibold">-₹{exp.amount.toLocaleString('en-IN')}</td>
+                  <td className="px-6 py-4 text-red-600 font-semibold">-{formatCompactCurrency(exp.amount, isIndian)}</td>
                   <td className="px-6 py-4 text-muted-foreground text-xs">{exp.description || '—'}</td>
                   <td className="px-6 py-4 text-muted-foreground text-xs">{new Date(exp.date).toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-right"><button onClick={() => deleteExpense(exp.id)} className="p-2 rounded-lg text-muted-foreground hover:bg-red-50 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16} /></button></td>
