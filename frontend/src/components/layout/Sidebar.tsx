@@ -80,9 +80,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-5 border-b border-border/40 shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shadow-lg">
-            <Sparkles size={16} className="text-white" />
-          </div>
+          <img src="/logo.png" alt="Adrex Media" className="w-8 h-8 rounded-xl object-contain shadow-lg" />
           <div>
             <h2 className="text-base font-bold tracking-tight text-gradient">Adrex Media</h2>
             <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Agency Workspace</p>

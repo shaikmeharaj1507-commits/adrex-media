@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Adrex Media OS - Agency Management",
   description: "Enterprise SaaS for Influencer & Performance Marketing Agencies",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

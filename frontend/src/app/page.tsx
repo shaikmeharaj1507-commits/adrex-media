@@ -24,9 +24,7 @@ export default function Home() {
       {/* Header */}
       <header className="relative z-10 max-w-7xl mx-auto w-full px-6 py-5 flex items-center justify-between border-b border-border/40 backdrop-blur-sm">
         <div className="flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shadow-lg">
-            <Sparkles size={18} className="text-white" />
-          </span>
+          <img src="/logo.png" alt="Adrex Media" className="w-9 h-9 rounded-xl object-contain shadow-lg" />
           <span className="font-extrabold text-lg tracking-tight text-foreground">
             ADREX<span className="text-primary font-light">MEDIA</span>
           </span>
