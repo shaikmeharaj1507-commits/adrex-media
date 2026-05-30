@@ -164,7 +164,7 @@ export const createTask = async (req: Request, res: Response) => {
     const user = (req as any).user;
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { title, assignee, assigneeId, priority, campaign, campaignId, dueDate, status } = req.body;
+    const { title, description, assignee, assigneeId, priority, campaign, campaignId, dueDate, status } = req.body;
     const idempotencyKey = req.headers['x-idempotency-key'] as string;
 
     // 1. Direct Idempotency Key check
@@ -215,6 +215,7 @@ export const createTask = async (req: Request, res: Response) => {
       data: {
         agencyId: user.agencyId,
         title,
+        description: description || null,
         assignee,
         assigneeId: assigneeId || null,
         priority,
@@ -270,7 +271,7 @@ export const updateTask = async (req: Request, res: Response) => {
     if (!user || !user.agencyId) return res.status(401).json({ error: 'Unauthorized' });
 
     const { id } = req.params;
-    const { status, title, assignee, assigneeId, priority, campaign, campaignId, dueDate } = req.body;
+    const { status, title, description, assignee, assigneeId, priority, campaign, campaignId, dueDate } = req.body;
 
     // Verify authorization
     const existingTask = await prisma.task.findFirst({
@@ -287,6 +288,7 @@ export const updateTask = async (req: Request, res: Response) => {
       where: { id, agencyId: user.agencyId },
       data: {
         ...(title && { title }),
+        ...(description !== undefined && { description }),
         ...(assignee !== undefined && { assignee }),
         ...(assigneeId !== undefined && { assigneeId }),
         ...(priority && { priority }),

@@ -47,12 +47,13 @@ function AdminDashboardContent({ user, stats, loading, monthlyRevenue, hasRevenu
           const Icon = card.icon;
           return (
             <motion.div key={i} variants={fadeIn}
-              className={`p-5 rounded-2xl bg-gradient-to-br ${card.bg} border border-border shadow-sm`}>
-              <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-border ${card.color} shadow-sm`}>
+              className="p-5 rounded-2xl glassmorphism border border-border/80 shadow-sm relative overflow-hidden group hover:border-primary/30 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${card.iconBorder} ${card.iconBg} ${card.color} shadow-sm relative z-10`}>
                 <Icon size={20} />
               </div>
-              <p className="text-3xl font-bold text-foreground mt-3">{loading ? '—' : card.value}</p>
-              <p className="text-sm text-muted-foreground mt-1">{card.label}</p>
+              <p className="text-3xl font-bold text-foreground mt-3 relative z-10">{loading ? '—' : card.value}</p>
+              <p className="text-sm text-muted-foreground mt-1 relative z-10">{card.label}</p>
             </motion.div>
           );
         })}
@@ -204,15 +205,17 @@ function TeamMemberDashboardContent({ user, stats, loading, recentActivity }: an
       
       {/* KPI Cards for Team Member */}
       <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" variants={staggerContainer} initial="initial" animate="animate">
-        <motion.div variants={fadeIn} className="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/30 border border-border shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center text-amber-600 shadow-sm"><Activity size={20} /></div>
-          <p className="text-3xl font-bold text-foreground mt-3">{loading ? '-' : (stats.tasks || 0)}</p>
-          <p className="text-sm text-muted-foreground mt-1">My Open Tasks</p>
+        <motion.div variants={fadeIn} className="p-5 rounded-2xl glassmorphism border border-border/80 shadow-sm relative overflow-hidden group hover:border-primary/30 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-sm relative z-10"><Activity size={20} /></div>
+          <p className="text-3xl font-bold text-foreground mt-3 relative z-10">{loading ? '-' : (stats.tasks || 0)}</p>
+          <p className="text-sm text-muted-foreground mt-1 relative z-10">My Open Tasks</p>
         </motion.div>
-        <motion.div variants={fadeIn} className="p-5 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-border shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center text-primary shadow-sm"><Megaphone size={20} /></div>
-          <p className="text-3xl font-bold text-foreground mt-3">{loading ? '-' : (stats.activeCampaigns || 0)}</p>
-          <p className="text-sm text-muted-foreground mt-1">Active Campaigns</p>
+        <motion.div variants={fadeIn} className="p-5 rounded-2xl glassmorphism border border-border/80 shadow-sm relative overflow-hidden group hover:border-primary/30 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm relative z-10"><Megaphone size={20} /></div>
+          <p className="text-3xl font-bold text-foreground mt-3 relative z-10">{loading ? '-' : (stats.activeCampaigns || 0)}</p>
+          <p className="text-sm text-muted-foreground mt-1 relative z-10">Active Campaigns</p>
         </motion.div>
         <motion.div variants={fadeIn} className="col-span-2 bg-card border border-border rounded-2xl p-6 flex flex-col justify-center shadow-sm">
           <h3 className="font-semibold text-foreground mb-3">Quick Actions</h3>
@@ -284,10 +287,10 @@ function DashboardContent() {
   }, [router]);
 
   const kpiCards = useMemo(() => [
-    { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-rose-600', bg: 'from-rose-50 to-rose-100/30' },
-    { label: 'Total Clients', value: stats.clients, icon: Briefcase, color: 'text-cyan-600', bg: 'from-cyan-50 to-cyan-100/30' },
-    { label: 'Influencers', value: stats.influencers, icon: Users, color: 'text-rose-600', bg: 'from-rose-50 to-rose-100/30' },
-    { label: 'Open Tasks', value: stats.tasks, icon: Activity, color: 'text-amber-600', bg: 'from-amber-50 to-amber-100/30' },
+    { label: 'Active Campaigns', value: stats.activeCampaigns, icon: Megaphone, color: 'text-rose-500 dark:text-rose-400', iconBg: 'bg-rose-500/10 dark:bg-rose-500/20', iconBorder: 'border-rose-500/20 dark:border-rose-500/30' },
+    { label: 'Total Clients', value: stats.clients, icon: Briefcase, color: 'text-blue-500 dark:text-blue-400', iconBg: 'bg-blue-500/10 dark:bg-blue-500/20', iconBorder: 'border-blue-500/20 dark:border-blue-500/30' },
+    { label: 'Influencers', value: stats.influencers, icon: Users, color: 'text-violet-500 dark:text-violet-400', iconBg: 'bg-violet-500/10 dark:bg-violet-500/20', iconBorder: 'border-violet-500/20 dark:border-violet-500/30' },
+    { label: 'Open Tasks', value: stats.tasks, icon: Activity, color: 'text-amber-500 dark:text-amber-400', iconBg: 'bg-amber-500/10 dark:bg-amber-500/20', iconBorder: 'border-amber-500/20 dark:border-amber-500/30' },
   ], [stats]);
 
   const quickLinks = useMemo(() => [

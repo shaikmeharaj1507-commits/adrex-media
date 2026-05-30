@@ -13,6 +13,7 @@ type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
 interface Task {
   id: string;
   title: string;
+  description: string | null;
   assignee: string | null;
   assigneeId: string | null;
   priority: Priority;
@@ -58,7 +59,7 @@ export default function TasksPage() {
   const [teamMembers, setTeamMembers] = useState<{id: string, firstName: string, lastName: string}[]>([]);
   const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', campaignId: '', dueDate: '', status: 'TODO' as TaskStatus });
+  const [newTask, setNewTask] = useState({ title: '', description: '', assignee: '', assigneeId: '', priority: 'MEDIUM' as Priority, campaign: '', campaignId: '', dueDate: '', status: 'TODO' as TaskStatus });
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
@@ -210,7 +211,7 @@ export default function TasksPage() {
           showToast('Task created successfully', 'success');
         }
 
-        setNewTask({ title: '', assignee: '', assigneeId: '', priority: 'MEDIUM', campaign: '', campaignId: '', dueDate: '', status: 'TODO' });
+        setNewTask({ title: '', description: '', assignee: '', assigneeId: '', priority: 'MEDIUM', campaign: '', campaignId: '', dueDate: '', status: 'TODO' });
         setShowModal(false);
       } else {
         const errData = await res.json().catch(() => ({}));
@@ -437,6 +438,12 @@ export default function TasksPage() {
                     type="text" placeholder="e.g. Brief influencers for campaign" required disabled={isSubmitting}
                     className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-60" />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Task Description</label>
+                  <textarea value={newTask.description} onChange={e => setNewTask(p => ({ ...p, description: e.target.value }))}
+                    placeholder="Describe the details of this task..." disabled={isSubmitting} rows={3}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-60 resize-none" />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   {isAdmin ? (
                     <div>
@@ -546,6 +553,14 @@ export default function TasksPage() {
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Title</p>
                   <p className="text-sm font-semibold text-foreground mt-0.5">{selectedTask.title}</p>
                 </div>
+                {selectedTask.description && (
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Description</p>
+                    <p className="text-sm text-foreground mt-0.5 bg-muted/40 rounded-xl p-3 border border-border/40 whitespace-pre-wrap leading-relaxed">
+                      {selectedTask.description}
+                    </p>
+                  </div>
+                )}
  
                 <div className="grid grid-cols-2 gap-4">
                   <div>

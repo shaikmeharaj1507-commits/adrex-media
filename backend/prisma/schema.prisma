@@ -156,6 +156,7 @@ model Task {
   agencyId    String
   agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   title       String
+  description String?
   assignee    String?
   assigneeId  String?
   assigneeUser User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)

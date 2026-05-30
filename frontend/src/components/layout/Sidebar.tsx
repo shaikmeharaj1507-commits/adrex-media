@@ -47,12 +47,9 @@ const roleItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout, workspaceRole, setWorkspaceRole } = useAuthStore();
-  const [showRolesMenu, setShowRolesMenu] = useState(false);
+  const { user, logout } = useAuthStore();
 
-  // Use workspaceRole for NAV FILTER PREVIEW, but never for permission enforcement
-  // Admin identity (user.role) is always preserved
-  const activeRole = workspaceRole ?? user?.role ?? 'TEAM_MEMBER';
+  const activeRole = user?.role ?? 'TEAM_MEMBER';
 
   const filteredMenuItems = menuItems.filter(item => {
     if (!item.roles) return true;
@@ -69,8 +66,6 @@ export default function Sidebar() {
     logout();
     router.push('/login');
   };
-
-  const selectedRoleItem = roleItems.find(r => r.id === workspaceRole);
 
   return (
     <aside className="w-64 h-[calc(100vh-2rem)] m-4 rounded-3xl flex flex-col fixed left-0 top-0 z-40 overflow-hidden"
@@ -94,36 +89,6 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
-
-      {/* Workspace Role Preview Banner */}
-      <AnimatePresence>
-        {workspaceRole && workspaceRole !== user?.role && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="workspace-preview-bar shrink-0 overflow-hidden"
-          >
-            <div className="flex items-center justify-between px-4 py-2">
-              <div className="flex items-center gap-1.5">
-                <Eye size={11} className="text-primary" />
-                <span className="text-[10px] font-semibold text-primary">Previewing:</span>
-                <span className="text-[10px] text-muted-foreground truncate max-w-[90px]">
-                  {selectedRoleItem?.label ?? workspaceRole}
-                </span>
-              </div>
-              <button
-                onClick={() => setWorkspaceRole(null)}
-                className="p-0.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                title="Exit preview mode"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto min-h-0">
@@ -154,73 +119,6 @@ export default function Sidebar() {
             </Link>
           );
         })}
-
-        {/* Separator */}
-        <div className="my-3 border-t border-border/40" />
-
-        {/* Workspace Role Viewer — Preview what a role would see */}
-        {(user?.role === 'SUPER_ADMIN' || user?.role === 'MANAGER') && (
-          <div className="space-y-1">
-            <button
-              onClick={() => setShowRolesMenu(!showRolesMenu)}
-              className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors rounded-lg hover:bg-muted/40"
-            >
-              <span>Role Preview</span>
-              <motion.div animate={{ rotate: showRolesMenu ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown size={12} />
-              </motion.div>
-            </button>
-
-            <AnimatePresence>
-              {showRolesMenu && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                  <div className="space-y-0.5 max-h-48 overflow-y-auto pr-0.5 pb-1">
-                    {/* Reset option */}
-                    <button
-                      onClick={() => setWorkspaceRole(null)}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[11px] ${
-                        !workspaceRole
-                          ? 'bg-primary/10 border border-primary/25 text-primary font-semibold'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent'
-                      }`}
-                    >
-                      <ShieldAlert size={12} className="text-purple-400 shrink-0" />
-                      <span className="truncate">My Role ({user?.role?.replace(/_/g, ' ')})</span>
-                      {!workspaceRole && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
-                    </button>
-
-                    {roleItems.filter(r => r.id !== user?.role).map((role) => {
-                      const RoleIcon = role.icon;
-                      const isSelected = workspaceRole === role.id;
-                      return (
-                        <button
-                          key={role.id}
-                          onClick={() => setWorkspaceRole(isSelected ? null : role.id)}
-                          title={`Preview ${role.label} perspective`}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[11px] ${
-                            isSelected
-                              ? 'bg-primary/10 border border-primary/25 text-primary font-semibold'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent'
-                          }`}
-                        >
-                          <RoleIcon size={12} className={`${role.color} shrink-0`} />
-                          <span className="truncate">{role.label}</span>
-                          {isSelected && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
       </nav>
 
       {/* Bottom */}
