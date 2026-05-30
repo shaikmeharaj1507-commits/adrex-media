@@ -15,6 +15,10 @@ const TEXT_MUTED = '#94a3b8';
 
 function drawHeader(doc: Doc, agencyName: string) {
   const pageWidth = doc.page.width;
+  const savedY = doc.y;
+  const oldTopMargin = doc.page.margins.top;
+  doc.page.margins.top = 0;
+
   // Branded Top Navigation Header Bar
   doc.rect(0, 0, pageWidth, 65).fillColor('#0f172a').fill();
   
@@ -23,14 +27,20 @@ function drawHeader(doc: Doc, agencyName: string) {
   doc.fontSize(8).font('Helvetica').fillColor('#94a3b8').text(`${APP_VERSION} • Operations OS`, 50, 38);
   
   // Right: Agency Name
-  const agencyText = doc.fontSize(10).font('Helvetica-Bold').fillColor('#e2e8f0');
+  doc.fontSize(10).font('Helvetica-Bold').fillColor('#e2e8f0');
   const textWidth = doc.widthOfString(agencyName);
-  agencyText.text(agencyName, pageWidth - 50 - textWidth, 24);
+  doc.text(agencyName, pageWidth - 50 - textWidth, 24);
+
+  doc.page.margins.top = oldTopMargin;
+  doc.y = savedY;
 }
 
 function drawFooter(doc: Doc, agencyName: string) {
   const pageHeight = doc.page.height;
   const pageWidth = doc.page.width;
+  const savedY = doc.y;
+  const oldBottomMargin = doc.page.margins.bottom;
+  doc.page.margins.bottom = 0;
   
   // Thin border above footer
   doc.lineWidth(0.5).strokeColor('#e2e8f0').moveTo(50, pageHeight - 35).lineTo(pageWidth - 50, pageHeight - 35).stroke();
@@ -42,8 +52,13 @@ function drawFooter(doc: Doc, agencyName: string) {
   );
   
   // Page count on the right
-  const pageNumberText = `Page ${doc.bufferedPageRange().start + 1}`;
+  const range = doc.bufferedPageRange();
+  const pageNum = range ? range.start + 1 : 1;
+  const pageNumberText = `Page ${pageNum}`;
   doc.text(pageNumberText, pageWidth - 50 - doc.widthOfString(pageNumberText), pageHeight - 25);
+
+  doc.page.margins.bottom = oldBottomMargin;
+  doc.y = savedY;
 }
 
 function drawSectionHeader(doc: Doc, title: string) {
