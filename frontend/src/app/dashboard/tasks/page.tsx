@@ -7,6 +7,8 @@ import { Plus, X, CheckSquare, Clock, AlertCircle, CheckCircle2, Shield, Lock, L
 import { useAuthStore } from '@/store/authStore';
 import { useSocketStore } from '@/store/socketStore';
 
+import { DatePicker } from '@/components/ui/date-picker';
+
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
 
@@ -490,8 +492,10 @@ export default function TasksPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Due Date</label>
-                  <input value={newTask.dueDate} onChange={e => setNewTask(p => ({ ...p, dueDate: e.target.value }))}
-                    type="date" disabled={isSubmitting} className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-60" />
+                  <DatePicker
+                    date={newTask.dueDate ? new Date(newTask.dueDate) : undefined}
+                    setDate={(d) => setNewTask(p => ({ ...p, dueDate: d ? d.toISOString().split('T')[0] : '' }))}
+                  />
                 </div>
                 <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:opacity-95 transition-all shadow-sm disabled:opacity-70 flex items-center justify-center gap-2">
                   {isSubmitting ? (

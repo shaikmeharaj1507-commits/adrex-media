@@ -3,6 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DatePicker } from '@/components/ui/date-picker';
 import { 
   BarChart2, TrendingUp, Users, Megaphone, Download, FileText, 
   PieChart, Activity, Calendar, ChevronDown, CheckSquare, Sparkles,
@@ -262,22 +263,18 @@ export default function ReportsPage() {
           <div className="flex flex-wrap items-end gap-4">
             <div>
               <label className="block text-xs text-muted-foreground mb-1.5">Start Date</label>
-              <input
-                type="date"
-                id="custom-start-date"
-                value={customStart}
-                onChange={e => setCustomStart(e.target.value)}
-                className="bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+              <DatePicker
+                date={customStart ? new Date(customStart) : undefined}
+                setDate={(d) => setCustomStart(d ? d.toISOString().split('T')[0] : '')}
+                className="w-48 py-2.5"
               />
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1.5">End Date</label>
-              <input
-                type="date"
-                id="custom-end-date"
-                value={customEnd}
-                onChange={e => setCustomEnd(e.target.value)}
-                className="bg-background border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-primary transition-colors"
+              <DatePicker
+                date={customEnd ? new Date(customEnd) : undefined}
+                setDate={(d) => setCustomEnd(d ? d.toISOString().split('T')[0] : '')}
+                className="w-48 py-2.5"
               />
             </div>
             <button
