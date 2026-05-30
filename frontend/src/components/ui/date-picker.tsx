@@ -42,7 +42,6 @@ export function DatePicker({ date, setDate, placeholder = "Pick a date", classNa
             mode="single"
             selected={date}
             onSelect={setDate}
-            initialFocus
           />
         </Popover.Content>
       </Popover.Portal>
