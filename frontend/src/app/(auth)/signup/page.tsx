@@ -3,10 +3,11 @@
 import { API_URL } from '@/lib/api';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Building2, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Building2, Loader2, Sparkles, Users, BarChart3, ShieldCheck, ChevronRight, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -39,7 +40,6 @@ export default function SignupPage() {
       if (res.ok) {
         localStorage.setItem('adrex_token', data.token);
         setUser(data.user);
-        // Hard redirect to ensure auth store rehydrates before AuthGuard checks
         window.location.href = '/dashboard';
       } else {
         setError(data.error || 'Signup failed');
@@ -52,94 +52,221 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] opacity-20 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 blur-[100px] rounded-full mix-blend-screen" />
+    <div className="min-h-screen flex flex-col md:flex-row relative overflow-hidden bg-background text-foreground">
+      {/* Decorative Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[130px] rounded-full pointer-events-none opacity-20"
+        style={{ background: 'var(--aurora-1)' }} />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[130px] rounded-full pointer-events-none opacity-20"
+        style={{ background: 'var(--aurora-2)' }} />
+
+      {/* Left Column: Premium Feature Banner / Info */}
+      <div className="hidden md:flex md:w-1/2 p-12 lg:p-20 flex-col justify-between relative border-r border-border/40 bg-muted/10">
+        <div className="space-y-8 relative z-10">
+          {/* Logo brand */}
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Adrex Media" className="w-10 h-10 rounded-xl object-contain shadow-lg" />
+            <span className="font-extrabold text-xl tracking-tight text-foreground">
+              ADREX<span className="text-primary font-light">MEDIA</span>
+            </span>
+          </div>
+
+          <div className="space-y-4 max-w-lg pt-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1 rounded-full text-xs font-semibold text-primary">
+              <Sparkles size={12} />
+              <span>Next-Gen Operating System</span>
+            </div>
+            <h2 className="text-4xl lg:text-5xl font-black tracking-tight leading-none text-foreground">
+              Unleash Your Agency's <span className="text-gradient">Full Potential</span>.
+            </h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              Unify your influencer relations, campaign workflows, financial pipelines, and live client reporting. Built from the ground up for high-velocity media teams.
+            </p>
+          </div>
+
+          {/* Features preview cards */}
+          <div className="space-y-4 max-w-md pt-8">
+            <div className="glassmorphism p-4 rounded-2xl border border-border/60 hover:border-primary/30 transition-all flex items-start gap-4">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Users size={16} className="text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Premium Influencer CRM</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Invite creators, chat in real-time, collect campaign deliverables, and dispatch payouts seamlessly.</p>
+              </div>
+            </div>
+
+            <div className="glassmorphism p-4 rounded-2xl border border-border/60 hover:border-primary/30 transition-all flex items-start gap-4">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <BarChart3 size={16} className="text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Flawless Invoice & Reporting PDFs</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Export beautiful, fully customized operations summaries and professional invoices with a single click.</p>
+              </div>
+            </div>
+
+            <div className="glassmorphism p-4 rounded-2xl border border-border/60 hover:border-primary/30 transition-all flex items-start gap-4">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <ShieldCheck size={16} className="text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Granular Role Boundaries</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Secure workspace segregation with custom rules for Super Admins, Managers, and Creator partners.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground relative z-10">
+          © {new Date().getFullYear()} Adrex Media OS. Built for modern enterprise performance marketing.
+        </div>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="flex justify-center">
-          <img src="/logo.png" alt="Adrex Media" className="w-14 h-14 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.4)]" />
+      {/* Right Column: Form Panel */}
+      <div className="flex-1 flex flex-col justify-between p-6 sm:p-12 md:p-20 relative min-h-screen md:min-h-0">
+        {/* Top bar containing Theme Switcher */}
+        <div className="flex justify-end items-center gap-3 w-full shrink-0">
+          <ThemeSwitcher size="sm" showLabel />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-white tracking-tight">Create your agency</h2>
-        <p className="mt-2 text-center text-sm text-zinc-400">
-          Already have an account?{' '}
-          <Link href="/login" className="font-medium text-purple-400 hover:text-purple-300 transition-colors">
-            Sign in
-          </Link>
-        </p>
-      </motion.div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-zinc-900/50 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/10">
-          <form className="space-y-5" onSubmit={handleSubmit}>
+        {/* Form container */}
+        <div className="w-full max-w-md mx-auto my-auto py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="w-full space-y-6"
+          >
+            {/* Logo display on mobile only */}
+            <div className="md:hidden flex items-center gap-2.5 mb-8 justify-center">
+              <img src="/logo.png" alt="Adrex Media" className="w-9 h-9 rounded-xl object-contain shadow-lg" />
+              <span className="font-extrabold text-lg tracking-tight text-foreground">
+                ADREX<span className="text-primary font-light">MEDIA</span>
+              </span>
+            </div>
+
+            <div className="text-center md:text-left">
+              <h1 className="text-3xl font-bold tracking-tight mb-2 text-foreground">Create Agency Workspace</h1>
+              <p className="text-muted-foreground text-sm">Register your enterprise workspace for free</p>
+            </div>
+
+            {/* Error Banner */}
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                {error}
-              </div>
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="flex items-center gap-2.5 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm"
+              >
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{error}</span>
+              </motion.div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">First Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <User size={16} className="text-muted-foreground" />
+                    </div>
+                    <input 
+                      type="text" 
+                      required 
+                      value={formData.firstName} 
+                      onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                      className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm" 
+                      placeholder="John" 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Last Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={formData.lastName} 
+                    onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                    className="block w-full px-3 py-3 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm" 
+                    placeholder="Doe" 
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">First Name</label>
+                <label className="block text-sm font-medium mb-1.5">Agency Name</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User size={18} className="text-zinc-500" />
+                    <Building2 size={16} className="text-muted-foreground" />
                   </div>
-                  <input type="text" required value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })}
-                    className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="John" />
+                  <input 
+                    type="text" 
+                    required 
+                    value={formData.agencyName} 
+                    onChange={e => setFormData({ ...formData, agencyName: e.target.value })}
+                    className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm" 
+                    placeholder="Acme Marketing" 
+                  />
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">Last Name</label>
-                <input type="text" required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-                  className="block w-full px-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="Doe" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Agency Name</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Building2 size={18} className="text-zinc-500" />
+                <label className="block text-sm font-medium mb-1.5">Work Email</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail size={16} className="text-muted-foreground" />
+                  </div>
+                  <input 
+                    type="email" 
+                    required 
+                    value={formData.email} 
+                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm" 
+                    placeholder="john@example.com" 
+                  />
                 </div>
-                <input type="text" required value={formData.agencyName} onChange={e => setFormData({ ...formData, agencyName: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="Acme Marketing" />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Email address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={18} className="text-zinc-500" />
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Password</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock size={16} className="text-muted-foreground" />
+                  </div>
+                  <input 
+                    type="password" 
+                    required 
+                    value={formData.password} 
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                    className="block w-full pl-10 pr-3 py-3 border border-border rounded-xl bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm" 
+                    placeholder="••••••••" 
+                  />
                 </div>
-                <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="john@example.com" />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-zinc-500" />
-                </div>
-                <input type="password" required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all sm:text-sm" placeholder="••••••••" />
-              </div>
-            </div>
-
-            <div>
-              <button type="submit" disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.3)] text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? <Loader2 size={20} className="animate-spin" /> : 'Create Workspace'}
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(124,92,255,0.3)] flex items-center justify-center gap-2 mt-2"
+              >
+                {loading ? <Loader2 size={17} className="animate-spin" /> : <span className="flex items-center gap-1.5 justify-center">Create Workspace <ChevronRight size={15} /></span>}
               </button>
-            </div>
-          </form>
+            </form>
+
+            <p className="text-center md:text-left text-sm text-muted-foreground pt-4">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:underline font-semibold">
+                Sign in
+              </Link>
+            </p>
+          </motion.div>
         </div>
-      </motion.div>
+
+        {/* Footer on mobile */}
+        <div className="md:hidden text-center text-[10px] text-muted-foreground mt-8 shrink-0">
+          © {new Date().getFullYear()} Adrex Media OS.
+        </div>
+      </div>
     </div>
   );
 }
